@@ -16,6 +16,7 @@
     "vuex": "^3.4.0"
   },
   "devDependencies": {
+    "@mdi/font": "^6.1.95",
     "@vue/cli-plugin-babel": "~4.5.0",
     "@vue/cli-plugin-eslint": "~4.5.0",
     "@vue/cli-plugin-pwa": "~4.5.0",
