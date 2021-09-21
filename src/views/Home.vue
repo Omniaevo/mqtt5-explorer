@@ -1,15 +1,22 @@
 <template>
-  <hello-world />
+  <v-card class="ma-6">
+    <v-toolbar text color="primary" dark>
+      <v-toolbar-title>MQTT Connection</v-toolbar-title>
+    </v-toolbar>
+    <v-btn text v-on:click="connectToMqtt">Connect</v-btn>
+  </v-card>
 </template>
 
 <script>
-import HelloWorld from "../components/HelloWorld";
-
 export default {
   name: "Home",
 
-  components: {
-    HelloWorld,
+  data: () => ({}),
+
+  methods: {
+    connectToMqtt() {
+      this.$router.push({ name: "Viewer" });
+    },
   },
 };
 </script>
