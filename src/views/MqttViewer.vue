@@ -1,5 +1,8 @@
 <template>
-  <v-card class="ma-6">{{ client }}</v-card>
+  <v-card class="ma-6">
+    <v-btn v-on:click="disconnectFromMqtt">Disconnect</v-btn>
+    <v-treeview v-bind:items="data" hoverable dense rounded open-on-click></v-treeview>
+  </v-card>
 </template>
 
 <script>
@@ -10,6 +13,7 @@ export default {
 
   data: () => ({
     client: undefined,
+    data: [],
   }),
 
   beforeMount() {
@@ -19,9 +23,15 @@ export default {
       "1883",
       "omniaevo",
       "poiqwe10"
-    ).connectToMqtt();
+    );
+    this.data = this.client.data;
   },
 
-  methods: {},
+  methods: {
+    disconnectFromMqtt() {
+      this.client.disconnect();
+      // this.data = [];
+    },
+  },
 };
 </script>

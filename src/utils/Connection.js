@@ -1,4 +1,6 @@
 import mqtt from "mqtt";
+import Folder from "../models/Folder.js";
+import File from "../models/File.js";
 
 class Connection {
   #client = undefined;
@@ -6,30 +8,72 @@ class Connection {
   #protocol = "mqtt://";
   #host = undefined;
   #port = undefined;
+  #topic = "#";
+  #data = [];
   #username = undefined;
   #password = undefined;
-  #subscription = "#";
 
-  constructor(name, host, port, username, password) {
+  constructor(name, host, port, topic, username, password) {
     this.#name = name;
     this.#host = host;
     this.#port = port;
+    this.#topic = topic;
     this.#username = username;
     this.#password = password;
+    this.#connectToMqtt();
   }
 
-  connectToMqtt() {
+  #connectToMqtt() {
     let url = this.#protocol + this.#host + ":" + this.#port;
-    console.log(url);
     let options = {
       username: this.#username,
       password: this.#password,
       protocolVersion: 5,
     };
-
     this.#client = mqtt.connect(url, options);
+    // this.#client.subscribe(this.#topic, options);
 
-    return this.#client;
+    this.#client.on("connect", () => {
+      // When connected subscribe to a topic
+      this.#client.subscribe("#", () => {
+        // const items = [];
+        const map = {};
+        let idCount = 1;
+
+        // when a message arrives, do something with it
+        this.#client.on("message", (_t, _m, packet) => {
+          const splitted = packet.topic.split("/");
+          let topic = undefined;
+
+          if (splitted.length === 1) {
+            topic = new File(() => idCount++, packet.topic, packet);
+          } else {
+            topic = new Folder(() => idCount++, splitted, packet);
+          }
+
+          if (map[splitted[0]] === undefined) {
+            topic.initObject();
+            this.#data.push(topic);
+            map[splitted[0]] = this.#data.length - 1;
+          } else {
+            this.#data[map[splitted[0]]].merge(topic);
+          }
+          console.log(this.#data);
+        });
+      });
+    });
+  }
+
+  get data() {
+    return this.#data;
+  }
+
+  disconnect() {
+    this.#client.end(true, {});
+    this.#client.on("close", () => {
+      // this.#data = [];
+      console.log("connection end", this.#data);
+    });
   }
 }
 
