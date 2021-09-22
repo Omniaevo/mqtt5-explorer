@@ -6,7 +6,6 @@ import store from "./store";
 import vuetify from "./plugins/vuetify";
 
 Vue.config.productionTip = false;
-document.title = "MQTT5 Explorer";
 
 new Vue({
   router,
