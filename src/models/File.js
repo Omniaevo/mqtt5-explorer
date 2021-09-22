@@ -1,4 +1,4 @@
-import BaseEntity from "./BaseEntity.js";
+import BaseEntity from "./BaseEntity";
 
 class File extends BaseEntity {
   value = undefined;

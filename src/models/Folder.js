@@ -1,5 +1,5 @@
-import BaseEntity from "./BaseEntity.js";
-import File from "./File.js";
+import BaseEntity from "./BaseEntity";
+import File from "./File";
 
 class Folder extends BaseEntity {
   children = [];

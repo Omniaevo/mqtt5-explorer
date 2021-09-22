@@ -1,6 +1,6 @@
 import mqtt from "mqtt";
-import Folder from "../models/Folder.js";
-import File from "../models/File.js";
+import Folder from "../models/Folder";
+import File from "../models/File";
 
 class Connection {
   #client = undefined;

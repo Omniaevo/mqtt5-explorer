@@ -1,7 +1,13 @@
 <template>
   <v-card class="ma-6">
     <v-btn v-on:click="disconnectFromMqtt">Disconnect</v-btn>
-    <v-treeview v-bind:items="data" hoverable dense rounded open-on-click></v-treeview>
+    <v-treeview
+      v-bind:items="data"
+      hoverable
+      dense
+      rounded
+      open-on-click
+    ></v-treeview>
   </v-card>
 </template>
 
