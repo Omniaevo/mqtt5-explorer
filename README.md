@@ -12,7 +12,14 @@ npm run serve
 
 ### Compiles and minifies for production
 ```
-npm run build
+# Linux
+npm run electron:build -- --linux
+
+# MacOS
+npm run electron:build -- --mac
+
+# Windows
+npm run electron:build -- --win
 ```
 
 ### Lints and fixes files
