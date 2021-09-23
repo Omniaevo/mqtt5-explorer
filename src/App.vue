@@ -28,6 +28,12 @@
   </v-app>
 </template>
 
+<style>
+.rounded {
+  border-radius: 10vw;
+}
+</style>
+
 <script>
 export default {
   name: "App",

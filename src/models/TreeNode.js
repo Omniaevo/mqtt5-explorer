@@ -5,6 +5,7 @@ class TreeNode {
   old = undefined;
   children = [];
   child = undefined;
+  blink = false;
   idFun = () => {};
 
   constructor(id, structure, value) {
@@ -33,6 +34,8 @@ class TreeNode {
   }
 
   merge(node) {
+    this._blink();
+
     // `node` is a leaf
     if (node.child === undefined) {
       this._setValue(node.value);
@@ -51,6 +54,15 @@ class TreeNode {
     }
 
     return this.size === 0 && this.value === undefined;
+  }
+
+  _blink() {
+    this.blink = true;
+    setTimeout(() => this._stopBlink(), 120);
+  }
+
+  _stopBlink() {
+    this.blink = false;
   }
 
   _setValue(newValue) {

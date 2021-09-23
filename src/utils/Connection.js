@@ -33,7 +33,7 @@ class Connection {
 
     this.#client.on("connect", () => {
       // When connected subscribe to a topic
-      this.#client.subscribe("#", () => {
+      this.#client.subscribe(["#", "$SYS/#"], () => {
         const map = {};
         let idCount = 1;
 
