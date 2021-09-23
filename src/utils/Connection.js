@@ -24,6 +24,7 @@ class Connection {
 
   #connectToMqtt() {
     let url = this.#protocol + this.#host + ":" + this.#port;
+    console.log("url", url);
     let options = {
       username: this.#username,
       password: this.#password,

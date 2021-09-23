@@ -1,53 +1,39 @@
 <template>
   <v-container class="connection-container">
     <v-card>
-      <v-toolbar text color="primary" dark>
+      <v-toolbar color="primary" text flat dark>
+        <v-btn
+          v-on:click="addNewConnection"
+          color="pink"
+          class="me-2"
+          fab
+          left
+          small
+        >
+          <v-icon>mdi-plus</v-icon>
+        </v-btn>
         <v-toolbar-title>MQTT Connection</v-toolbar-title>
       </v-toolbar>
-      <v-card-text>
-        <v-form>
-          <div class="input-container">
-            <v-text-field
-              v-model="connectionData.name"
-              label="Name"
-              required
-            ></v-text-field>
-            <div row>
-              <v-text-field
-                v-model="connectionData.host"
-                v-bind:rules="[(v) => !!v || 'Host required']"
-                label="Host"
-                required
-              ></v-text-field>
-              <v-text-field
-                v-model="connectionData.port"
-                label="Port"
-                required
-              ></v-text-field>
-            </div>
-            <div row>
-              <v-text-field
-                v-model="connectionData.username"
-                v-bind:rules="[(v) => !!v || 'Username required']"
-                label="Username"
-                required
-              ></v-text-field>
-              <v-text-field
-                v-model="connectionData.password"
-                v-bind:rules="[(v) => !!v || 'Password required']"
-                type="password"
-                label="Password"
-                required
-              ></v-text-field>
-            </div>
-          </div>
-          <v-btn
-            v-bind:disabled="!validConnectionData"
-            v-on:click="connectToMqtt"
-            >Connect</v-btn
-          >
-        </v-form>
-      </v-card-text>
+
+      <div row>
+        <v-tabs v-on:change="changeTab" style="max-width: 10em;" v-model="tabId" vertical>
+          <v-tab v-for="(conn, i) in connectionsAvailable" v-bind:key="i">
+            {{ conn.name }}
+          </v-tab>
+        </v-tabs>
+
+        <v-tabs-items v-model="tabId">
+          <v-tab-item v-for="(conn, i) in connectionsAvailable" v-bind:key="i">
+            <v-card-text>
+              <!-- Input form -->
+              <ConnectionForm
+                v-bind:data="connectionsAvailable[i]"
+                v-on:update="dataChanged($event, i)"
+              />
+            </v-card-text>
+          </v-tab-item>
+        </v-tabs-items>
+      </div>
     </v-card>
   </v-container>
 </template>
@@ -61,51 +47,53 @@
   align-items: center;
 }
 
-.input-container {
-  display: flex;
-  flex-direction: column;
-}
-
 div[row] {
   display: flex;
   flex-direction: row;
-  gap: 2em;
+  gap: 1.5em;
 }
 </style>
 
 <script>
+import ConnectionForm from "../components/ConnectionForm.vue";
+
 export default {
   name: "Home",
 
+  components: { ConnectionForm },
+
   data: () => ({
-    connectionData: {
+    connectionsAvailable: [],
+    defaultConnectionData: {
       name: "new-connection",
       host: undefined,
       port: "1883",
       username: undefined,
       password: undefined,
     },
+    tabId: 0,
   }),
 
   beforeMount() {
-    let storedConnectionData = this.$store.getters.getConnectionByIndex(0);
-    if (storedConnectionData) this.connectionData = storedConnectionData;
-  },
-
-  computed: {
-    validConnectionData() {
-      return (
-        !!this.connectionData.username &&
-        !!this.connectionData.password &&
-        !!this.connectionData.host
-      );
-    },
+    if (this.$store.getters.getAllConnections.length > 0) {
+      this.connectionsAvailable = this.$store.getters.getAllConnections;
+    } else {
+      // New connection empty
+      this.connectionsAvailable.push(this.defaultConnectionData);
+    }
   },
 
   methods: {
-    connectToMqtt() {
-      this.$store.commit("addNewConnection", this.connectionData);
-      this.$router.push({ name: "Viewer" });
+    addNewConnection() {
+      this.connectionsAvailable.push(this.defaultConnectionData);
+      console.log("add new connection", this.connectionsAvailable);
+    },
+    changeTab(tab) {
+      console.log(tab);
+    },
+    dataChanged(data, index) {
+      console.log(data, index);
+      // this.$store.commit("updateConnection", data, index);
     },
   },
 };
