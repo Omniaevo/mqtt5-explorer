@@ -1,6 +1,5 @@
 import mqtt from "mqtt";
-import Folder from "../models/Folder";
-import File from "../models/File";
+import TreeNode from "../models/TreeNode";
 
 class Connection {
   #client = undefined;
@@ -41,13 +40,7 @@ class Connection {
         // when a message arrives
         this.#client.on("message", (_t, _m, packet) => {
           const splitted = packet.topic.split("/");
-          let topic = undefined;
-
-          if (splitted.length === 1) {
-            topic = new File(() => idCount++, packet.topic, packet);
-          } else {
-            topic = new Folder(() => idCount++, splitted, packet);
-          }
+          let topic = new TreeNode(() => idCount++, splitted, packet);
 
           if (map[splitted[0]] === undefined) {
             topic.initObject();

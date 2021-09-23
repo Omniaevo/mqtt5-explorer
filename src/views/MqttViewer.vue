@@ -5,9 +5,21 @@
       <v-treeview v-bind:items="data" hoverable dense rounded open-on-click>
         <template slot="label" slot-scope="{ item, leaf }" class="ma-0">
           <div v-if="leaf" v-on:click="getProperties(item)">
-            {{ item.name }} = {{ item.value.payload }}
+            {{ item.name }} =
+            <span class="font-weight-black">
+              {{ item.value.payload }}
+            </span>
           </div>
-          <div v-else>{{ item.name }}</div>
+          <div v-else>
+            {{ item.name }}
+            {{ item.value !== undefined ? "=" : "" }}
+            <span class="font-weight-black">
+              {{ item.value !== undefined ? item.value.payload : "" }}
+            </span>
+            <span class="caption grey--text ms-4">
+              ({{ item.size }} elements inside)
+            </span>
+          </div>
         </template>
       </v-treeview>
     </v-card>
