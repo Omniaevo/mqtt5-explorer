@@ -1,8 +1,11 @@
+/* global __static */
+
 "use strict";
 
 import { app, protocol, BrowserWindow } from "electron";
-import Store from "electron-store";
 import { createProtocol } from "vue-cli-plugin-electron-builder/lib";
+import path from "path";
+import Store from "electron-store";
 import installExtension, { VUEJS_DEVTOOLS } from "electron-devtools-installer";
 const isDevelopment = process.env.NODE_ENV !== "production";
 
@@ -19,6 +22,7 @@ async function createWindow() {
     width: store.get("app_width") || 1366,
     height: store.get("app_height") || 768,
     title: "MQTT5 Explorer",
+    icon: path.join(__static, "icon.png"),
     webPreferences: {
       // Use pluginOptions.nodeIntegration, leave this alone
       // See nklayman.github.io/vue-cli-plugin-electron-builder/guide/security.html#node-integration for more info
