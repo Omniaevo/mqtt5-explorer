@@ -1,15 +1,40 @@
 <template>
-  <v-card class="ma-6">
-    <v-btn v-on:click="disconnectFromMqtt">Disconnect</v-btn>
-    <v-treeview
-      v-bind:items="data"
-      hoverable
-      dense
-      rounded
-      open-on-click
-    ></v-treeview>
-  </v-card>
+  <div class="ma-4 explorer-grid-container">
+    <v-card flat class="treeview-container">
+      <v-btn v-on:click="disconnectFromMqtt">Disconnect</v-btn>
+      <v-treeview v-bind:items="data" hoverable dense rounded open-on-click>
+        <template slot="label" slot-scope="{ item, leaf }" class="ma-0">
+          <div v-if="leaf" v-on:click="getProperties(item)">
+            {{ item.name }} = {{ item.value.payload }}
+          </div>
+          <div v-else>{{ item.name }}</div>
+        </template>
+      </v-treeview>
+    </v-card>
+
+    <v-card flat class="properties-container">
+      <v-card-title>Properties view</v-card-title>
+    </v-card>
+  </div>
 </template>
+<style scoped>
+.explorer-grid-container {
+  display: grid;
+  grid-template-areas: "treeview explorer";
+  grid-auto-columns: 1fr 2fr;
+  gap: 1em;
+}
+
+.treeview-container {
+  grid-area: "treeview";
+  /* background-color: red; */
+}
+
+.properties-container {
+  grid-area: "properties";
+  /* background-color: blue; */
+}
+</style>
 
 <script>
 import Connection from "../utils/Connection";
@@ -36,6 +61,9 @@ export default {
   methods: {
     disconnectFromMqtt() {
       this.client.disconnect();
+    },
+    getProperties(item) {
+      console.log(item.value);
     },
   },
 };
