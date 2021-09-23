@@ -2,12 +2,33 @@
   <div class="ma-4 explorer-grid-container">
     <v-card flat class="treeview-container">
       <v-btn v-on:click="disconnectFromMqtt">Disconnect</v-btn>
-      <v-treeview v-bind:items="data" hoverable dense rounded open-on-click>
+      <v-treeview
+        v-bind:items="data"
+        dense
+        hoverable
+        open-on-click
+        rounded
+        transition
+      >
         <template slot="label" slot-scope="{ item, leaf }" class="ma-0">
-          <div v-if="leaf" v-on:click="getProperties(item)">
-            {{ item.name }} = {{ item.value.payload }}
+          <div
+            v-bind:class="{
+              primary: item.blink,
+              'white--text': item.blink,
+              'px-2': true,
+              rounded: true,
+            }"
+            v-on:click="getProperties(item)"
+          >
+            {{ item.name }}
+            {{ item.value !== undefined ? "=" : "" }}
+            <span class="font-weight-black">
+              {{ item.value !== undefined ? item.value.payload : "" }}
+            </span>
+            <span v-if="leaf" class="caption grey--text ms-4">
+              ({{ item.size }} elements inside)
+            </span>
           </div>
-          <div v-else>{{ item.name }}</div>
         </template>
       </v-treeview>
     </v-card>
