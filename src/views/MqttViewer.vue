@@ -4,19 +4,13 @@
       <v-btn v-on:click="disconnectFromMqtt">Disconnect</v-btn>
       <v-treeview v-bind:items="data" hoverable dense rounded open-on-click>
         <template slot="label" slot-scope="{ item, leaf }" class="ma-0">
-          <div v-if="leaf" v-on:click="getProperties(item)">
-            {{ item.name }} =
-            <span class="font-weight-black">
-              {{ item.value.payload }}
-            </span>
-          </div>
-          <div v-else>
+          <div v-on:click="getProperties(item)">
             {{ item.name }}
             {{ item.value !== undefined ? "=" : "" }}
             <span class="font-weight-black">
               {{ item.value !== undefined ? item.value.payload : "" }}
             </span>
-            <span class="caption grey--text ms-4">
+            <span v-if="leaf" class="caption grey--text ms-4">
               ({{ item.size }} elements inside)
             </span>
           </div>
