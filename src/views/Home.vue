@@ -16,7 +16,7 @@
       </v-toolbar>
 
       <div row>
-        <v-tabs v-on:change="changeTab" style="max-width: 10em;" v-model="tabId" vertical>
+        <v-tabs style="max-width: 10em" v-model="tabId" vertical>
           <v-tab v-for="(conn, i) in connectionsAvailable" v-bind:key="i">
             {{ conn.name }}
           </v-tab>
@@ -27,8 +27,8 @@
             <v-card-text>
               <!-- Input form -->
               <ConnectionForm
-                v-bind:data="connectionsAvailable[i]"
-                v-on:update="dataChanged($event, i)"
+                v-bind:data="conn"
+                v-on:updated="dataChanged($event, i)"
               />
             </v-card-text>
           </v-tab-item>
@@ -56,6 +56,7 @@ div[row] {
 
 <script>
 import ConnectionForm from "../components/ConnectionForm.vue";
+import Vue from "vue";
 
 export default {
   name: "Home",
@@ -64,17 +65,11 @@ export default {
 
   data: () => ({
     connectionsAvailable: [],
-    defaultConnectionData: {
-      name: "new-connection",
-      host: undefined,
-      port: "1883",
-      username: undefined,
-      password: undefined,
-    },
     tabId: 0,
   }),
 
   beforeMount() {
+    // Load stored connections
     if (this.$store.getters.getAllConnections.length > 0) {
       this.connectionsAvailable = this.$store.getters.getAllConnections;
     } else {
@@ -83,17 +78,25 @@ export default {
     }
   },
 
+  computed: {
+    defaultConnectionData() {
+      return {
+        name: "new-connection",
+        host: undefined,
+        port: "1883",
+        username: undefined,
+        password: undefined,
+      };
+    },
+  },
+
   methods: {
     addNewConnection() {
       this.connectionsAvailable.push(this.defaultConnectionData);
-      console.log("add new connection", this.connectionsAvailable);
-    },
-    changeTab(tab) {
-      console.log(tab);
     },
     dataChanged(data, index) {
-      console.log(data, index);
-      // this.$store.commit("updateConnection", data, index);
+      Vue.set(this.connectionsAvailable, index, data);
+      this.$store.commit("updateConnection", [data, index]);
     },
   },
 };

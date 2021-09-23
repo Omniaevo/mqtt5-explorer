@@ -7,8 +7,8 @@ const dataVuexModule = {
     addNewConnection: (state, data) => state.brokerConnections.push(data),
     removeConnection: (state, index) =>
       state.brokerConnections.splice(index, 1),
-    updateConnection: (state, data, index) =>
-      (state.brokerConnections[index] = data),
+    updateConnection: (state, data) =>
+      (state.brokerConnections[data[1]] = data[0]),
   },
 
   getters: {

@@ -3,6 +3,9 @@
     <div class="input-container">
       <v-text-field
         v-model="connectionData.name"
+        v-bind:rules="[
+          (v) => v.length <= 10 || 'Name must be less than 10 characters',
+        ]"
         label="Name"
         required
       ></v-text-field>
@@ -74,8 +77,8 @@ export default {
   }),
 
   beforeMount() {
-    // Copy the data received
-    this.connectionData = this.data;
+    // Clone the data received
+    this.connectionData = { ...this.data };
   },
 
   computed: {
@@ -90,7 +93,6 @@ export default {
 
   methods: {
     saveChanges() {
-      console.log("saved changes");
       this.$emit("updated", this.connectionData);
     },
     connectToMqtt() {

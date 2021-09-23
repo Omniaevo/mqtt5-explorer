@@ -70,7 +70,6 @@ export default {
 
   beforeMount() {
     let connectionData = this.$store.getters.getConnectionByIndex(0);
-    console.log("connectionData Viewer", connectionData);
     this.client = new Connection(
       connectionData.name, //"gcloud",
       connectionData.host, //"35.195.129.171",
