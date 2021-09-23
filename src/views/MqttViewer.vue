@@ -36,7 +36,6 @@ export default {
   methods: {
     disconnectFromMqtt() {
       this.client.disconnect();
-      // this.data = [];
     },
   },
 };

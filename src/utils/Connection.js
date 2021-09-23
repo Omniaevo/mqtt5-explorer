@@ -31,16 +31,14 @@ class Connection {
       protocolVersion: 5,
     };
     this.#client = mqtt.connect(url, options);
-    // this.#client.subscribe(this.#topic, options);
 
     this.#client.on("connect", () => {
       // When connected subscribe to a topic
       this.#client.subscribe("#", () => {
-        // const items = [];
         const map = {};
         let idCount = 1;
 
-        // when a message arrives, do something with it
+        // when a message arrives
         this.#client.on("message", (_t, _m, packet) => {
           const splitted = packet.topic.split("/");
           let topic = undefined;
@@ -58,7 +56,6 @@ class Connection {
           } else {
             this.#data[map[splitted[0]]].merge(topic);
           }
-          console.log(this.#data);
         });
       });
     });
@@ -71,7 +68,6 @@ class Connection {
   disconnect() {
     this.#client.end(true, {});
     this.#client.on("close", () => {
-      // this.#data = [];
       console.log("connection end", this.#data);
     });
   }
