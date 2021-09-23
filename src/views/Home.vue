@@ -7,25 +7,45 @@
       <v-card-text>
         <v-form>
           <div class="input-container">
-            <v-text-field v-model="name" label="Name" required></v-text-field>
+            <v-text-field
+              v-model="connectionData.name"
+              label="Name"
+              required
+            ></v-text-field>
             <div row>
-              <v-text-field v-model="host" label="Host" required></v-text-field>
-              <v-text-field v-model="port" label="Port" required></v-text-field>
+              <v-text-field
+                v-model="connectionData.host"
+                v-bind:rules="[(v) => !!v || 'Host required']"
+                label="Host"
+                required
+              ></v-text-field>
+              <v-text-field
+                v-model="connectionData.port"
+                label="Port"
+                required
+              ></v-text-field>
             </div>
             <div row>
               <v-text-field
-                v-model="username"
+                v-model="connectionData.username"
+                v-bind:rules="[(v) => !!v || 'Username required']"
                 label="Username"
                 required
               ></v-text-field>
               <v-text-field
-                v-model="password"
+                v-model="connectionData.password"
+                v-bind:rules="[(v) => !!v || 'Password required']"
+                type="password"
                 label="Password"
                 required
               ></v-text-field>
             </div>
           </div>
-          <v-btn text v-on:click="connectToMqtt">Connect</v-btn>
+          <v-btn
+            v-bind:disabled="!validConnectionData"
+            v-on:click="connectToMqtt"
+            >Connect</v-btn
+          >
         </v-form>
       </v-card-text>
     </v-card>
@@ -58,23 +78,33 @@ export default {
   name: "Home",
 
   data: () => ({
-    name: undefined,
-    host: undefined,
-    port: undefined,
-    username: undefined,
-    password: undefined,
+    connectionData: {
+      name: "new-connection",
+      host: undefined,
+      port: "1883",
+      username: undefined,
+      password: undefined,
+    },
   }),
+
+  beforeMount() {
+    let storedConnectionData = this.$store.getters.getConnectionByIndex(0);
+    if (storedConnectionData) this.connectionData = storedConnectionData;
+  },
+
+  computed: {
+    validConnectionData() {
+      return (
+        !!this.connectionData.username &&
+        !!this.connectionData.password &&
+        !!this.connectionData.host
+      );
+    },
+  },
 
   methods: {
     connectToMqtt() {
-      let connection = {
-        name: this.name,
-        host: this.host,
-        port: this.port,
-        username: this.username,
-        password: this.password,
-      };
-      this.$store.commit("addNewConnection", connection);
+      this.$store.commit("addNewConnection", this.connectionData);
       this.$router.push({ name: "Viewer" });
     },
   },

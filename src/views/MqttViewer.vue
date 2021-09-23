@@ -69,12 +69,13 @@ export default {
   }),
 
   beforeMount() {
+    let connectionData = this.$store.getters.getConnectionByIndex(0);
     this.client = new Connection(
-      "gcloud",
-      "35.195.129.171",
-      "1883",
-      "omniaevo",
-      "poiqwe10"
+      connectionData.name, //"gcloud",
+      connectionData.host, //"35.195.129.171",
+      connectionData.port, //"1883",
+      connectionData.username, //"omniaevo",
+      connectionData.password //"poiqwe10"
     );
     this.data = this.client.data;
   },
@@ -82,6 +83,7 @@ export default {
   methods: {
     disconnectFromMqtt() {
       this.client.disconnect();
+      this.$router.push({ name: "Home" });
     },
     getProperties(item) {
       console.log(item.value);

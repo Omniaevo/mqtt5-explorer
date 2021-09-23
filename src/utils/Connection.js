@@ -61,7 +61,7 @@ class Connection {
   disconnect() {
     this.#client.end(true, {});
     this.#client.on("close", () => {
-      console.log("connection end", this.#data);
+      console.log("connection end");
     });
   }
 }
