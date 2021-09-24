@@ -1,51 +1,46 @@
 import mqtt from "mqtt";
 import TreeNode from "../models/TreeNode";
+import ConnectionProperties from "../models/ConnectionProperties";
 
 class Connection {
   #client = undefined;
-  #name = "new-connection";
-  #protocol = "mqtt://";
-  #host = undefined;
-  #port = undefined;
-  #topics = [];
+  #url = undefined;
+  #properties = new ConnectionProperties();
   #data = [];
-  #username = undefined;
-  #password = undefined;
   #map = {};
   #idCount = 1;
-
-  constructor(name, host, port, topics, username, password) {
-    this.#name = name;
-    this.#host = host;
-    this.#port = port;
-    this.#topics = topics;
-    this.#username = username;
-    this.#password = password;
-    this.#map = {};
-    this.#idCount = 1;
-  }
 
   get data() {
     return this.#data;
   }
 
+  init(properties) {
+    this.#properties = properties;
+    // eslint-disable-next-line prettier/prettier
+    this.#url = `${this.#properties.protocol}${this.#properties.host}:${this.#properties.port}`;
+
+    this.#client = undefined;
+    this.#data = [];
+    this.#map = {};
+    this.#idCount = 1;
+  }
+
   connect(onError) {
-    const url = this.#protocol + this.#host + ":" + this.#port;
     const options = {
-      username: this.#username,
-      password: this.#password,
-      protocolVersion: 5,
+      username: this.#properties.username,
+      password: this.#properties.password,
+      protocolVersion: this.#properties.version,
       keepalive: 120,
       reconnectPeriod: 0,
       connectTimeout: 5000,
     };
 
-    this.#client = mqtt.connect(url, options);
+    this.#client = mqtt.connect(this.#url, options);
 
     this.#client.on("error", onError);
     this.#client.on("connect", () => {
       // When connected subscribe to a topic
-      this.#client.subscribe(this.#topics, () => {});
+      this.#client.subscribe(this.#properties.topics, () => {});
     });
     // when a message arrives
     this.#client.on("message", (_t, _m, packet) => {

@@ -6,16 +6,15 @@ class TreeNode {
   children = [];
   child = undefined;
   blink = false;
-  idFun = () => {};
 
   constructor(id, structure, value) {
-    this.idFun = id;
+    this.#idFun = id;
     this.name = structure[0];
 
     if (structure.length > 1) {
       this.child = new TreeNode(id, structure.slice(1), value);
     } else {
-      this._setValue(value);
+      this.#setValue(value);
     }
   }
 
@@ -24,7 +23,7 @@ class TreeNode {
   }
 
   initObject() {
-    this.id = this.idFun();
+    this.id = this.#idFun();
 
     if (this.child !== undefined) {
       this.child.initObject();
@@ -34,7 +33,7 @@ class TreeNode {
   }
 
   merge(node) {
-    this._blink();
+    this.#blink();
 
     // `node` is a leaf
     if (node.child === undefined) {
@@ -56,20 +55,24 @@ class TreeNode {
     return this.size === 0 && this.value === undefined;
   }
 
-  _blink() {
+  //#region Private methods
+
+  #idFun = () => {};
+
+  #blink = () => {
     this.blink = true;
-    setTimeout(() => this._stopBlink(), 120);
-  }
+    setTimeout(() => this.#stopBlink(), 120);
+  };
 
-  _stopBlink() {
-    this.blink = false;
-  }
+  #stopBlink = () => (this.blink = false);
 
-  _setValue(newValue) {
+  #setValue = (newValue) => {
     this.old = this.value;
     this.value =
       ((newValue || {}).payload || []).length > 0 ? newValue : undefined;
-  }
+  };
+
+  //#endregion
 }
 
 export default TreeNode;

@@ -3,7 +3,7 @@
     <v-card flat class="treeview-container">
       <v-btn v-on:click="disconnectFromMqtt">Disconnect</v-btn>
       <v-treeview
-        v-bind:items="client.data"
+        v-bind:items="$connection.data"
         dense
         hoverable
         open-on-click
@@ -34,7 +34,7 @@
     </v-card>
 
     <v-card flat class="properties-container">
-      <v-card-title>Properties view</v-card-title>
+      <v-card-title>{{ connectionProperties.name }}</v-card-title>
     </v-card>
   </div>
 </template>
@@ -58,40 +58,32 @@
 </style>
 
 <script>
-import Connection from "../utils/Connection";
+import ConnectionProperties from "../models/ConnectionProperties";
 
 export default {
   name: "MqttViewer",
 
   data: () => ({
-    client: undefined,
+    connectionProperties: new ConnectionProperties(),
   }),
 
   beforeMount() {
-    let connectionData = this.$store.getters.getConnectionByIndex(
-      this.$route.params.index
+    this.connectionProperties.init(
+      this.$store.getters.getConnectionByIndex(this.$route.params.index)
     );
-    this.client = new Connection(
-      connectionData.name,
-      connectionData.host,
-      connectionData.port,
-      connectionData.topics,
-      connectionData.username,
-      connectionData.password
-    );
+    this.$connection.init(this.connectionProperties);
   },
 
   mounted() {
-    this.client.connect((err) => {
+    this.$connection.connect((err) => {
       console.error(err);
-      this.client.disconnect(() => {});
-      this.$router.replace({ name: "Home" });
+      this.disconnectFromMqtt();
     });
   },
 
   methods: {
     disconnectFromMqtt() {
-      this.client.disconnect(() => this.$router.replace({ name: "Home" }));
+      this.$connection.disconnect(() => this.$router.replace({ name: "Home" }));
     },
     getProperties(item) {
       console.log(item.value);

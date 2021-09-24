@@ -3,19 +3,20 @@
     <div class="input-container">
       <v-text-field
         v-model="connectionData.name"
+        v-bind:rules="staticConnectionProperties.rules.host.name"
         label="Name"
         required
       ></v-text-field>
       <div row>
         <v-text-field
           v-model="connectionData.host"
-          v-bind:rules="[(v) => !!v || 'Host required']"
+          v-bind:rules="staticConnectionProperties.rules.host"
           label="Host"
           required
         ></v-text-field>
         <v-text-field
           v-model="connectionData.port"
-          v-bind:rules="[(v) => !!v || 'Port required']"
+          v-bind:rules="staticConnectionProperties.rules.host.port"
           label="Port"
           required
         ></v-text-field>
@@ -62,19 +63,27 @@ div[row] {
 </style>
 
 <script>
+import ConnectionProperties from "../models/ConnectionProperties";
+
 export default {
   name: "ConnectionForm",
 
   props: {
-    data: { type: Object, required: true },
+    properties: { type: ConnectionProperties, required: true },
+  },
+
+  data: () => ({
+    connectionData: new ConnectionProperties(),
+    staticConnectionProperties: ConnectionProperties,
+  }),
+
+  beforeMount() {
+    this.connectionData.init(this.properties);
   },
 
   computed: {
     validConnectionData() {
-      return !!this.connectionData.host && !!this.connectionData.port;
-    },
-    connectionData() {
-      return { ...this.data };
+      return ConnectionProperties.validate(this.connectionData);
     },
   },
 

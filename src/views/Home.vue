@@ -29,17 +29,22 @@
           class="tab-width"
           vertical
         >
-          <v-tab v-for="(conn, i) in connectionsAvailable" v-bind:key="i">
-            <div class="tab-truncate tab-width text-left">{{ conn.name }}</div>
+          <v-tab v-for="(connection, i) in connectionsAvailable" v-bind:key="i">
+            <div class="tab-truncate tab-width text-left">
+              {{ connection.name }}
+            </div>
           </v-tab>
         </v-tabs>
 
         <v-tabs-items v-model="tabId">
-          <v-tab-item v-for="(conn, i) in connectionsAvailable" v-bind:key="i">
+          <v-tab-item
+            v-for="(connection, i) in connectionsAvailable"
+            v-bind:key="i"
+          >
             <v-card-text>
               <!-- Input form -->
               <ConnectionForm
-                v-bind:data="conn"
+                v-bind:properties="connection"
                 v-on:updated="dataChanged($event, i)"
                 v-on:delete="deleteConnection(i)"
                 v-on:connect="connect(i)"
@@ -81,6 +86,7 @@ div[row] {
 <script>
 import Vue from "vue";
 import ConnectionForm from "../components/ConnectionForm.vue";
+import ConnectionProperties from "../models/ConnectionProperties";
 
 export default {
   name: "Home",
@@ -90,14 +96,7 @@ export default {
   data: () => ({
     tabId: 0,
     onChangeCallback: () => {},
-    defaultConnectionData: {
-      name: "new-connection",
-      host: undefined,
-      port: "1883",
-      username: undefined,
-      password: undefined,
-      topics: ["#", "$SYS/#"],
-    },
+    defaultConnectionData: new ConnectionProperties(),
   }),
 
   beforeMount() {
