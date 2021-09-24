@@ -1,51 +1,46 @@
 import mqtt from "mqtt";
 import TreeNode from "../models/TreeNode";
+import ConnectionProperties from "../models/ConnectionProperties";
 
 class Connection {
   #client = undefined;
-  #name = "new-connection";
-  #protocol = "mqtt://";
-  #host = undefined;
-  #port = undefined;
-  #topics = [];
-  #data = [];
-  #username = undefined;
-  #password = undefined;
+  #url = undefined;
+  #properties = new ConnectionProperties();
   #map = {};
   #idCount = 1;
+  #addCallback = () => {};
+  #mergeCallback = () => {};
+  #getSize = () => 0;
 
-  constructor(name, host, port, topics, username, password) {
-    this.#name = name;
-    this.#host = host;
-    this.#port = port;
-    this.#topics = topics;
-    this.#username = username;
-    this.#password = password;
+  init(properties, addCallback, mergeCallback, getSize) {
+    this.#properties = properties;
+    // eslint-disable-next-line prettier/prettier
+    this.#url = `${this.#properties.protocol}${this.#properties.host}:${this.#properties.port}`;
+    this.#addCallback = addCallback;
+    this.#mergeCallback = mergeCallback;
+    this.#getSize = getSize;
+
+    this.#client = undefined;
     this.#map = {};
     this.#idCount = 1;
   }
 
-  get data() {
-    return this.#data;
-  }
-
   connect(onError) {
-    const url = this.#protocol + this.#host + ":" + this.#port;
     const options = {
-      username: this.#username,
-      password: this.#password,
-      protocolVersion: 5,
+      username: this.#properties.username,
+      password: this.#properties.password,
+      protocolVersion: this.#properties.version,
       keepalive: 120,
       reconnectPeriod: 0,
       connectTimeout: 5000,
     };
 
-    this.#client = mqtt.connect(url, options);
+    this.#client = mqtt.connect(this.#url, options);
 
     this.#client.on("error", onError);
     this.#client.on("connect", () => {
       // When connected subscribe to a topic
-      this.#client.subscribe(this.#topics, () => {});
+      this.#client.subscribe(this.#properties.topics, () => {});
     });
     // when a message arrives
     this.#client.on("message", (_t, _m, packet) => {
@@ -54,10 +49,10 @@ class Connection {
 
       if (this.#map[splitted[0]] === undefined) {
         topic.initObject();
-        this.#data.push(topic);
-        this.#map[splitted[0]] = this.#data.length - 1;
+        this.#addCallback(topic);
+        this.#map[splitted[0]] = this.#getSize() - 1;
       } else {
-        this.#data[this.#map[splitted[0]]].merge(topic);
+        this.#mergeCallback(this.#map[splitted[0]], topic);
       }
     });
   }
