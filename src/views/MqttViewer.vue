@@ -3,7 +3,7 @@
     <v-card flat class="treeview-container">
       <v-btn v-on:click="disconnectFromMqtt">Disconnect</v-btn>
       <v-treeview
-        v-bind:items="data"
+        v-bind:items="client.data"
         dense
         hoverable
         open-on-click
@@ -65,7 +65,6 @@ export default {
 
   data: () => ({
     client: undefined,
-    data: [],
   }),
 
   beforeMount() {
@@ -76,15 +75,23 @@ export default {
       connectionData.name,
       connectionData.host,
       connectionData.port,
+      connectionData.topics,
       connectionData.username,
       connectionData.password
     );
-    this.data = this.client.data;
+  },
+
+  mounted() {
+    this.client.connect((err) => {
+      console.error(err);
+      this.client.disconnect(() => {});
+      this.$router.replace({ name: "Home" });
+    });
   },
 
   methods: {
     disconnectFromMqtt() {
-      this.client.disconnect(() => this.$router.push({ name: "Home" }));
+      this.client.disconnect(() => this.$router.replace({ name: "Home" }));
     },
     getProperties(item) {
       console.log(item.value);

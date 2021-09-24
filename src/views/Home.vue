@@ -96,6 +96,7 @@ export default {
       port: "1883",
       username: undefined,
       password: undefined,
+      topics: ["#", "$SYS/#"],
     },
   }),
 

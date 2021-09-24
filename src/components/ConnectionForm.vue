@@ -15,6 +15,7 @@
         ></v-text-field>
         <v-text-field
           v-model="connectionData.port"
+          v-bind:rules="[(v) => !!v || 'Port required']"
           label="Port"
           required
         ></v-text-field>
@@ -22,13 +23,11 @@
       <div row>
         <v-text-field
           v-model="connectionData.username"
-          v-bind:rules="[(v) => !!v || 'Username required']"
           label="Username"
           required
         ></v-text-field>
         <v-text-field
           v-model="connectionData.password"
-          v-bind:rules="[(v) => !!v || 'Password required']"
           type="password"
           label="Password"
           required
@@ -70,15 +69,9 @@ export default {
     data: { type: Object, required: true },
   },
 
-  data: () => ({}),
-
   computed: {
     validConnectionData() {
-      return (
-        !!this.connectionData.username &&
-        !!this.connectionData.password &&
-        !!this.connectionData.host
-      );
+      return !!this.connectionData.host && !!this.connectionData.port;
     },
     connectionData() {
       return { ...this.data };
