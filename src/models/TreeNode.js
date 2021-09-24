@@ -37,7 +37,7 @@ class TreeNode {
 
     // `node` is a leaf
     if (node.child === undefined) {
-      this._setValue(node.value);
+      this.#setValue(node.value);
 
       return this.size === 0 && this.value === undefined;
     }
@@ -55,8 +55,6 @@ class TreeNode {
     return this.size === 0 && this.value === undefined;
   }
 
-  //#region Private methods
-
   #idFun = () => {};
 
   #blink = () => {
@@ -71,8 +69,6 @@ class TreeNode {
     this.value =
       ((newValue || {}).payload || []).length > 0 ? newValue : undefined;
   };
-
-  //#endregion
 }
 
 export default TreeNode;

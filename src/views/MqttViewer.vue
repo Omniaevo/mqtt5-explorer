@@ -1,41 +1,60 @@
 <template>
-  <div class="ma-4 explorer-grid-container">
-    <v-card flat class="treeview-container">
-      <v-btn v-on:click="disconnectFromMqtt">Disconnect</v-btn>
-      <v-treeview
-        v-bind:items="$connection.data"
-        dense
-        hoverable
-        open-on-click
-        rounded
-        transition
-      >
-        <template slot="label" slot-scope="{ item, leaf }" class="ma-0">
-          <div
-            v-bind:class="{
-              primary: item.blink,
-              'white--text': item.blink,
-              'px-2': true,
-              rounded: true,
-            }"
-            v-on:click="getProperties(item)"
-          >
-            {{ item.name }}
-            {{ item.value !== undefined ? "=" : "" }}
-            <span class="font-weight-black">
-              {{ item.value !== undefined ? item.value.payload : "" }}
-            </span>
-            <span v-if="leaf" class="caption grey--text ms-4">
-              ({{ item.size }} elements inside)
-            </span>
-          </div>
-        </template>
-      </v-treeview>
-    </v-card>
+  <div>
+    <v-app-bar color="white" app flat>
+      <div class="d-flex align-center">
+        <v-tooltip bottom>
+          <template v-slot:activator="{ on, attrs }">
+            <v-btn
+              v-bind="attrs"
+              v-on="on"
+              v-on:click="disconnectFromMqtt()"
+              color="black"
+              icon
+            >
+              <v-icon>mdi-arrow-left</v-icon>
+            </v-btn>
+          </template>
+          <span>Disconnect</span>
+        </v-tooltip>
 
-    <v-card flat class="properties-container">
-      <v-card-title>{{ connectionProperties.name }}</v-card-title>
-    </v-card>
+        <div class="title ms-4">
+          Connected to: {{ connectionProperties.name }}
+        </div>
+      </div>
+    </v-app-bar>
+
+    <div class="ma-4 explorer-grid-container">
+      <v-card flat class="treeview-container">
+        <v-treeview
+          v-bind:items="treeData"
+          dense
+          hoverable
+          open-on-click
+          rounded
+        >
+          <template slot="label" slot-scope="{ item, leaf }" class="ma-0">
+            <div
+              v-bind:class="{
+                primary: item.blink,
+                'white--text': item.blink,
+                'px-2': true,
+                rounded: true,
+              }"
+              v-on:click="getProperties(item)"
+            >
+              {{ item.name }}
+              {{ item.value !== undefined ? "=" : "" }}
+              <span class="font-weight-black">
+                {{ item.value !== undefined ? item.value.payload : "" }}
+              </span>
+              <span v-if="leaf" class="caption grey--text ms-4">
+                ({{ item.size }} elements inside)
+              </span>
+            </div>
+          </template>
+        </v-treeview>
+      </v-card>
+    </div>
   </div>
 </template>
 <style scoped>
@@ -64,6 +83,7 @@ export default {
   name: "MqttViewer",
 
   data: () => ({
+    treeData: [],
     connectionProperties: new ConnectionProperties(),
   }),
 
@@ -71,22 +91,36 @@ export default {
     this.connectionProperties.init(
       this.$store.getters.getConnectionByIndex(this.$route.params.index)
     );
-    this.$connection.init(this.connectionProperties);
+    this.$connection.init(
+      this.connectionProperties,
+      this.add,
+      this.merge,
+      () => this.treeData.length
+    );
   },
 
   mounted() {
-    this.$connection.connect((err) => {
-      console.error(err);
-      this.disconnectFromMqtt();
-    });
+    this.$connection.connect((err) => this.disconnectFromMqtt(err.toString()));
   },
 
   methods: {
-    disconnectFromMqtt() {
-      this.$connection.disconnect(() => this.$router.replace({ name: "Home" }));
+    disconnectFromMqtt(msg = undefined) {
+      this.$connection.disconnect(() => {
+        this.$router.replace({ name: "Home" });
+
+        if (msg !== undefined) this.$bus.$emit("error", msg);
+      });
     },
     getProperties(item) {
       console.log(item.value);
+    },
+    add(node) {
+      this.treeData.push(node);
+    },
+    merge(index, node) {
+      if (this.treeData[index].merge(node)) {
+        this.treeData.splice(index, 1);
+      }
     },
   },
 };

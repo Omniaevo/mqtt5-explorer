@@ -6,21 +6,21 @@ class Connection {
   #client = undefined;
   #url = undefined;
   #properties = new ConnectionProperties();
-  #data = [];
   #map = {};
   #idCount = 1;
+  #addCallback = () => {};
+  #mergeCallback = () => {};
+  #getSize = () => 0;
 
-  get data() {
-    return this.#data;
-  }
-
-  init(properties) {
+  init(properties, addCallback, mergeCallback, getSize) {
     this.#properties = properties;
     // eslint-disable-next-line prettier/prettier
     this.#url = `${this.#properties.protocol}${this.#properties.host}:${this.#properties.port}`;
+    this.#addCallback = addCallback;
+    this.#mergeCallback = mergeCallback;
+    this.#getSize = getSize;
 
     this.#client = undefined;
-    this.#data = [];
     this.#map = {};
     this.#idCount = 1;
   }
@@ -49,10 +49,10 @@ class Connection {
 
       if (this.#map[splitted[0]] === undefined) {
         topic.initObject();
-        this.#data.push(topic);
-        this.#map[splitted[0]] = this.#data.length - 1;
+        this.#addCallback(topic);
+        this.#map[splitted[0]] = this.#getSize() - 1;
       } else {
-        this.#data[this.#map[splitted[0]]].merge(topic);
+        this.#mergeCallback(this.#map[splitted[0]], topic);
       }
     });
   }

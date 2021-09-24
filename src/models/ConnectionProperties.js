@@ -9,20 +9,20 @@ class ConnectionProperties {
   password = undefined;
 
   static rules = {
-    name: [(val) => !!val.name.trim() || "Connection name is required"],
-    protocol: [(val) => !!val.protocol.trim() || "Protocol is required"],
-    host: [(val) => !!val.host.trim() || "Host is required"],
-    port: [(val) => !!val.port.trim() || "Port is required"],
-    topics: [(val) => !!val.topics.trim() || "Topics is required"],
+    name: [(val) => !!val || "Connection name is required"],
+    protocol: [(val) => !!val || "Protocol is required"],
+    host: [(val) => !!val || "Host is required"],
+    port: [(val) => !!val || "Port is required"],
+    topics: [(val) => !!val || "Topics is required"],
   };
 
   static validate(properties) {
     return (
-      !!properties.name.trim() &&
-      !!properties.protocol.trim() &&
-      !!properties.host.trim() &&
-      !!properties.port.trim() &&
-      !!properties.topics.trim() &&
+      !!properties.name &&
+      !!properties.protocol &&
+      !!properties.host &&
+      !!properties.port &&
+      !!properties.topics &&
       !!properties.version
     );
   }
