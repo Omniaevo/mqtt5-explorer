@@ -17,8 +17,9 @@
           <span>Disconnect</span>
         </v-tooltip>
 
-        <div class="title ms-4">
-          Connected to: {{ connectionProperties.name }}
+        <div class="ms-4">
+          <div class="title">Connected to: {{ connectionProperties.name }}</div>
+          <div class="caption grey--text small-line">{{ $connection.url }}</div>
         </div>
       </div>
     </v-app-bar>
@@ -73,6 +74,10 @@
 .properties-container {
   grid-area: "properties";
   /* background-color: blue; */
+}
+
+.small-line {
+  line-height: 0.5rem;
 }
 </style>
 
