@@ -16,9 +16,14 @@
       </v-toolbar>
 
       <div row>
-        <v-tabs style="max-width: 10em" v-model="tabId" vertical>
+        <v-tabs
+          v-model="tabId"
+          v-on:change="onChangeCallback"
+          class="tab-width"
+          vertical
+        >
           <v-tab v-for="(conn, i) in connectionsAvailable" v-bind:key="i">
-            {{ conn.name }}
+            <div class="tab-truncate tab-width text-left">{{ conn.name }}</div>
           </v-tab>
         </v-tabs>
 
@@ -29,6 +34,8 @@
               <ConnectionForm
                 v-bind:data="conn"
                 v-on:updated="dataChanged($event, i)"
+                v-on:delete="deleteConnection(i)"
+                v-on:connect="connect(i)"
               />
             </v-card-text>
           </v-tab-item>
@@ -52,11 +59,20 @@ div[row] {
   flex-direction: row;
   gap: 1.5em;
 }
+
+.tab-width {
+  width: 16ch;
+}
+
+.tab-truncate {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 </style>
 
 <script>
 import ConnectionForm from "../components/ConnectionForm.vue";
-import Vue from "vue";
 
 export default {
   name: "Home",
@@ -64,39 +80,44 @@ export default {
   components: { ConnectionForm },
 
   data: () => ({
-    connectionsAvailable: [],
     tabId: 0,
+    onChangeCallback: () => {},
+    defaultConnectionData: {
+      name: "new-connection",
+      host: undefined,
+      port: "1883",
+      username: undefined,
+      password: undefined,
+    },
   }),
 
   beforeMount() {
     // Load stored connections
-    if (this.$store.getters.getAllConnections.length > 0) {
-      this.connectionsAvailable = this.$store.getters.getAllConnections;
-    } else {
-      // New connection empty
-      this.connectionsAvailable.push(this.defaultConnectionData);
-    }
+    if (this.connectionsAvailable.length == 0) this.addNewConnection();
   },
 
   computed: {
-    defaultConnectionData() {
-      return {
-        name: "new-connection",
-        host: undefined,
-        port: "1883",
-        username: undefined,
-        password: undefined,
-      };
+    connectionsAvailable() {
+      return this.$store.getters.getAllConnections;
     },
   },
 
   methods: {
     addNewConnection() {
-      this.connectionsAvailable.push(this.defaultConnectionData);
+      this.$store.commit("addNewConnection", this.defaultConnectionData);
     },
     dataChanged(data, index) {
-      Vue.set(this.connectionsAvailable, index, data);
-      this.$store.commit("updateConnection", [data, index]);
+      this.$store.commit("updateConnection", { data, index });
+    },
+    deleteConnection(index) {
+      this.onChangeCallback = () => {
+        this.$store.commit("removeConnection", index);
+        this.onChangeCallback = () => {};
+      };
+      this.tabId = 0;
+    },
+    connect(index) {
+      this.$router.push({ path: `viewer/${index}` });
     },
   },
 };

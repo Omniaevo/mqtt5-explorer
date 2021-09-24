@@ -3,9 +3,6 @@
     <div class="input-container">
       <v-text-field
         v-model="connectionData.name"
-        v-bind:rules="[
-          (v) => v.length <= 10 || 'Name must be less than 10 characters',
-        ]"
         label="Name"
         required
       ></v-text-field>
@@ -39,6 +36,7 @@
       </div>
     </div>
     <div row>
+      <v-btn v-on:click="deleteConnection">Delete</v-btn>
       <v-btn v-on:click="saveChanges" color="pink" dark>Save</v-btn>
       <v-btn
         v-bind:disabled="!validConnectionData"
@@ -92,12 +90,14 @@ export default {
   },
 
   methods: {
+    deleteConnection() {
+      this.$emit("delete");
+    },
     saveChanges() {
       this.$emit("updated", this.connectionData);
     },
     connectToMqtt() {
-      this.$store.commit("addNewConnection", this.connectionData);
-      this.$router.push({ name: "Viewer" });
+      this.$emit("connect");
     },
   },
 };

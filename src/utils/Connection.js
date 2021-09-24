@@ -59,11 +59,9 @@ class Connection {
     return this.#data;
   }
 
-  disconnect() {
+  disconnect(callback) {
+    this.#client.on("close", callback);
     this.#client.end(true, {});
-    this.#client.on("close", () => {
-      console.log("connection end");
-    });
   }
 }
 
