@@ -36,8 +36,8 @@
       </div>
     </div>
     <div row>
-      <v-btn v-on:click="deleteConnection">Delete</v-btn>
-      <v-btn v-on:click="saveChanges" color="pink" dark>Save</v-btn>
+      <v-btn v-on:click="deleteConnection" color="error">Delete</v-btn>
+      <v-btn v-on:click="saveChanges">Save</v-btn>
       <v-btn
         v-bind:disabled="!validConnectionData"
         v-on:click="connectToMqtt"
@@ -70,14 +70,7 @@ export default {
     data: { type: Object, required: true },
   },
 
-  data: () => ({
-    connectionData: undefined,
-  }),
-
-  beforeMount() {
-    // Clone the data received
-    this.connectionData = { ...this.data };
-  },
+  data: () => ({}),
 
   computed: {
     validConnectionData() {
@@ -86,6 +79,9 @@ export default {
         !!this.connectionData.password &&
         !!this.connectionData.host
       );
+    },
+    connectionData() {
+      return { ...this.data };
     },
   },
 

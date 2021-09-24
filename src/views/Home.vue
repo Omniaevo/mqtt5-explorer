@@ -2,17 +2,24 @@
   <v-container class="connection-container">
     <v-card>
       <v-toolbar color="primary" text flat dark>
-        <v-btn
-          v-on:click="addNewConnection"
-          color="pink"
-          class="me-2"
-          fab
-          left
-          small
-        >
-          <v-icon>mdi-plus</v-icon>
-        </v-btn>
         <v-toolbar-title>MQTT Connection</v-toolbar-title>
+        <v-spacer></v-spacer>
+        <v-tooltip bottom>
+          <template v-slot:activator="{ on, attrs }">
+            <v-btn
+              v-on:click="addTmpConnection"
+              color="white"
+              class="me-2"
+              v-bind="attrs"
+              v-on="on"
+              fab
+              small
+            >
+              <v-icon color="primary">mdi-plus</v-icon>
+            </v-btn>
+          </template>
+          <span>New connection</span>
+        </v-tooltip>
       </v-toolbar>
 
       <div row>
@@ -72,6 +79,7 @@ div[row] {
 </style>
 
 <script>
+import Vue from "vue";
 import ConnectionForm from "../components/ConnectionForm.vue";
 
 export default {
@@ -92,8 +100,7 @@ export default {
   }),
 
   beforeMount() {
-    // Load stored connections
-    if (this.connectionsAvailable.length == 0) this.addNewConnection();
+    if (this.connectionsAvailable.length == 0) this.addTmpConnection();
   },
 
   computed: {
@@ -103,10 +110,15 @@ export default {
   },
 
   methods: {
-    addNewConnection() {
-      this.$store.commit("addNewConnection", this.defaultConnectionData);
+    addTmpConnection() {
+      Vue.set(
+        this.connectionsAvailable,
+        this.connectionsAvailable.length,
+        this.defaultConnectionData
+      );
     },
     dataChanged(data, index) {
+      if (data.name === "") data.name = this.defaultConnectionData.name;
       this.$store.commit("updateConnection", { data, index });
     },
     deleteConnection(index) {
