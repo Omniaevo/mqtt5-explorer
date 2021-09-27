@@ -22,16 +22,11 @@
         />
       </div>
       <div row>
-        <v-text-field
-          v-model="connectionData.username"
-          label="Username"
-          required
-        />
+        <v-text-field v-model="connectionData.username" label="Username" />
         <v-text-field
           v-model="connectionData.password"
           type="password"
           label="Password"
-          required
         />
       </div>
     </div>

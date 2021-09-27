@@ -6,8 +6,8 @@
           <template v-slot:activator="{ on, attrs }">
             <v-btn
               v-bind="attrs"
-              v-on="on"
               v-on:click="disconnectFromMqtt()"
+              v-on="on"
               icon
             >
               <v-icon>mdi-arrow-left</v-icon>
@@ -24,7 +24,7 @@
     </v-app-bar>
 
     <div class="ma-4 explorer-grid-container">
-      <v-card flat class="treeview-container">
+      <v-card class="treeview-container" flat>
         <v-treeview
           v-bind:items="treeData"
           dense

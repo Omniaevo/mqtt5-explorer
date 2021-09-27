@@ -1,17 +1,17 @@
 <template>
   <v-container class="connection-container">
     <v-card class="card-width">
-      <v-toolbar color="primary" text flat dark>
+      <v-toolbar color="primary" dark flat text>
         <v-toolbar-title>MQTT Connection</v-toolbar-title>
         <v-spacer></v-spacer>
         <v-tooltip bottom>
           <template v-slot:activator="{ on, attrs }">
             <v-btn
               v-on:click="addTmpConnection"
-              color="white"
-              class="me-2"
-              v-bind="attrs"
               v-on="on"
+              v-bind="attrs"
+              class="me-2"
+              color="white"
               fab
               small
             >
@@ -47,9 +47,9 @@
               <!-- Input form -->
               <ConnectionForm
                 v-bind:properties="connection"
-                v-on:updated="dataChanged($event, i)"
-                v-on:delete="deleteConnection(i)"
                 v-on:connect="connect(i)"
+                v-on:delete="deleteConnection(i)"
+                v-on:updated="dataChanged($event, i)"
               />
             </v-card-text>
           </v-tab-item>
