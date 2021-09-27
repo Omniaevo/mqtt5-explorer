@@ -7,12 +7,12 @@
         <v-tooltip bottom>
           <template v-slot:activator="{ on, attrs }">
             <v-btn
+              v-bind="attrs"
               v-on:click="addTmpConnection"
               v-on="on"
-              v-bind="attrs"
               class="me-2"
-              color="white"
               fab
+              light
               small
             >
               <v-icon color="primary">mdi-plus</v-icon>
