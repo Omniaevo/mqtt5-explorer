@@ -25,8 +25,8 @@
         <v-text-field v-model="connectionData.username" label="Username" />
         <v-text-field
           v-model="connectionData.password"
-          type="password"
           label="Password"
+          type="password"
         />
       </div>
     </div>
