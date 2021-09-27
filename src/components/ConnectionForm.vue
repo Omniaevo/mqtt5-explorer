@@ -79,34 +79,33 @@
       </v-btn>
     </div>
 
-    <v-dialog v-model="settingsDialog" persistent>
+    <v-dialog v-model="settingsDialog" width="75ch" persistent>
       <v-card>
-        <v-toolbar flat text>
-          <v-tooltip bottom>
-            <template v-slot:activator="{ on, attrs }">
-              <v-btn
-                v-bind="attrs"
-                v-on="on"
-                v-on:click="settingsDialog = false"
-                icon
-              >
-                <v-icon>mdi-arrow-left</v-icon>
-              </v-btn>
-            </template>
-            <span>Back</span>
-          </v-tooltip>
+        <v-toolbar color="primary" dark flat text>
           <v-toolbar-title>Connection settings</v-toolbar-title>
         </v-toolbar>
+
         <v-card-text>
           <div row>
             <v-switch
               v-model="connectionData.validateCertificate"
-              class="ma-0"
               label="Validate Certificate"
               inset
             />
           </div>
+          <v-combobox
+            v-model="connectionData.topics"
+            label="Subscriptions"
+            chips
+            deletable-chips
+            multiple
+          />
         </v-card-text>
+
+        <v-card-actions>
+          <v-spacer />
+          <v-btn v-on:click="settingsDialog = false" text> Done </v-btn>
+        </v-card-actions>
       </v-card>
     </v-dialog>
   </v-form>
@@ -120,6 +119,10 @@
 
 .small-input {
   max-width: 10ch;
+}
+
+.dialog-width {
+  width: 10ch !important;
 }
 
 div[row] {
@@ -154,7 +157,8 @@ export default {
 
   beforeMount() {
     this.connectionData.init(this.properties);
-    this.connectionData.topics = ["#", "$SYS/#"];
+    if (this.connectionData.topics.length == 0)
+      this.connectionData.topics = ["#", "$SYS/#"];
   },
 
   computed: {
