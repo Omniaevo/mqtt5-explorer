@@ -67,12 +67,10 @@
 
 .treeview-container {
   grid-area: "treeview";
-  /* background-color: red; */
 }
 
 .properties-container {
   grid-area: "properties";
-  /* background-color: blue; */
 }
 
 .small-line {

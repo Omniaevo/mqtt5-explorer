@@ -80,12 +80,12 @@
     </div>
 
     <v-dialog v-model="settingsDialog" max-width="75ch" persistent scrollable>
-      <v-card height="40ch">
+      <v-card>
         <v-toolbar color="primary" dark flat text>
           <v-toolbar-title>Connection settings</v-toolbar-title>
         </v-toolbar>
 
-        <v-card-text>
+        <v-card-text style="max-height: 35ch">
           <div row>
             <v-switch
               v-model="connectionData.validateCertificate"
