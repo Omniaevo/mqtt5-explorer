@@ -8,7 +8,6 @@
               v-bind="attrs"
               v-on="on"
               v-on:click="disconnectFromMqtt()"
-              color="black"
               icon
             >
               <v-icon>mdi-arrow-left</v-icon>

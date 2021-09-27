@@ -1,6 +1,6 @@
 <template>
   <v-container class="connection-container">
-    <v-card>
+    <v-card class="card-width">
       <v-toolbar color="primary" text flat dark>
         <v-toolbar-title>MQTT Connection</v-toolbar-title>
         <v-spacer></v-spacer>
@@ -22,22 +22,21 @@
         </v-tooltip>
       </v-toolbar>
 
-      <div row>
-        <v-tabs
-          v-model="tabId"
-          v-on:change="onChangeCallback"
-          class="tab-width"
-          vertical
-        >
-          <v-tab
-            v-for="(connection, i) in connectionsAvailable"
-            v-bind:key="'tab-' + i"
-          >
-            <div class="tab-truncate tab-width text-left">
-              {{ connection.name }}
-            </div>
-          </v-tab>
-        </v-tabs>
+      <div class="tab-no-overflow" row>
+        <div class="tab-scroll pe-5">
+          <v-tabs v-model="tabId" class="tab-width" vertical>
+            <v-tabs-slider color="primary lighten-3"></v-tabs-slider>
+
+            <v-tab
+              v-for="(connection, i) in connectionsAvailable"
+              v-bind:key="'tab-' + i"
+            >
+              <div class="tab-truncate tab-width text-left">
+                {{ connection.name }}
+              </div>
+            </v-tab>
+          </v-tabs>
+        </div>
 
         <v-tabs-items v-model="tabId">
           <v-tab-item
@@ -75,8 +74,22 @@ div[row] {
   gap: 1.5em;
 }
 
+.card-width {
+  width: 70ch;
+}
+
 .tab-width {
   width: 16ch;
+}
+
+.tab-no-overflow {
+  height: 34ch !important;
+  overflow: hidden !important;
+}
+
+.tab-scroll {
+  overflow: auto !important;
+  overflow-x: hidden !important;
 }
 
 .tab-truncate {
@@ -98,7 +111,6 @@ export default {
 
   data: () => ({
     tabId: 0,
-    onChangeCallback: () => {},
     defaultConnectionData: new ConnectionProperties(),
   }),
 
@@ -125,11 +137,8 @@ export default {
       this.$store.commit("updateConnection", { data, index });
     },
     deleteConnection(index) {
-      this.onChangeCallback = () => {
-        this.$store.commit("removeConnection", index);
-        this.onChangeCallback = () => {};
-      };
       this.tabId = 0;
+      this.$store.commit("removeConnection", index);
     },
     connect(index) {
       this.$router.push({ path: `viewer/${index}` });
