@@ -40,6 +40,7 @@ export default {
 
   beforeMount() {
     this.$bus.$on("error", this.displayMsg);
+    this.loadConnections();
   },
 
   beforeDestroy() {

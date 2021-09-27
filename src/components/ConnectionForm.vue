@@ -106,7 +106,13 @@ export default {
       this.$emit("delete");
     },
     saveChanges() {
-      this.$emit("updated", this.connectionData);
+      const clone = new ConnectionProperties();
+      this.connectionData.name = !this.connectionData.name.trim()
+        ? clone.name
+        : this.connectionData.name;
+
+      clone.init(this.connectionData);
+      this.$emit("updated", clone);
     },
     connectToMqtt() {
       this.$emit("connect");

@@ -100,7 +100,6 @@ div[row] {
 </style>
 
 <script>
-import Vue from "vue";
 import ConnectionForm from "../components/ConnectionForm.vue";
 import ConnectionProperties from "../models/ConnectionProperties";
 
@@ -118,23 +117,15 @@ export default {
     if (this.connectionsAvailable.length == 0) this.addTmpConnection();
   },
 
-  computed: {
-    connectionsAvailable() {
-      return this.$store.getters.getAllConnections;
-    },
-  },
-
   methods: {
     addTmpConnection() {
-      Vue.set(
-        this.connectionsAvailable,
-        this.connectionsAvailable.length,
-        this.defaultConnectionData
-      );
+      this.$store.commit("addNewConnection", this.defaultConnectionData);
     },
     dataChanged(data, index) {
-      if (data.name === "") data.name = this.defaultConnectionData.name;
+      data.saved = true;
+
       this.$store.commit("updateConnection", { data, index });
+      this.persistConnections();
     },
     deleteConnection(index) {
       this.tabId = 0;

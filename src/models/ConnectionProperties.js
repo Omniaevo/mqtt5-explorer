@@ -7,6 +7,7 @@ class ConnectionProperties {
   host = undefined;
   username = undefined;
   password = undefined;
+  saved = false;
 
   static rules = {
     name: [(val) => !!val || "Connection name is required"],

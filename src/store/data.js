@@ -6,6 +6,8 @@ const dataVuexModule = {
   },
 
   mutations: {
+    loadPersistentConnections: (state, data) =>
+      (state.brokerConnections = data),
     addNewConnection: (state, data) =>
       Vue.set(state.brokerConnections, state.brokerConnections.length, data),
     updateConnection: (state, update) =>
