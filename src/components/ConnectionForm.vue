@@ -79,8 +79,8 @@
       </v-btn>
     </div>
 
-    <v-dialog v-model="settingsDialog" width="75ch" persistent>
-      <v-card>
+    <v-dialog v-model="settingsDialog" max-width="75ch" persistent scrollable>
+      <v-card height="40ch">
         <v-toolbar color="primary" dark flat text>
           <v-toolbar-title>Connection settings</v-toolbar-title>
         </v-toolbar>
