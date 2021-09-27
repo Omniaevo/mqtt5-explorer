@@ -1,68 +1,69 @@
 import mqtt from "mqtt";
 import TreeNode from "../models/TreeNode";
+import ConnectionProperties from "../models/ConnectionProperties";
 
 class Connection {
   #client = undefined;
-  #name = "new-connection";
-  #protocol = "mqtt://";
-  #host = undefined;
-  #port = undefined;
-  #topic = "#";
-  #data = [];
-  #username = undefined;
-  #password = undefined;
+  #url = undefined;
+  #properties = new ConnectionProperties();
+  #map = {};
+  #idCount = 1;
+  #addCallback = () => {};
+  #mergeCallback = () => {};
+  #getSize = () => 0;
 
-  constructor(name, host, port, topic, username, password) {
-    this.#name = name;
-    this.#host = host;
-    this.#port = port;
-    this.#topic = topic;
-    this.#username = username;
-    this.#password = password;
-    this.#connectToMqtt();
+  get url() {
+    return this.#url;
   }
 
-  #connectToMqtt() {
-    let url = this.#protocol + this.#host + ":" + this.#port;
-    let options = {
-      username: this.#username,
-      password: this.#password,
-      protocolVersion: 5,
-    };
-    this.#client = mqtt.connect(url, options);
+  init(properties, addCallback, mergeCallback, getSize) {
+    this.#properties = properties;
+    // eslint-disable-next-line prettier/prettier
+    this.#url = `${this.#properties.protocol}${this.#properties.host}:${this.#properties.port}`;
+    this.#addCallback = addCallback;
+    this.#mergeCallback = mergeCallback;
+    this.#getSize = getSize;
 
+    this.#client = undefined;
+    this.#map = {};
+    this.#idCount = 1;
+  }
+
+  connect(onError) {
+    const options = {
+      username: this.#properties.username,
+      password: this.#properties.password,
+      protocolVersion: this.#properties.version,
+      keepalive: 120,
+      reconnectPeriod: 0,
+      connectTimeout: 5000,
+    };
+
+    this.#client = mqtt.connect(this.#url, options);
+
+    this.#client.on("error", onError);
     this.#client.on("connect", () => {
       // When connected subscribe to a topic
-      this.#client.subscribe(["#", "$SYS/#"], () => {
-        const map = {};
-        let idCount = 1;
+      this.#client.subscribe(this.#properties.topics, () => {});
+    });
+    // when a message arrives
+    this.#client.on("message", (_t, _m, packet) => {
+      const splitted = packet.topic.split("/");
+      let topic = new TreeNode(() => this.#idCount++, splitted, packet);
 
-        // when a message arrives
-        this.#client.on("message", (_t, _m, packet) => {
-          const splitted = packet.topic.split("/");
-          let topic = new TreeNode(() => idCount++, splitted, packet);
-
-          if (map[splitted[0]] === undefined) {
-            topic.initObject();
-            this.#data.push(topic);
-            map[splitted[0]] = this.#data.length - 1;
-          } else {
-            this.#data[map[splitted[0]]].merge(topic);
-          }
-        });
-      });
+      if (this.#map[splitted[0]] === undefined) {
+        topic.initObject();
+        this.#addCallback(topic);
+        this.#map[splitted[0]] = this.#getSize() - 1;
+      } else {
+        this.#mergeCallback(this.#map[splitted[0]], topic);
+      }
     });
   }
 
-  get data() {
-    return this.#data;
-  }
-
-  disconnect() {
+  disconnect(callback) {
+    this.#client.on("close", callback);
     this.#client.end(true, {});
-    this.#client.on("close", () => {
-      console.log("connection end");
-    });
   }
 }
 

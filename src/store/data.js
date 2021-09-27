@@ -1,12 +1,19 @@
+import Vue from "vue";
+
 const dataVuexModule = {
   state: {
     brokerConnections: [],
   },
 
   mutations: {
-    addNewConnection: (state, data) => state.brokerConnections.push(data),
+    loadPersistentConnections: (state, data) =>
+      (state.brokerConnections = data),
+    addNewConnection: (state, data) =>
+      Vue.set(state.brokerConnections, state.brokerConnections.length, data),
+    updateConnection: (state, update) =>
+      Vue.set(state.brokerConnections, update.index, update.data),
     removeConnection: (state, index) =>
-      state.brokerConnections.splice(index, 1),
+      Vue.delete(state.brokerConnections, index),
   },
 
   getters: {

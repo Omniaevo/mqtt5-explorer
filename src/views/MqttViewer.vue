@@ -1,41 +1,60 @@
 <template>
-  <div class="ma-4 explorer-grid-container">
-    <v-card flat class="treeview-container">
-      <v-btn v-on:click="disconnectFromMqtt">Disconnect</v-btn>
-      <v-treeview
-        v-bind:items="data"
-        dense
-        hoverable
-        open-on-click
-        rounded
-        transition
-      >
-        <template slot="label" slot-scope="{ item, leaf }" class="ma-0">
-          <div
-            v-bind:class="{
-              primary: item.blink,
-              'white--text': item.blink,
-              'px-2': true,
-              rounded: true,
-            }"
-            v-on:click="getProperties(item)"
-          >
-            {{ item.name }}
-            {{ item.value !== undefined ? "=" : "" }}
-            <span class="font-weight-black">
-              {{ item.value !== undefined ? item.value.payload : "" }}
-            </span>
-            <span v-if="leaf" class="caption grey--text ms-4">
-              ({{ item.size }} elements inside)
-            </span>
-          </div>
-        </template>
-      </v-treeview>
-    </v-card>
+  <div>
+    <v-app-bar color="white" app flat>
+      <div class="d-flex align-center">
+        <v-tooltip bottom>
+          <template v-slot:activator="{ on, attrs }">
+            <v-btn
+              v-bind="attrs"
+              v-on:click="disconnectFromMqtt()"
+              v-on="on"
+              icon
+            >
+              <v-icon>mdi-arrow-left</v-icon>
+            </v-btn>
+          </template>
+          <span>Disconnect</span>
+        </v-tooltip>
 
-    <v-card flat class="properties-container">
-      <v-card-title>Properties view</v-card-title>
-    </v-card>
+        <div class="ms-4">
+          <div class="title">Connected to: {{ connectionProperties.name }}</div>
+          <div class="caption grey--text small-line">{{ $connection.url }}</div>
+        </div>
+      </div>
+    </v-app-bar>
+
+    <div class="ma-4 explorer-grid-container">
+      <v-card class="treeview-container" flat>
+        <v-treeview
+          v-bind:items="treeData"
+          dense
+          hoverable
+          open-on-click
+          rounded
+        >
+          <template slot="label" slot-scope="{ item, leaf }" class="ma-0">
+            <div
+              v-bind:class="{
+                primary: item.blink,
+                'white--text': item.blink,
+                'px-2': true,
+                rounded: true,
+              }"
+              v-on:click="getProperties(item)"
+            >
+              {{ item.name }}
+              {{ item.value !== undefined ? "=" : "" }}
+              <span class="font-weight-black">
+                {{ item.value !== undefined ? item.value.payload : "" }}
+              </span>
+              <span v-if="leaf" class="caption grey--text ms-4">
+                ({{ item.size }} elements inside)
+              </span>
+            </div>
+          </template>
+        </v-treeview>
+      </v-card>
+    </div>
   </div>
 </template>
 <style scoped>
@@ -55,38 +74,57 @@
   grid-area: "properties";
   /* background-color: blue; */
 }
+
+.small-line {
+  line-height: 0.5rem;
+}
 </style>
 
 <script>
-import Connection from "../utils/Connection";
+import ConnectionProperties from "../models/ConnectionProperties";
 
 export default {
   name: "MqttViewer",
 
   data: () => ({
-    client: undefined,
-    data: [],
+    treeData: [],
+    connectionProperties: new ConnectionProperties(),
   }),
 
   beforeMount() {
-    let connectionData = this.$store.getters.getConnectionByIndex(0);
-    this.client = new Connection(
-      connectionData.name, //"gcloud",
-      connectionData.host, //"35.195.129.171",
-      connectionData.port, //"1883",
-      connectionData.username, //"omniaevo",
-      connectionData.password //"poiqwe10"
+    this.connectionProperties.init(
+      this.$store.getters.getConnectionByIndex(this.$route.params.index)
     );
-    this.data = this.client.data;
+    this.$connection.init(
+      this.connectionProperties,
+      this.add,
+      this.merge,
+      () => this.treeData.length
+    );
+  },
+
+  mounted() {
+    this.$connection.connect((err) => this.disconnectFromMqtt(err.toString()));
   },
 
   methods: {
-    disconnectFromMqtt() {
-      this.client.disconnect();
-      this.$router.push({ name: "Home" });
+    disconnectFromMqtt(msg = undefined) {
+      this.$connection.disconnect(() => {
+        this.$router.replace({ name: "Home" });
+
+        if (msg !== undefined) this.$bus.$emit("error", msg);
+      });
     },
     getProperties(item) {
       console.log(item.value);
+    },
+    add(node) {
+      this.treeData.push(node);
+    },
+    merge(index, node) {
+      if (this.treeData[index].merge(node)) {
+        this.treeData.splice(index, 1);
+      }
     },
   },
 };

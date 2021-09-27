@@ -1,30 +1,25 @@
 <template>
   <v-app>
-    <v-app-bar app color="primary" dark>
-      <div class="d-flex align-center">
-        <v-img
-          alt="Vuetify Logo"
-          class="shrink mr-2"
-          contain
-          src="https://cdn.vuetifyjs.com/images/logos/vuetify-logo-dark.png"
-          transition="scale-transition"
-          width="40"
-        />
-
-        <v-img
-          alt="Vuetify Name"
-          class="shrink mt-1 hidden-sm-and-down"
-          contain
-          min-width="100"
-          src="https://cdn.vuetifyjs.com/images/logos/vuetify-name-dark.png"
-          width="100"
-        />
-      </div>
-    </v-app-bar>
-
     <v-main>
       <router-view />
     </v-main>
+
+    <v-snackbar
+      v-model="onMsg"
+      v-bind:timeout="5000"
+      color="error"
+      elevation="4"
+      centered
+      top
+    >
+      {{ message }}
+
+      <template v-slot:action="{ attrs }">
+        <v-btn v-bind="attrs" v-on:click="onMsg = false" icon>
+          <v-icon>mdi-close</v-icon>
+        </v-btn>
+      </template>
+    </v-snackbar>
   </v-app>
 </template>
 
@@ -39,7 +34,24 @@ export default {
   name: "App",
 
   data: () => ({
-    //
+    onMsg: false,
+    message: undefined,
   }),
+
+  beforeMount() {
+    this.$bus.$on("error", this.displayMsg);
+    this.loadConnections();
+  },
+
+  beforeDestroy() {
+    this.$bus.$off("error", this.displayMsg);
+  },
+
+  methods: {
+    displayMsg(message) {
+      this.message = message;
+      this.onMsg = true;
+    },
+  },
 };
 </script>
