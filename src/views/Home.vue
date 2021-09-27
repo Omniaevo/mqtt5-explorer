@@ -29,7 +29,10 @@
           class="tab-width"
           vertical
         >
-          <v-tab v-for="(connection, i) in connectionsAvailable" v-bind:key="i">
+          <v-tab
+            v-for="(connection, i) in connectionsAvailable"
+            v-bind:key="'tab-' + i"
+          >
             <div class="tab-truncate tab-width text-left">
               {{ connection.name }}
             </div>
