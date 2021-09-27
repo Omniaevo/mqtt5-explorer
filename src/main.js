@@ -15,20 +15,33 @@ Vue.prototype.$estore = new Store();
 Vue.mixin({
   data: () => ({
     connectionsStore: "saved_mqtt_connections",
+    settingsStore: "saved_app_settings",
   }),
 
   computed: {
     connectionsAvailable() {
       return this.$store.getters.getAllConnections;
     },
+    allSettings() {
+      return this.$store.getters.getAllSettings;
+    },
+    theme() {
+      return this.$store.getters.getTheme;
+    },
+    darkTheme() {
+      return (this.theme || "light") === "dark";
+    },
+  },
+
+  watch: {
+    theme(newValue) {
+      this.persistSettings();
+      this.$vuetify.theme.dark = (newValue || "light") === "dark";
+    },
   },
 
   methods: {
     persistConnections() {
-      console.log(
-        this.connectionsStore,
-        JSON.stringify(this.connectionsAvailable.filter((c) => c.saved))
-      );
       this.$estore.set(
         this.connectionsStore,
         JSON.stringify(this.connectionsAvailable.filter((c) => c.saved))
@@ -38,6 +51,15 @@ Vue.mixin({
       this.$store.commit(
         "loadPersistentConnections",
         JSON.parse(this.$estore.get(this.connectionsStore) || "[]")
+      );
+    },
+    persistSettings() {
+      this.$estore.set(this.settingsStore, JSON.stringify(this.allSettings));
+    },
+    loadSettings() {
+      this.$store.commit(
+        "setAllSettings",
+        JSON.parse(this.$estore.get(this.settingsStore) || "{}")
       );
     },
   },

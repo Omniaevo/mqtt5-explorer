@@ -1,5 +1,45 @@
 <template>
   <v-container class="connection-container">
+    <v-app-bar v-bind:color="darkTheme ? 'gray' : 'white'" app flat>
+      <div class="d-flex align-center">
+        <v-tooltip bottom>
+          <template v-slot:activator="{ on, attrs }">
+            <v-btn
+              v-bind="attrs"
+              v-on:click="settingsDrawer = !settingsDrawer"
+              v-on="on"
+              icon
+            >
+              <v-icon>mdi-{{ settingsDrawer ? "chevron-left" : "cog" }}</v-icon>
+            </v-btn>
+          </template>
+          <span>{{ settingsDrawer ? "Close a" : "A" }}pp settings</span>
+        </v-tooltip>
+      </div>
+    </v-app-bar>
+
+    <v-navigation-drawer v-model="settingsDrawer" app>
+      <v-list>
+        <v-list-item>
+          <v-list-item-content>
+            <v-select
+              v-model="selectedTheme"
+              v-bind:items="['light', 'dark']"
+              label="Theme"
+            >
+              <template v-slot:item="{ item }">
+                <div class="text-capitalize">{{ item }}</div>
+              </template>
+
+              <template v-slot:selection="{ item }">
+                <div class="text-capitalize">{{ item }}</div>
+              </template>
+            </v-select>
+          </v-list-item-content>
+        </v-list-item>
+      </v-list>
+    </v-navigation-drawer>
+
     <v-card class="card-width">
       <v-toolbar color="primary" dark flat text>
         <v-toolbar-title>MQTT Connection</v-toolbar-title>
@@ -110,8 +150,20 @@ export default {
 
   data: () => ({
     tabId: 0,
+    settingsDrawer: false,
     defaultConnectionData: new ConnectionProperties(),
   }),
+
+  computed: {
+    selectedTheme: {
+      get() {
+        return this.$store.getters.getTheme;
+      },
+      set(newValue) {
+        this.$store.commit("setTheme", newValue);
+      },
+    },
+  },
 
   beforeMount() {
     if (this.connectionsAvailable.length == 0) this.addTmpConnection();

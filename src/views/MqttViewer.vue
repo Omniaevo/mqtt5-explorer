@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-app-bar color="white" app flat>
+    <v-app-bar v-bind:color="darkTheme ? 'gray' : 'white'" app flat>
       <div class="d-flex align-center">
         <v-tooltip bottom>
           <template v-slot:activator="{ on, attrs }">
@@ -23,7 +23,7 @@
       </div>
     </v-app-bar>
 
-    <div class="ma-4 explorer-grid-container">
+    <div class="mx-4 my-2 explorer-grid-container">
       <v-card class="treeview-container" flat>
         <v-treeview
           v-bind:items="treeData"
