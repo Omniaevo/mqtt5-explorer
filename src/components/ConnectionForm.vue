@@ -8,6 +8,20 @@
         required
       />
       <div row>
+        <v-select
+          v-model="connectionData.protocol"
+          v-bind:rules="staticConnectionProperties.rules.protocol"
+          v-bind:items="protocols"
+          label="Protocol"
+          required
+        />
+        <v-select
+          v-model="connectionData.version"
+          v-bind:items="versions"
+          label="Version"
+        />
+      </div>
+      <div row>
         <v-text-field
           v-model="connectionData.host"
           v-bind:rules="staticConnectionProperties.rules.host"
@@ -40,6 +54,21 @@
         Save
       </v-btn>
       <div />
+      <v-tooltip bottom>
+        <template v-slot:activator="{ on, attrs }">
+          <v-btn
+            v-bind="attrs"
+            v-on:click="settingsDialog = true"
+            v-on="on"
+            fab
+            text
+            small
+          >
+            <v-icon>mdi-cog</v-icon>
+          </v-btn>
+        </template>
+        <span>Connection settings</span>
+      </v-tooltip>
       <v-btn
         v-bind:disabled="!validConnectionData"
         v-on:click="connectToMqtt"
@@ -49,6 +78,37 @@
         Connect
       </v-btn>
     </div>
+
+    <v-dialog v-model="settingsDialog" persistent>
+      <v-card>
+        <v-toolbar flat text>
+          <v-tooltip bottom>
+            <template v-slot:activator="{ on, attrs }">
+              <v-btn
+                v-bind="attrs"
+                v-on="on"
+                v-on:click="settingsDialog = false"
+                icon
+              >
+                <v-icon>mdi-arrow-left</v-icon>
+              </v-btn>
+            </template>
+            <span>Back</span>
+          </v-tooltip>
+          <v-toolbar-title>Connection settings</v-toolbar-title>
+        </v-toolbar>
+        <v-card-text>
+          <div row>
+            <v-switch
+              v-model="connectionData.validateCertificate"
+              class="ma-0"
+              label="Validate Certificate"
+              inset
+            />
+          </div>
+        </v-card-text>
+      </v-card>
+    </v-dialog>
   </v-form>
 </template>
 
@@ -56,6 +116,10 @@
 .input-container {
   display: flex;
   flex-direction: column;
+}
+
+.small-input {
+  max-width: 10ch;
 }
 
 div[row] {
@@ -66,7 +130,7 @@ div[row] {
 
 div[foot] {
   display: grid;
-  grid-template-columns: min-content min-content 1fr min-content;
+  grid-template-columns: min-content min-content 1fr min-content min-content;
 }
 </style>
 
@@ -82,6 +146,9 @@ export default {
 
   data: () => ({
     connectionData: new ConnectionProperties(),
+    protocols: ["mqtt", "mqtts", "ws", "wss"],
+    versions: [4, 5],
+    settingsDialog: false,
     staticConnectionProperties: ConnectionProperties,
   }),
 

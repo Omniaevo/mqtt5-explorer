@@ -19,7 +19,7 @@ class Connection {
   init(properties, addCallback, mergeCallback, getSize) {
     this.#properties = properties;
     // eslint-disable-next-line prettier/prettier
-    this.#url = `${this.#properties.protocol}${this.#properties.host}:${this.#properties.port}`;
+    this.#url = `${this.#properties.protocol}://${this.#properties.host}:${this.#properties.port}`;
     this.#addCallback = addCallback;
     this.#mergeCallback = mergeCallback;
     this.#getSize = getSize;
@@ -34,6 +34,7 @@ class Connection {
       username: this.#properties.username,
       password: this.#properties.password,
       protocolVersion: this.#properties.version,
+      rejectUnauthorized: this.#properties.validateCertificate,
       keepalive: 120,
       reconnectPeriod: 0,
       connectTimeout: 5000,

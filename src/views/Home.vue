@@ -43,7 +43,7 @@
     <v-card class="card-width">
       <v-toolbar color="primary" dark flat text>
         <v-toolbar-title>MQTT Connection</v-toolbar-title>
-        <v-spacer></v-spacer>
+        <v-spacer />
         <v-tooltip bottom>
           <template v-slot:activator="{ on, attrs }">
             <v-btn
@@ -123,7 +123,7 @@ div[row] {
 }
 
 .tab-no-overflow {
-  height: 34ch !important;
+  height: 41ch !important;
   overflow: hidden !important;
 }
 
