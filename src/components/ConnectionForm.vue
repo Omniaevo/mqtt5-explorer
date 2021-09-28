@@ -39,8 +39,10 @@
         <v-text-field v-model="connectionData.username" label="Username" />
         <v-text-field
           v-model="connectionData.password"
+          v-bind:append-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
+          v-bind:type="showPassword ? 'text' : 'password'"
+          v-on:click:append="showPassword = !showPassword"
           label="Password"
-          type="password"
         />
       </div>
     </div>
@@ -156,6 +158,7 @@ export default {
     protocols: ["mqtt", "mqtts", "ws", "wss"],
     versions: [4, 5],
     settingsDialog: false,
+    showPassword: false,
     staticConnectionProperties: ConnectionProperties,
   }),
 
