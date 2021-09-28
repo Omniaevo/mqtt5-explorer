@@ -18,7 +18,7 @@
       </div>
     </v-app-bar>
 
-    <v-navigation-drawer v-model="settingsDrawer" app>
+    <v-navigation-drawer v-model="settingsDrawer" app temporary>
       <v-list>
         <v-list-item>
           <v-list-item-content>

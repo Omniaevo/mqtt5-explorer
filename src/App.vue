@@ -39,6 +39,7 @@ export default {
   }),
 
   beforeMount() {
+    this.loadCustomCssTheme(this.darkTheme);
     this.$bus.$on("error", this.displayMsg);
     this.loadSettings();
     this.loadConnections();
@@ -46,6 +47,16 @@ export default {
 
   beforeDestroy() {
     this.$bus.$off("error", this.displayMsg);
+  },
+
+  watch: {
+    theme(newValue) {
+      const isDark = (newValue || "light") === "dark";
+
+      this.loadCustomCssTheme(isDark);
+      this.persistSettings();
+      this.$vuetify.theme.dark = isDark;
+    },
   },
 
   methods: {

@@ -33,13 +33,6 @@ Vue.mixin({
     },
   },
 
-  watch: {
-    theme(newValue) {
-      this.persistSettings();
-      this.$vuetify.theme.dark = (newValue || "light") === "dark";
-    },
-  },
-
   methods: {
     persistConnections() {
       this.$estore.set(
@@ -61,6 +54,24 @@ Vue.mixin({
         "setAllSettings",
         JSON.parse(this.$estore.get(this.settingsStore) || "{}")
       );
+    },
+    loadCustomCssTheme(isDark) {
+      const path = isDark
+        ? "/styles/dark-scrollbar.css"
+        : "/styles/light-scrollbar.css";
+
+      const scrollTheme = document.createElement("link");
+      const oldScroll = document.getElementById("scroll-bar");
+
+      scrollTheme.setAttribute("id", "scroll-bar");
+      scrollTheme.setAttribute("rel", "stylesheet");
+      scrollTheme.setAttribute("href", path);
+
+      if (oldScroll != undefined) {
+        oldScroll.parentElement.removeChild(oldScroll);
+      }
+
+      document.head.appendChild(scrollTheme);
     },
   },
 });

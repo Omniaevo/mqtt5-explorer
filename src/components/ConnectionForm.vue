@@ -63,7 +63,7 @@
             v-on:click="settingsDialog = true"
             v-on="on"
             fab
-            text
+            icon
             small
           >
             <v-icon>mdi-cog</v-icon>

@@ -1,0 +1,21 @@
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+  background: #121212 !important;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: #0094f0;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:window-inactive {
+  background: #0094f0;
+  border-radius: 4px;
+}
+
+::selection {
+  background: #0094f0;
+  color: #121212;
+}
