@@ -54,6 +54,15 @@
           </template>
         </v-treeview>
       </v-card>
+
+      <v-card class="properties-container">
+        <v-card-title>
+          Topic: 
+          <v-card-subtitle>
+            {{ itemSelected ? itemSelected.value.topic : "" }}
+          </v-card-subtitle>
+        </v-card-title>
+      </v-card>
     </div>
   </div>
 </template>
@@ -87,6 +96,7 @@ export default {
   data: () => ({
     treeData: [],
     connectionProperties: new ConnectionProperties(),
+    itemSelected: undefined,
   }),
 
   beforeMount() {
@@ -114,7 +124,8 @@ export default {
       });
     },
     getProperties(item) {
-      console.log(item.value);
+      console.log(item);
+      item.value ? (this.itemSelected = item) : (this.itemSelected = undefined);
     },
     add(node) {
       this.treeData.push(node);
