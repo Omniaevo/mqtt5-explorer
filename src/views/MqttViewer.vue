@@ -56,7 +56,7 @@
       </v-card>
 
       <div class="properties-container">
-        <v-expansion-panels multiple>
+        <v-expansion-panels v-model="packetPanels" multiple>
           <v-expansion-panel>
             <v-expansion-panel-header>Topic</v-expansion-panel-header>
             <v-expansion-panel-content>
@@ -69,8 +69,33 @@
           <v-expansion-panel>
             <v-expansion-panel-header>Value</v-expansion-panel-header>
             <v-expansion-panel-content>
-              <div wrap-text>
-                {{ itemSelected ? itemSelected.value.payload : "" }}
+              <div v-if="itemSelected">
+                <div
+                  v-if="itemSelected.old"
+                  class="d-flex rounded mb-1"
+                  wrap-text
+                >
+                  <div class="error px-2 py-1">
+                    <v-icon dark small>mdi-delete</v-icon>
+                  </div>
+                  <div
+                    class="px-4 flex-fill py-1"
+                    style="background: #ff535655"
+                  >
+                    {{ itemSelected.old.payload }}
+                  </div>
+                </div>
+                <div class="d-flex rounded" wrap-text>
+                  <div class="success px-2 py-1">
+                    <v-icon dark small>mdi-lightning-bolt</v-icon>
+                  </div>
+                  <div
+                    class="px-4 flex-fill py-1"
+                    style="background: #41b05655"
+                  >
+                    {{ itemSelected.value ? itemSelected.value.payload : "" }}
+                  </div>
+                </div>
               </div>
             </v-expansion-panel-content>
           </v-expansion-panel>
@@ -123,6 +148,7 @@ export default {
 
   data: () => ({
     treeData: [],
+    packetPanels: [0, 1, 2],
     connectionProperties: new ConnectionProperties(),
     itemSelected: undefined,
   }),
@@ -152,7 +178,7 @@ export default {
       });
     },
     getProperties(item) {
-      item.value ? (this.itemSelected = item) : (this.itemSelected = undefined);
+      if (item.value) this.itemSelected = item;
     },
     add(node) {
       this.treeData.push(node);

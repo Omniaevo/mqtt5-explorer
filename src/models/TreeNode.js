@@ -65,7 +65,7 @@ class TreeNode {
   #stopBlink = () => (this.blink = false);
 
   #setValue = (newValue) => {
-    this.old = this.value;
+    this.old = this.value ? { ...this.value } : undefined;
     this.value =
       ((newValue || {}).payload || []).length > 0 ? newValue : undefined;
   };
