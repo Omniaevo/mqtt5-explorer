@@ -103,9 +103,7 @@
           <v-expansion-panel v-if="$connection.protocolVersion === 5">
             <v-expansion-panel-header>Properties</v-expansion-panel-header>
             <v-expansion-panel-content v-if="itemSelected">
-              <pre>
-                {{ itemSelected.value ? itemSelected.value.properties : "" }}
-              </pre>
+              <pre>{{ (itemSelected.value || {}).properties || "" }}</pre>
             </v-expansion-panel-content>
           </v-expansion-panel>
         </v-expansion-panels>
