@@ -61,7 +61,7 @@
             <v-expansion-panel-header>Topic</v-expansion-panel-header>
             <v-expansion-panel-content>
               <div wrap-text>
-                {{ itemSelected ? itemSelected.value.topic : "" }}
+                {{ itemSelected ? itemSelected.topic : "" }}
               </div>
             </v-expansion-panel-content>
           </v-expansion-panel>
@@ -85,7 +85,7 @@
                     {{ itemSelected.old.payload }}
                   </div>
                 </div>
-                <div class="d-flex rounded" wrap-text>
+                <div v-if="itemSelected.value" class="d-flex rounded" wrap-text>
                   <div class="success px-2 py-1">
                     <v-icon dark small>mdi-lightning-bolt</v-icon>
                   </div>
@@ -93,7 +93,7 @@
                     class="px-4 flex-fill py-1"
                     style="background: #41b05655"
                   >
-                    {{ itemSelected.value ? itemSelected.value.payload : "" }}
+                    {{ itemSelected.value.payload }}
                   </div>
                 </div>
               </div>
@@ -103,7 +103,9 @@
           <v-expansion-panel v-if="$connection.protocolVersion === 5">
             <v-expansion-panel-header>Properties</v-expansion-panel-header>
             <v-expansion-panel-content v-if="itemSelected">
-              <pre>{{ itemSelected.value.properties }}</pre>
+              <pre>
+                {{ itemSelected.value ? itemSelected.value.properties : "" }}
+              </pre>
             </v-expansion-panel-content>
           </v-expansion-panel>
         </v-expansion-panels>
@@ -184,7 +186,7 @@ export default {
       });
     },
     getProperties(item) {
-      if (item.value) this.itemSelected = item;
+      this.itemSelected = { ...item };
     },
     add(node) {
       this.treeData.push(node);
