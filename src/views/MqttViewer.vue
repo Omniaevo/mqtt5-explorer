@@ -55,14 +55,34 @@
         </v-treeview>
       </v-card>
 
-      <v-card class="properties-container">
-        <v-card-title>
-          Topic: 
-          <v-card-subtitle>
-            {{ itemSelected ? itemSelected.value.topic : "" }}
-          </v-card-subtitle>
-        </v-card-title>
-      </v-card>
+      <div class="properties-container">
+        <v-expansion-panels multiple>
+          <v-expansion-panel>
+            <v-expansion-panel-header>Topic</v-expansion-panel-header>
+            <v-expansion-panel-content>
+              <div wrap-text>
+                {{ itemSelected ? itemSelected.value.topic : "" }}
+              </div>
+            </v-expansion-panel-content>
+          </v-expansion-panel>
+
+          <v-expansion-panel>
+            <v-expansion-panel-header>Value</v-expansion-panel-header>
+            <v-expansion-panel-content>
+              <div wrap-text>
+                {{ itemSelected ? itemSelected.value.payload : "" }}
+              </div>
+            </v-expansion-panel-content>
+          </v-expansion-panel>
+
+          <v-expansion-panel v-if="$connection.protocolVersion === 5">
+            <v-expansion-panel-header>Properties</v-expansion-panel-header>
+            <v-expansion-panel-content v-if="itemSelected">
+              <pre>{{ itemSelected.value.properties }}</pre>
+            </v-expansion-panel-content>
+          </v-expansion-panel>
+        </v-expansion-panels>
+      </div>
     </div>
   </div>
 </template>
@@ -72,7 +92,7 @@
   overflow: hidden;
   display: grid;
   grid-template-areas: "treeview explorer";
-  grid-auto-columns: 1fr 2fr;
+  grid-auto-columns: 1fr 1fr;
   gap: 1em;
 }
 
@@ -84,6 +104,10 @@
 .properties-container {
   grid-area: "properties";
   overflow: auto;
+}
+
+div[wrap-text] {
+  overflow-wrap: break-word;
 }
 
 .small-line {
@@ -128,7 +152,6 @@ export default {
       });
     },
     getProperties(item) {
-      console.log(item);
       item.value ? (this.itemSelected = item) : (this.itemSelected = undefined);
     },
     add(node) {
