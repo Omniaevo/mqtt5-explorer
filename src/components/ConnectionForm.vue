@@ -10,8 +10,8 @@
       <div row>
         <v-select
           v-model="connectionData.protocol"
-          v-bind:rules="staticConnectionProperties.rules.protocol"
           v-bind:items="protocols"
+          v-bind:rules="staticConnectionProperties.rules.protocol"
           label="Protocol"
           required
         />
@@ -177,7 +177,7 @@ export default {
       this.$emit("delete");
     },
     saveChanges() {
-      this.$emitConnectionData("updated");
+      this.emitConnectionData("updated");
     },
     connectToMqtt() {
       this.emitConnectionData("connect");
