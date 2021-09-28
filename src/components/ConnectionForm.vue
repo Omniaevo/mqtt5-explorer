@@ -85,7 +85,7 @@
           <v-toolbar-title>Connection settings</v-toolbar-title>
         </v-toolbar>
 
-        <v-card-text style="max-height: 35ch">
+        <v-card-text class="dialog-text-container">
           <div row>
             <v-switch
               v-model="connectionData.validateCertificate"
@@ -123,6 +123,10 @@
 
 .dialog-width {
   width: 10ch !important;
+}
+
+.dialog-text-container {
+  max-height: 35ch;
 }
 
 div[row] {
