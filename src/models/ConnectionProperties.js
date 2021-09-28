@@ -1,9 +1,10 @@
 class ConnectionProperties {
   name = "new-connection";
-  protocol = "mqtt://";
+  protocol = "mqtt";
   version = 5;
   port = 1883;
-  topics = [];
+  validateCertificate = true;
+  topics = ["#", "$SYS/#"];
   host = undefined;
   username = undefined;
   password = undefined;
@@ -35,6 +36,7 @@ class ConnectionProperties {
     this.protocol = properties.protocol;
     this.version = properties.version;
     this.port = properties.port;
+    this.validateCertificate = properties.validateCertificate;
     this.topics = properties.topics;
     this.host = properties.host;
     this.username = properties.username;

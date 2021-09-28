@@ -8,6 +8,20 @@
         required
       />
       <div row>
+        <v-select
+          v-model="connectionData.protocol"
+          v-bind:items="protocols"
+          v-bind:rules="staticConnectionProperties.rules.protocol"
+          label="Protocol"
+          required
+        />
+        <v-select
+          v-model="connectionData.version"
+          v-bind:items="versions"
+          label="Version"
+        />
+      </div>
+      <div row>
         <v-text-field
           v-model="connectionData.host"
           v-bind:rules="staticConnectionProperties.rules.host"
@@ -25,8 +39,10 @@
         <v-text-field v-model="connectionData.username" label="Username" />
         <v-text-field
           v-model="connectionData.password"
+          v-bind:append-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
+          v-bind:type="showPassword ? 'text' : 'password'"
+          v-on:click:append="showPassword = !showPassword"
           label="Password"
-          type="password"
         />
       </div>
     </div>
@@ -40,6 +56,21 @@
         Save
       </v-btn>
       <div />
+      <v-tooltip bottom>
+        <template v-slot:activator="{ on, attrs }">
+          <v-btn
+            v-bind="attrs"
+            v-on:click="settingsDialog = true"
+            v-on="on"
+            fab
+            text
+            small
+          >
+            <v-icon>mdi-cog</v-icon>
+          </v-btn>
+        </template>
+        <span>Connection settings</span>
+      </v-tooltip>
       <v-btn
         v-bind:disabled="!validConnectionData"
         v-on:click="connectToMqtt"
@@ -49,6 +80,36 @@
         Connect
       </v-btn>
     </div>
+
+    <v-dialog v-model="settingsDialog" max-width="75ch" persistent scrollable>
+      <v-card>
+        <v-toolbar color="primary" dark flat text>
+          <v-toolbar-title>Connection settings</v-toolbar-title>
+        </v-toolbar>
+
+        <v-card-text class="dialog-text-container">
+          <div row>
+            <v-switch
+              v-model="connectionData.validateCertificate"
+              label="Validate Certificate"
+              inset
+            />
+          </div>
+          <v-combobox
+            v-model="connectionData.topics"
+            label="Subscriptions"
+            chips
+            deletable-chips
+            multiple
+          />
+        </v-card-text>
+
+        <v-card-actions>
+          <v-spacer />
+          <v-btn v-on:click="settingsDialog = false" text> Done </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </v-form>
 </template>
 
@@ -56,6 +117,18 @@
 .input-container {
   display: flex;
   flex-direction: column;
+}
+
+.small-input {
+  max-width: 10ch;
+}
+
+.dialog-width {
+  width: 10ch !important;
+}
+
+.dialog-text-container {
+  max-height: 35ch;
 }
 
 div[row] {
@@ -66,7 +139,7 @@ div[row] {
 
 div[foot] {
   display: grid;
-  grid-template-columns: min-content min-content 1fr min-content;
+  grid-template-columns: min-content min-content 1fr min-content min-content;
 }
 </style>
 
@@ -82,12 +155,15 @@ export default {
 
   data: () => ({
     connectionData: new ConnectionProperties(),
+    protocols: ["mqtt", "mqtts", "ws", "wss"],
+    versions: [4, 5],
+    settingsDialog: false,
+    showPassword: false,
     staticConnectionProperties: ConnectionProperties,
   }),
 
   beforeMount() {
     this.connectionData.init(this.properties);
-    this.connectionData.topics = ["#", "$SYS/#"];
   },
 
   computed: {
@@ -101,16 +177,19 @@ export default {
       this.$emit("delete");
     },
     saveChanges() {
+      this.emitConnectionData("updated");
+    },
+    connectToMqtt() {
+      this.emitConnectionData("connect");
+    },
+    emitConnectionData(event) {
       const clone = new ConnectionProperties();
       this.connectionData.name = !this.connectionData.name.trim()
         ? clone.name
         : this.connectionData.name;
 
       clone.init(this.connectionData);
-      this.$emit("updated", clone);
-    },
-    connectToMqtt() {
-      this.$emit("connect");
+      this.$emit(event, clone);
     },
   },
 };
