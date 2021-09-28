@@ -4,7 +4,7 @@ class ConnectionProperties {
   version = 5;
   port = 1883;
   validateCertificate = true;
-  topics = [];
+  topics = ["#", "$SYS/#"];
   host = undefined;
   username = undefined;
   password = undefined;

@@ -161,8 +161,6 @@ export default {
 
   beforeMount() {
     this.connectionData.init(this.properties);
-    if (this.connectionData.topics.length == 0)
-      this.connectionData.topics = ["#", "$SYS/#"];
   },
 
   computed: {
@@ -176,16 +174,19 @@ export default {
       this.$emit("delete");
     },
     saveChanges() {
+      this.$emitConnectionData("updated");
+    },
+    connectToMqtt() {
+      this.emitConnectionData("connect");
+    },
+    emitConnectionData(event) {
       const clone = new ConnectionProperties();
       this.connectionData.name = !this.connectionData.name.trim()
         ? clone.name
         : this.connectionData.name;
 
       clone.init(this.connectionData);
-      this.$emit("updated", clone);
-    },
-    connectToMqtt() {
-      this.$emit("connect");
+      this.$emit(event, clone);
     },
   },
 };

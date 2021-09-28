@@ -87,7 +87,7 @@
               <!-- Input form -->
               <ConnectionForm
                 v-bind:properties="connection"
-                v-on:connect="connect(i)"
+                v-on:connect="connect($event, i)"
                 v-on:delete="deleteConnection(i)"
                 v-on:updated="dataChanged($event, i)"
               />
@@ -183,7 +183,8 @@ export default {
       this.tabId = 0;
       this.$store.commit("removeConnection", index);
     },
-    connect(index) {
+    connect(data, index) {
+      this.dataChanged(data, index);
       this.$router.push({ path: `viewer/${index}` });
     },
   },
