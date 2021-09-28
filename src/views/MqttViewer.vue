@@ -1,6 +1,6 @@
 <template>
-  <div>
-    <v-app-bar v-bind:color="darkTheme ? 'gray' : 'white'" app flat>
+  <div class="page-grid-container">
+    <v-app-bar v-bind:color="darkTheme ? 'gray' : 'white'" flat>
       <div class="d-flex align-center">
         <v-tooltip bottom>
           <template v-slot:activator="{ on, attrs }">
@@ -112,12 +112,18 @@
   </div>
 </template>
 <style scoped>
+.page-grid-container {
+  height: 100vh;
+  display: grid;
+  grid-template-rows: min-content 1fr;
+}
+
 .explorer-grid-container {
-  height: 88vh;
   overflow: hidden;
   display: grid;
   grid-template-areas: "treeview explorer";
-  grid-auto-columns: 1fr 1fr;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr;
   gap: 1em;
 }
 

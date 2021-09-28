@@ -13,15 +13,9 @@
           v-bind:items="protocols"
           v-bind:rules="staticConnectionProperties.rules.protocol"
           label="Protocol"
+          style="max-width: 10ch"
           required
         />
-        <v-select
-          v-model="connectionData.version"
-          v-bind:items="versions"
-          label="Version"
-        />
-      </div>
-      <div row>
         <v-text-field
           v-model="connectionData.host"
           v-bind:rules="staticConnectionProperties.rules.host"
@@ -32,6 +26,7 @@
           v-model="connectionData.port"
           v-bind:rules="staticConnectionProperties.rules.port"
           label="Port"
+          style="max-width: 10ch"
           required
         />
       </div>
@@ -69,7 +64,7 @@
             <v-icon>mdi-cog</v-icon>
           </v-btn>
         </template>
-        <span>Connection settings</span>
+        <span>Advanced settings</span>
       </v-tooltip>
       <v-btn
         v-bind:disabled="!validConnectionData"
@@ -84,24 +79,42 @@
     <v-dialog v-model="settingsDialog" max-width="75ch" persistent scrollable>
       <v-card>
         <v-toolbar color="primary" dark flat text>
-          <v-toolbar-title>Connection settings</v-toolbar-title>
+          <v-toolbar-title>Advanced connection settings</v-toolbar-title>
         </v-toolbar>
 
-        <v-card-text class="dialog-text-container">
+        <v-card-text class="dialog-text-container pt-4">
           <div row>
+            <v-select
+              v-model="connectionData.version"
+              v-bind:items="versions"
+              class="me-4"
+              label="Version"
+              style="max-width: 10ch"
+            />
             <v-switch
               v-model="connectionData.validateCertificate"
               label="Validate Certificate"
               inset
             />
           </div>
-          <v-combobox
-            v-model="connectionData.topics"
-            label="Subscriptions"
-            chips
-            deletable-chips
-            multiple
-          />
+          <div row>
+            <v-combobox
+              v-model="connectionData.topics"
+              append-icon=""
+              label="Subscriptions"
+              multiple
+            >
+              <template v-slot:selection="{ item, index }">
+                <v-chip
+                  v-on:click:close="connectionData.topics.splice(index, 1)"
+                  class="my-3"
+                  close
+                >
+                  <span class="me-2 font-weight-bold">{{ item }}</span>
+                </v-chip>
+              </template>
+            </v-combobox>
+          </div>
         </v-card-text>
 
         <v-card-actions>

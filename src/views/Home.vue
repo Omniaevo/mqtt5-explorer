@@ -10,7 +10,7 @@
               v-on="on"
               icon
             >
-              <v-icon>mdi-{{ settingsDrawer ? "chevron-left" : "cog" }}</v-icon>
+              <v-icon>mdi-cog</v-icon>
             </v-btn>
           </template>
           <span>{{ settingsDrawer ? "Close a" : "A" }}pp settings</span>
@@ -123,7 +123,7 @@ div[row] {
 }
 
 .tab-no-overflow {
-  height: 41ch !important;
+  height: 34ch !important;
   overflow: hidden !important;
 }
 
