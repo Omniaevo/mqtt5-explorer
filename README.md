@@ -1,3 +1,36 @@
-# Mqtt5 Explorer
+# mqtt5-explorer
 
-A simple MQTT client that supports MQTT5 protocol.
+## Project setup
+```
+npm install
+```
+
+### Compiles and hot-reloads for development
+```
+npm run electron:serve
+```
+
+## Generate app images
+```
+npm run electron:icons
+```
+
+### Compiles and minifies for production
+```
+# Linux
+npm run electron:build -- --linux
+
+# MacOS
+npm run electron:build -- --mac
+
+# Windows
+npm run electron:build -- --win
+```
+
+### Lints and fixes files
+```
+npm run lint
+```
+
+### Customize configuration
+See [Configuration Reference](https://cli.vuejs.org/config/).
