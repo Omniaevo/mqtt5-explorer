@@ -68,6 +68,8 @@
 </template>
 <style scoped>
 .explorer-grid-container {
+  height: 88vh;
+  overflow: hidden;
   display: grid;
   grid-template-areas: "treeview explorer";
   grid-auto-columns: 1fr 2fr;
@@ -76,10 +78,12 @@
 
 .treeview-container {
   grid-area: "treeview";
+  overflow: auto;
 }
 
 .properties-container {
   grid-area: "properties";
+  overflow: auto;
 }
 
 .small-line {
