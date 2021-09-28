@@ -26,6 +26,7 @@
 <style>
 .rounded {
   border-radius: 10vw;
+  overflow: hidden;
 }
 </style>
 

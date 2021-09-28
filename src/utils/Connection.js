@@ -16,6 +16,10 @@ class Connection {
     return this.#url;
   }
 
+  get protocolVersion() {
+    return this.#properties.version;
+  }
+
   init(properties, addCallback, mergeCallback, getSize) {
     this.#properties = properties;
     // eslint-disable-next-line prettier/prettier

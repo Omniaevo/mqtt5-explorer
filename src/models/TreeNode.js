@@ -1,6 +1,7 @@
 class TreeNode {
   id = undefined;
   name = undefined;
+  topic = undefined;
   value = undefined;
   old = undefined;
   children = [];
@@ -10,6 +11,7 @@ class TreeNode {
   constructor(id, structure, value) {
     this.#idFun = id;
     this.name = structure[0];
+    this.topic = value.topic.split(this.name)[0] + this.name;
 
     if (structure.length > 1) {
       this.child = new TreeNode(id, structure.slice(1), value);
@@ -65,7 +67,7 @@ class TreeNode {
   #stopBlink = () => (this.blink = false);
 
   #setValue = (newValue) => {
-    this.old = this.value;
+    this.old = this.value ? { ...this.value } : undefined;
     this.value =
       ((newValue || {}).payload || []).length > 0 ? newValue : undefined;
   };
