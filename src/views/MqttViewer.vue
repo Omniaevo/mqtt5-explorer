@@ -184,7 +184,7 @@ export default {
       });
     },
     getProperties(item) {
-      this.itemSelected = { ...item };
+      this.itemSelected = item;
     },
     add(node) {
       this.treeData.push(node);
