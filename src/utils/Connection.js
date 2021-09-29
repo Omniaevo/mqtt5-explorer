@@ -66,6 +66,12 @@ class Connection {
     });
   }
 
+  publish(topic, message) {
+    console.log(topic, message);
+    // const options = {};
+    // this.#client = mqtt.publish(topic, message, options);
+  }
+
   disconnect(callback) {
     this.#client.on("close", callback);
     this.#client.end(true, {});
