@@ -414,7 +414,7 @@ export default {
         });
       }
 
-      this.$connection.publish(this.itemEditing);
+      this.$connection.publish(this.itemEditing.value);
     },
   },
 };

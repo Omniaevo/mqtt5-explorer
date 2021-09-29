@@ -67,14 +67,18 @@ class Connection {
   }
 
   publish(packet) {
-    const message = packet.value.payload;
-    const topic = packet.node;
+    const message = packet.payload;
+    const topic = packet.topic;
     const options = {
-      qos: packet.value.qos,
-      retain: packet.value.retain,
+      qos: packet.qos,
+      retain: packet.retain,
     };
 
-    this.#client = mqtt.publish(topic, message, options);
+    if (this.#properties.version > 4) {
+      options.properties = packet.properties;
+    }
+
+    this.#client.publish(topic, message, options);
   }
 
   disconnect(callback) {
