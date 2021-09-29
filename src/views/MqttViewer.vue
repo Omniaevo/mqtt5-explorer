@@ -100,7 +100,7 @@
             </v-expansion-panel-content>
           </v-expansion-panel>
 
-          <v-expansion-panel v-if="$connection.protocolVersion === 5">
+          <v-expansion-panel v-if="$connection.protocolVersion > 4">
             <v-expansion-panel-header>Properties</v-expansion-panel-header>
             <v-expansion-panel-content v-if="itemSelected">
               <pre>{{ (itemSelected.value || {}).properties || "" }}</pre>
@@ -108,7 +108,36 @@
           </v-expansion-panel>
 
           <v-expansion-panel>
-            <v-expansion-panel-header>Publish</v-expansion-panel-header>
+            <v-expansion-panel-header>
+              <div center-vertical>
+                <v-tooltip
+                  v-if="
+                    itemEditing !== undefined &&
+                    itemEditing.value &&
+                    itemSelected &&
+                    itemSelected.value &&
+                    itemSelected.value.payload !== undefined &&
+                    packetPanels.includes(3)
+                  "
+                  bottom
+                >
+                  <template v-slot:activator="{ on, attrs }">
+                    <v-btn
+                      v-bind="attrs"
+                      v-on:click.stop="loadForPublish(itemSelected)"
+                      v-on="on"
+                      class="me-2"
+                      icon
+                      small
+                    >
+                      <v-icon>mdi-sync</v-icon>
+                    </v-btn>
+                  </template>
+                  <span>Syncronize with new data</span>
+                </v-tooltip>
+                <span>Publish</span>
+              </div>
+            </v-expansion-panel-header>
             <v-expansion-panel-content v-if="itemEditing">
               <v-card flat>
                 <v-card-text class="pa-0">
@@ -138,7 +167,7 @@
                       />
                     </div>
                     <v-divider />
-                    <div v-if="$connection.protocolVersion === 5">
+                    <div v-if="$connection.protocolVersion > 4">
                       <v-card-title class="ps-0">Properties</v-card-title>
                       <v-text-field
                         v-model="itemEditing.value.properties.contentType"
@@ -146,16 +175,13 @@
                       />
                       <div v-if="itemEditing.value.properties.userProperties">
                         <v-card-text class="ps-0">User properties</v-card-text>
-                        <div v-for="(upKey, i) in upKeys" v-bind:key="upKey">
+                        <div
+                          v-for="(prop, i) in userProperties"
+                          v-bind:key="'user-properties-' + i"
+                        >
                           <div row>
-                            <v-text-field
-                              v-model="upKeys[i]"
-                              label="Property"
-                            />
-                            <v-text-field
-                              v-model="userProperties[upKeys[i]]"
-                              label="Value"
-                            />
+                            <v-text-field v-model="prop.key" label="Key" />
+                            <v-text-field v-model="prop.value" label="Value" />
                           </div>
                         </div>
                         <v-tooltip bottom>
@@ -164,7 +190,7 @@
                               v-bind="attrs"
                               v-on:click="addProperty"
                               v-on="on"
-                              style="width: 100%"
+                              block
                             >
                               <v-icon>mdi-plus</v-icon>
                             </v-btn>
@@ -182,6 +208,11 @@
                   </v-btn>
                 </v-card-actions>
               </v-card>
+            </v-expansion-panel-content>
+            <v-expansion-panel-content v-else>
+              <v-btn v-on:click="newForPublishing()" block>
+                <v-icon>mdi-plus</v-icon>
+              </v-btn>
             </v-expansion-panel-content>
           </v-expansion-panel>
         </v-expansion-panels>
@@ -229,6 +260,12 @@ div[row] {
   gap: 1.5em;
 }
 
+div[center-vertical] {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
 .small-line {
   line-height: 0.5rem;
 }
@@ -236,6 +273,7 @@ div[row] {
 
 <script>
 import ConnectionProperties from "../models/ConnectionProperties";
+import TreeNode from "../models/TreeNode";
 
 export default {
   name: "MqttViewer",
@@ -252,9 +290,6 @@ export default {
   computed: {
     userProperties() {
       return this.itemEditing.value.properties.userProperties;
-    },
-    upKeys() {
-      return Object.keys(this.userProperties);
     },
   },
 
@@ -284,7 +319,40 @@ export default {
     },
     getProperties(item) {
       this.itemSelected = item;
-      this.itemEditing = { ...item };
+      this.loadForPublish(item);
+    },
+    newForPublishing() {
+      this.loadForPublish(
+        new TreeNode(() => {}, ["topic"], { topic: "example/topic" }),
+        false
+      );
+    },
+    loadForPublish(item, clone = true) {
+      this.itemEditing = clone ? JSON.parse(JSON.stringify(item)) : item;
+
+      if (this.itemEditing.value === undefined) {
+        this.itemEditing.value = {
+          retain: false,
+          qos: 0,
+          payload: undefined,
+        };
+
+        if (this.$connection.protocolVersion > 4) {
+          this.itemEditing.value.properties = {
+            contentType: "",
+            userProperties: {},
+          };
+        }
+      }
+
+      if (this.$connection.protocolVersion > 4) {
+        this.itemEditing.value.properties.userProperties = Object.keys(
+          this.itemEditing.value.properties.userProperties
+        ).map((k) => ({
+          key: k,
+          value: this.itemEditing.value.properties.userProperties[k],
+        }));
+      }
     },
     add(node) {
       this.treeData.push(node);
@@ -296,6 +364,8 @@ export default {
     },
     addProperty() {},
     publishItem() {
+      this.itemEditing.value.topic = this.itemEditing.topic;
+
       console.log(this.itemEditing);
     },
   },
