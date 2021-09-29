@@ -35,7 +35,7 @@
           <template slot="label" slot-scope="{ item, leaf }" class="ma-0">
             <div
               v-bind:class="{
-                primary: item.blink,
+                primary: item.blink || selectedId === item.id,
                 'white--text': item.blink,
                 'px-2': true,
                 rounded: true,
@@ -100,7 +100,7 @@
             </v-expansion-panel-content>
           </v-expansion-panel>
 
-          <v-expansion-panel v-if="$connection.protocolVersion > 4">
+          <v-expansion-panel v-if="upSupported">
             <v-expansion-panel-header>Properties</v-expansion-panel-header>
             <v-expansion-panel-content v-if="itemSelected">
               <pre>{{ (itemSelected.value || {}).properties || "" }}</pre>
@@ -117,7 +117,7 @@
                     itemSelected &&
                     itemSelected.value &&
                     itemSelected.value.payload !== undefined &&
-                    packetPanels.includes(3)
+                    packetPanels.includes(panelsMaxIndex)
                   "
                   bottom
                 >
@@ -166,38 +166,46 @@
                         label="QoS"
                       />
                     </div>
-                    <v-divider />
-                    <div v-if="$connection.protocolVersion > 4">
+                    <div v-if="upSupported">
+                      <v-divider />
                       <v-card-title class="ps-0">Properties</v-card-title>
                       <v-text-field
                         v-model="itemEditing.value.properties.contentType"
                         label="Content type"
                       />
-                      <div v-if="itemEditing.value.properties.userProperties">
-                        <v-card-text class="ps-0">User properties</v-card-text>
-                        <div
-                          v-for="(prop, i) in userProperties"
-                          v-bind:key="'user-properties-' + i"
+                      <v-card-text class="ps-0">User properties</v-card-text>
+                      <div
+                        v-for="(prop, i) in userPropertiesArray"
+                        v-bind:key="'user-properties-' + i"
+                        row
+                      >
+                        <v-text-field v-model="prop.key" label="Key" />
+                        <v-text-field v-model="prop.value" label="Value" />
+                        <v-btn
+                          v-on:click="userPropertiesArray.splice(i, 1)"
+                          icon
                         >
-                          <div row>
-                            <v-text-field v-model="prop.key" label="Key" />
-                            <v-text-field v-model="prop.value" label="Value" />
-                          </div>
-                        </div>
-                        <v-tooltip bottom>
-                          <template v-slot:activator="{ on, attrs }">
-                            <v-btn
-                              v-bind="attrs"
-                              v-on:click="addProperty"
-                              v-on="on"
-                              block
-                            >
-                              <v-icon>mdi-plus</v-icon>
-                            </v-btn>
-                          </template>
-                          <span>Add new property</span>
-                        </v-tooltip>
+                          <v-icon>mdi-delete</v-icon>
+                        </v-btn>
                       </div>
+                      <v-tooltip bottom>
+                        <template v-slot:activator="{ on, attrs }">
+                          <v-btn
+                            v-bind="attrs"
+                            v-on:click="
+                              userPropertiesArray.push({
+                                key: 'key',
+                                value: 'value',
+                              })
+                            "
+                            v-on="on"
+                            block
+                          >
+                            <v-icon>mdi-plus</v-icon>
+                          </v-btn>
+                        </template>
+                        <span>Add new property</span>
+                      </v-tooltip>
                     </div>
                   </div>
                 </v-card-text>
@@ -257,6 +265,7 @@ div[wrap-text] {
 div[row] {
   display: flex;
   flex-direction: row;
+  align-items: center;
   gap: 1.5em;
 }
 
@@ -280,16 +289,21 @@ export default {
 
   data: () => ({
     treeData: [],
-    packetPanels: [0, 1, 2],
+    packetPanels: [],
     qos: [0, 1, 2],
     connectionProperties: new ConnectionProperties(),
     itemSelected: undefined,
     itemEditing: undefined,
+    userPropertiesArray: [],
+    selectedId: -1,
   }),
 
   computed: {
-    userProperties() {
-      return this.itemEditing.value.properties.userProperties;
+    upSupported() {
+      return this.$connection.protocolVersion > 4;
+    },
+    panelsMaxIndex() {
+      return this.upSupported ? 3 : 2;
     },
   },
 
@@ -319,7 +333,9 @@ export default {
     },
     getProperties(item) {
       this.itemSelected = item;
+      this.selectedId = item.id;
       this.loadForPublish(item);
+      this.packetPanels = [...Array(this.panelsMaxIndex).keys()];
     },
     newForPublishing() {
       this.loadForPublish(
@@ -337,7 +353,7 @@ export default {
           payload: undefined,
         };
 
-        if (this.$connection.protocolVersion > 4) {
+        if (this.upSupported) {
           this.itemEditing.value.properties = {
             contentType: "",
             userProperties: {},
@@ -345,8 +361,8 @@ export default {
         }
       }
 
-      if (this.$connection.protocolVersion > 4) {
-        this.itemEditing.value.properties.userProperties = Object.keys(
+      if (this.upSupported) {
+        this.userPropertiesArray = Object.keys(
           this.itemEditing.value.properties.userProperties
         ).map((k) => ({
           key: k,
@@ -362,11 +378,19 @@ export default {
         this.treeData.splice(index, 1);
       }
     },
-    addProperty() {},
     publishItem() {
       this.itemEditing.value.topic = this.itemEditing.topic;
 
-      console.log(this.itemEditing);
+      if (this.upSupported) {
+        this.itemEditing.value.properties.userProperties = {};
+
+        this.userPropertiesArray.forEach((prop) => {
+          // eslint-disable-next-line prettier/prettier
+          this.itemEditing.value.properties.userProperties[prop.key] = prop.value;
+        });
+      }
+
+      console.log(this.itemEditing.value);
     },
   },
 };
