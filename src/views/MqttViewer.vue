@@ -21,6 +21,23 @@
           <div class="caption grey--text small-line">{{ $connection.url }}</div>
         </div>
       </div>
+      <v-spacer />
+      <div v-if="selectedId !== -1" center-vertical>
+        <v-tooltip bottom>
+          <template v-slot:activator="{ on, attrs }">
+            <v-btn
+              v-bind="attrs"
+              v-on:click="resetSelection()"
+              v-on="on"
+              color="error"
+              icon
+            >
+              <v-icon>mdi-close</v-icon>
+            </v-btn>
+          </template>
+          <span>Clear selection</span>
+        </v-tooltip>
+      </div>
     </v-app-bar>
 
     <div class="mx-4 my-2 explorer-grid-container">
@@ -336,6 +353,13 @@ export default {
       this.selectedId = item.id;
       this.loadForPublish(item);
       this.packetPanels = [...Array(this.panelsMaxIndex).keys()];
+    },
+    resetSelection() {
+      this.itemSelected = undefined;
+      this.selectedId = -1;
+      this.itemEditing = undefined;
+      this.userPropertiesArray = [];
+      this.packetPanels = [];
     },
     newForPublishing() {
       this.loadForPublish(
