@@ -390,7 +390,7 @@ export default {
         });
       }
 
-      console.log(this.itemEditing.value);
+      this.$connection.publish(this.itemEditing);
     },
   },
 };

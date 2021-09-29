@@ -66,10 +66,15 @@ class Connection {
     });
   }
 
-  publish(topic, message) {
-    console.log(topic, message);
-    // const options = {};
-    // this.#client = mqtt.publish(topic, message, options);
+  publish(packet) {
+    const message = packet.value.payload;
+    const topic = packet.node;
+    const options = {
+      qos: packet.value.qos,
+      retain: packet.value.retain,
+    };
+
+    this.#client = mqtt.publish(topic, message, options);
   }
 
   disconnect(callback) {
