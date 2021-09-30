@@ -53,7 +53,7 @@
             <div
               v-bind:class="{
                 primary: item.blink || selectedId === item.id,
-                'white--text': item.blink,
+                'white--text': item.blink || selectedId === item.id,
                 'px-2': true,
                 rounded: true,
               }"
@@ -75,7 +75,25 @@
       <div class="properties-container">
         <v-expansion-panels v-model="packetPanels" multiple>
           <v-expansion-panel>
-            <v-expansion-panel-header>Topic</v-expansion-panel-header>
+            <v-expansion-panel-header>
+              Topic
+              <div v-if="itemSelected">
+                <v-tooltip bottom>
+                  <template v-slot:activator="{ on, attrs }">
+                    <v-btn
+                      v-bind="attrs"
+                      v-on:click="deleteTopic(itemEditing)"
+                      v-on="on"
+                      class="ms-2"
+                      icon
+                    >
+                      <v-icon color="error">mdi-delete</v-icon>
+                    </v-btn>
+                  </template>
+                  <span>Delete {{ itemSelected.topic }}</span>
+                </v-tooltip>
+              </div>
+            </v-expansion-panel-header>
             <v-expansion-panel-content>
               <div wrap-text>
                 {{ itemSelected ? itemSelected.topic : "" }}
@@ -415,6 +433,15 @@ export default {
       }
 
       this.$connection.publish(this.itemEditing.value);
+    },
+    deleteTopic(item) {
+      item.value ? (item.value.payload = null) : undefined;
+      if (item.children?.length > 0) {
+        item.children.forEach((c) => this.deleteTopic(c));
+      } else {
+        this.$connection.publish(item.value);
+        this.resetSelection();
+      }
     },
   },
 };
