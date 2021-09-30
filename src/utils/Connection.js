@@ -48,8 +48,11 @@ class Connection {
 
     this.#client.on("error", onError);
     this.#client.on("connect", () => {
-      // When connected subscribe to a topic
-      this.#client.subscribe(this.#properties.topics, () => {});
+      const options = { rap: true };
+
+      this.#properties.version > 4
+        ? this.#client.subscribe(this.#properties.topics, options, () => {})
+        : this.#client.subscribe(this.#properties.topics, () => {});
     });
     // when a message arrives
     this.#client.on("message", (_t, _m, packet) => {
