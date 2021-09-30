@@ -77,7 +77,6 @@ class Connection {
     if (this.#properties.version > 4) {
       options.properties = packet.properties;
     }
-
     this.#client.publish(topic, message, options);
   }
 

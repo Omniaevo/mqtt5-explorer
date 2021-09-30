@@ -183,7 +183,7 @@
                         label="QoS"
                       />
                     </div>
-                    <div v-if="upSupported">
+                    <div v-if="upSupported && itemEditing.value.properties">
                       <v-divider />
                       <v-card-title class="ps-0">Properties</v-card-title>
                       <v-text-field
@@ -385,7 +385,7 @@ export default {
         }
       }
 
-      if (this.upSupported) {
+      if (this.upSupported && this.itemEditing.value.properties) {
         this.userPropertiesArray = Object.keys(
           this.itemEditing.value.properties.userProperties
         ).map((k) => ({
