@@ -82,7 +82,7 @@
                   <template v-slot:activator="{ on, attrs }">
                     <v-btn
                       v-bind="attrs"
-                      v-on:click="deleteTopic(itemEditing)"
+                      v-on:click="deleteDialog = true"
                       v-on="on"
                       class="ms-2"
                       icon
@@ -261,6 +261,31 @@
         </v-expansion-panels>
       </div>
     </div>
+
+    <v-dialog v-model="deleteDialog" max-width="50ch" persistent>
+      <v-card>
+        <v-card-title>Confirm delete</v-card-title>
+        <v-card-text>
+          Do you want to delete
+          <span class="font-weight-black">
+            "{{ itemSelected ? itemSelected.topic : "" }}"
+          </span>
+          topic and his childs?
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer />
+          <v-btn v-on:click="deleteDialog = false" color="primary">No</v-btn>
+          <v-btn
+            v-on:click="
+              deleteTopic(itemEditing);
+              deleteDialog = false;
+            "
+            color="error"
+            >Yes</v-btn
+          >
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 <style scoped>
@@ -331,6 +356,7 @@ export default {
     itemEditing: undefined,
     userPropertiesArray: [],
     selectedId: -1,
+    deleteDialog: false,
   }),
 
   computed: {
@@ -435,13 +461,12 @@ export default {
       this.$connection.publish(this.itemEditing.value);
     },
     deleteTopic(item) {
-      item.value ? (item.value.payload = null) : undefined;
       if (item.children?.length > 0) {
         item.children.forEach((c) => this.deleteTopic(c));
-      } else {
-        this.$connection.publish(item.value);
-        this.resetSelection();
       }
+      item.value ? (item.value.payload = null) : undefined;
+      this.$connection.publish(item.value);
+      this.resetSelection();
     },
   },
 };
