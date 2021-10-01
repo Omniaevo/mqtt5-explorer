@@ -201,7 +201,7 @@
                         label="QoS"
                       />
                     </div>
-                    <div v-if="upSupported && itemEditing.value.properties">
+                    <div v-if="upSupported">
                       <v-divider />
                       <v-card-title class="ps-0">Properties</v-card-title>
                       <v-text-field
@@ -413,6 +413,7 @@ export default {
     },
     loadForPublish(item, clone = true) {
       this.itemEditing = clone ? JSON.parse(JSON.stringify(item)) : item;
+      this.userPropertiesArray = [];
 
       if (this.itemEditing.value === undefined) {
         this.itemEditing.value = {
@@ -429,7 +430,15 @@ export default {
         }
       }
 
-      if (this.upSupported && this.itemEditing.value.properties) {
+      if (this.upSupported && !this.itemEditing.value.properties) {
+        this.itemEditing.value.properties = {};
+      }
+
+      if (
+        this.upSupported &&
+        this.itemEditing.value.properties &&
+        this.itemEditing.value.properties.userProperties
+      ) {
         this.userPropertiesArray = Object.keys(
           this.itemEditing.value.properties.userProperties
         ).map((k) => ({
@@ -442,14 +451,22 @@ export default {
       this.treeData.push(node);
     },
     merge(index, node) {
-      if (this.treeData[index].merge(node)) {
+      const toDelete = this.treeData[index].merge(node);
+
+      if (toDelete) {
         this.treeData.splice(index, 1);
       }
+
+      return toDelete;
     },
     publishItem() {
       this.itemEditing.value.topic = this.itemEditing.topic;
 
       if (this.upSupported) {
+        if (!this.itemEditing.value.properties) {
+          this.itemEditing.value.properties = {};
+        }
+
         this.itemEditing.value.properties.userProperties = {};
 
         this.userPropertiesArray.forEach((prop) => {
@@ -464,7 +481,13 @@ export default {
       if (item.children?.length > 0) {
         item.children.forEach((c) => this.deleteTopic(c));
       }
-      item.value ? (item.value.payload = null) : undefined;
+
+      if (item.value) {
+        item.value.payload = null;
+      } else {
+        item.value = { payload: null, topic: item.topic, qos: 0, retain: true };
+      }
+
       this.$connection.publish(item.value);
       this.resetSelection();
     },
