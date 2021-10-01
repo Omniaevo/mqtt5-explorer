@@ -78,10 +78,21 @@
             <v-expansion-panel-header>Topic</v-expansion-panel-header>
             <v-expansion-panel-content>
               <div v-if="itemSelected" wrap-text>
-                <v-btn v-on:click="deleteDialog = true" icon>
-                  <v-icon color="error">mdi-delete</v-icon>
-                </v-btn>
-                {{ itemSelected.topic }}
+                <v-tooltip bottom>
+                  <template v-slot:activator="{ on, attrs }">
+                    <v-btn
+                      v-bind="attrs"
+                      v-on:click="deleteDialog = true"
+                      v-on="on"
+                      class="me-4"
+                      icon
+                    >
+                      <v-icon color="error">mdi-delete</v-icon>
+                    </v-btn>
+                    {{ itemSelected.topic }}
+                  </template>
+                  <span>Delete "{{ itemSelected.topic }}" topic</span>
+                </v-tooltip>
               </div>
             </v-expansion-panel-content>
           </v-expansion-panel>
