@@ -88,10 +88,38 @@
               <ConnectionForm
                 v-bind:properties="connection"
                 v-on:connect="connect($event, i)"
-                v-on:delete="deleteConnection(i)"
+                v-on:delete="deleteDialog = true"
                 v-on:updated="dataChanged($event, i)"
               />
             </v-card-text>
+
+            <v-dialog v-model="deleteDialog" max-width="50ch" persistent>
+              <v-card>
+                <v-card-title>Confirm delete</v-card-title>
+                <v-card-text>
+                  Do you want to delete
+                  <span class="font-weight-black">
+                    "{{ connection.name }}"?
+                  </span>
+                </v-card-text>
+                <v-card-actions>
+                  <v-spacer />
+                  <v-btn v-on:click="deleteDialog = false" color="primary" text>
+                    No
+                  </v-btn>
+                  <v-btn
+                    v-on:click="
+                      deleteConnection(i);
+                      deleteDialog = false;
+                    "
+                    color="error"
+                    text
+                  >
+                    Yes
+                  </v-btn>
+                </v-card-actions>
+              </v-card>
+            </v-dialog>
           </v-tab-item>
         </v-tabs-items>
       </div>
@@ -152,6 +180,7 @@ export default {
     tabId: 0,
     settingsDrawer: false,
     defaultConnectionData: new ConnectionProperties(),
+    deleteDialog: false,
   }),
 
   computed: {

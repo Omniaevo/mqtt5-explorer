@@ -75,28 +75,13 @@
       <div class="properties-container">
         <v-expansion-panels v-model="packetPanels" multiple>
           <v-expansion-panel>
-            <v-expansion-panel-header>
-              Topic
-              <div v-if="itemSelected">
-                <v-tooltip bottom>
-                  <template v-slot:activator="{ on, attrs }">
-                    <v-btn
-                      v-bind="attrs"
-                      v-on:click="deleteDialog = true"
-                      v-on="on"
-                      class="ms-2"
-                      icon
-                    >
-                      <v-icon color="error">mdi-delete</v-icon>
-                    </v-btn>
-                  </template>
-                  <span>Delete {{ itemSelected.topic }}</span>
-                </v-tooltip>
-              </div>
-            </v-expansion-panel-header>
+            <v-expansion-panel-header>Topic</v-expansion-panel-header>
             <v-expansion-panel-content>
-              <div wrap-text>
-                {{ itemSelected ? itemSelected.topic : "" }}
+              <div v-if="itemSelected" wrap-text>
+                <v-btn v-on:click="deleteDialog = true" icon>
+                  <v-icon color="error">mdi-delete</v-icon>
+                </v-btn>
+                {{ itemSelected.topic }}
               </div>
             </v-expansion-panel-content>
           </v-expansion-panel>
@@ -274,15 +259,19 @@
         </v-card-text>
         <v-card-actions>
           <v-spacer />
-          <v-btn v-on:click="deleteDialog = false" color="primary">No</v-btn>
+          <v-btn v-on:click="deleteDialog = false" color="primary" text>
+            No
+          </v-btn>
           <v-btn
             v-on:click="
               deleteTopic(itemEditing);
               deleteDialog = false;
             "
             color="error"
-            >Yes</v-btn
+            text
           >
+            Yes
+          </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
