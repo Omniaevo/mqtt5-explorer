@@ -91,6 +91,7 @@ class Connection {
         options.properties.userProperties = packet.properties.userProperties;
       }
     }
+
     this.#client.publish(topic, message, options);
   }
 

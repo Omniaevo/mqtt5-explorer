@@ -105,7 +105,7 @@
                 <v-card-actions>
                   <v-spacer />
                   <v-btn v-on:click="deleteDialog = false" color="primary" text>
-                    No
+                    Cancel
                   </v-btn>
                   <v-btn
                     v-on:click="
@@ -115,7 +115,7 @@
                     color="error"
                     text
                   >
-                    Yes
+                    Delete
                   </v-btn>
                 </v-card-actions>
               </v-card>
