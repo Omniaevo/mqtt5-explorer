@@ -67,9 +67,16 @@ class TreeNode {
   #stopBlink = () => (this.blink = false);
 
   #setValue = (newValue) => {
-    this.old = this.value ? { ...this.value } : undefined;
-    this.value =
-      ((newValue || {}).payload || []).length > 0 ? newValue : undefined;
+    this.old = this.value ? JSON.parse(JSON.stringify(this.value)) : undefined;
+
+    if (((newValue || {}).payload || []).length === 0) {
+      this.value = undefined;
+
+      return;
+    }
+
+    this.value = newValue;
+    this.value.payload = Buffer.from(this.value.payload).toString("utf-8");
   };
 }
 

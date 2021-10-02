@@ -48,8 +48,11 @@ class Connection {
 
     this.#client.on("error", onError);
     this.#client.on("connect", () => {
-      // When connected subscribe to a topic
-      this.#client.subscribe(this.#properties.topics, () => {});
+      const options = { rap: true };
+
+      this.#properties.version > 4
+        ? this.#client.subscribe(this.#properties.topics, options, () => {})
+        : this.#client.subscribe(this.#properties.topics, () => {});
     });
     // when a message arrives
     this.#client.on("message", (_t, _m, packet) => {
@@ -60,10 +63,36 @@ class Connection {
         topic.initObject();
         this.#addCallback(topic);
         this.#map[splitted[0]] = this.#getSize() - 1;
-      } else {
-        this.#mergeCallback(this.#map[splitted[0]], topic);
+      } else if (this.#mergeCallback(this.#map[splitted[0]], topic)) {
+        delete this.#map[splitted[0]];
       }
     });
+  }
+
+  publish(packet) {
+    const message = packet.payload;
+    const topic = packet.topic;
+    const options = {
+      qos: packet.qos,
+      retain: packet.retain,
+    };
+
+    if (this.#properties.version > 4 && packet.properties) {
+      if (packet.properties.contentType) {
+        options.properties = {};
+        options.properties.contentType = packet.properties.contentType;
+      }
+
+      if (
+        packet.properties.userProperties &&
+        Object.keys(packet.properties.userProperties).length > 0
+      ) {
+        if (!options.properties) options.properties = {};
+        options.properties.userProperties = packet.properties.userProperties;
+      }
+    }
+
+    this.#client.publish(topic, message, options);
   }
 
   disconnect(callback) {
