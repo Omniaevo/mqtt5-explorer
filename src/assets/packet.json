@@ -1,0 +1,27 @@
+{
+  "cmd": "publish",
+  "retain": true,
+  "qos": 0,
+  "dup": false,
+  "length": 155,
+  "topic": "events/@82:8a:d3:b1:08:8c/system/SY00/1632250678291",
+  "payload": {
+    "type": "Buffer",
+    "data": [
+      50,
+      58,
+      48
+    ]
+  },
+  "properties": {
+    "contentType": "event",
+    "userProperties": {
+      "ts": "1632250678285",
+      "type": "single",
+      "group": "system",
+      "id": "SY00",
+      "level": "low",
+      "attributes": ""
+    }
+  }
+}
