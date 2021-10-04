@@ -117,7 +117,7 @@
               <v-card>
                 <v-card-title>Confirm delete</v-card-title>
                 <v-card-text>
-                  Do you want to delete
+                  Are you sure you want to delete
                   <span class="font-weight-black">
                     "{{ connection.name }}"?
                   </span>
