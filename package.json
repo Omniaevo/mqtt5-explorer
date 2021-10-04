@@ -1,6 +1,6 @@
 {
   "name": "mqtt5-explorer",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
   "description": "A simple MQTT client that supports MQTT5 protocol.",
   "homepage": "https://gitlab.omniaevo.it/omniaevo/mqtt5-explorer",
