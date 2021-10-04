@@ -58,6 +58,9 @@ export default {
       this.persistSettings();
       this.$vuetify.theme.dark = isDark;
     },
+    outline() {
+      this.persistSettings();
+    },
   },
 
   methods: {

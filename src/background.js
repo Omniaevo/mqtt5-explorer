@@ -10,6 +10,7 @@ import installExtension, { VUEJS_DEVTOOLS } from "electron-devtools-installer";
 const isDevelopment = process.env.NODE_ENV !== "production";
 
 const isMac = process.platform === "darwin";
+const appName = "MQTT5 Explorer";
 
 // Scheme must be registered before the app is ready
 protocol.registerSchemesAsPrivileged([
@@ -27,7 +28,7 @@ const aboutMenu = [
       dialog.showMessageBox(win, {
         type: "info",
         title: "Info",
-        message: app.getName(),
+        message: appName,
         detail: `Version: ${app.getVersion()}-${process.platform}`,
         icon: "public/img/icons/android-chrome-192x192.png",
       }),
@@ -38,7 +39,7 @@ let menuTemplate = [
   ...(isMac
     ? [
         {
-          label: app.getName(),
+          label: appName,
           submenu: aboutMenu,
         },
       ]
@@ -57,12 +58,9 @@ let menuTemplate = [
       {
         type: "separator",
       },
+      ...(isMac ? [{ label: "Close window", role: "close" }] : []),
       {
-        label: "Close window",
-        role: "close",
-      },
-      {
-        label: `Quit ${app.getName()}`,
+        label: `Quit ${appName}`,
         role: "quit",
       },
     ],
@@ -82,7 +80,7 @@ async function createWindow() {
   win = new BrowserWindow({
     width: store.get("app_width") || 1366,
     height: store.get("app_height") || 768,
-    title: "MQTT5 Explorer",
+    title: appName,
     icon: path.join(__static, "icon.png"),
     webPreferences: {
       // Use pluginOptions.nodeIntegration, leave this alone

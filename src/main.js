@@ -30,6 +30,9 @@ Vue.mixin({
     theme() {
       return this.$store.getters.getTheme;
     },
+    outline() {
+      return this.$store.getters.getOutline;
+    },
     darkTheme() {
       return (this.theme || "light") === "dark";
     },

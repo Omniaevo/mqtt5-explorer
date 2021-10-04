@@ -3,6 +3,7 @@
     <div class="input-container">
       <v-text-field
         v-model="connectionData.name"
+        v-bind:outlined="outline"
         v-bind:rules="staticConnectionProperties.rules.name"
         label="Name"
         required
@@ -11,6 +12,7 @@
         <v-select
           v-model="connectionData.protocol"
           v-bind:items="protocols"
+          v-bind:outlined="outline"
           v-bind:rules="staticConnectionProperties.rules.protocol"
           label="Protocol"
           style="max-width: 10ch"
@@ -18,12 +20,14 @@
         />
         <v-text-field
           v-model="connectionData.host"
+          v-bind:outlined="outline"
           v-bind:rules="staticConnectionProperties.rules.host"
           label="Host"
           required
         />
         <v-text-field
           v-model="connectionData.port"
+          v-bind:outlined="outline"
           v-bind:rules="staticConnectionProperties.rules.port"
           label="Port"
           style="max-width: 10ch"
@@ -31,10 +35,15 @@
         />
       </div>
       <div row>
-        <v-text-field v-model="connectionData.username" label="Username" />
+        <v-text-field
+          v-model="connectionData.username"
+          v-bind:outlined="outline"
+          label="Username"
+        />
         <v-text-field
           v-model="connectionData.password"
           v-bind:append-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
+          v-bind:outlined="outline"
           v-bind:type="showPassword ? 'text' : 'password'"
           v-on:click:append="showPassword = !showPassword"
           label="Password"
@@ -87,6 +96,7 @@
             <v-select
               v-model="connectionData.version"
               v-bind:items="versions"
+              v-bind:outlined="outline"
               class="me-4"
               label="Version"
               style="max-width: 10ch"
@@ -100,6 +110,7 @@
           <div row>
             <v-combobox
               v-model="connectionData.topics"
+              v-bind:outlined="outline"
               append-icon=""
               label="Subscriptions"
               multiple
