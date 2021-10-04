@@ -73,7 +73,7 @@
       </v-card>
 
       <div class="properties-container">
-        <v-expansion-panels v-model="packetPanels" multiple>
+        <v-expansion-panels v-model="packetPanels" flat multiple>
           <v-expansion-panel>
             <v-expansion-panel-header>Topic</v-expansion-panel-header>
             <v-expansion-panel-content>
@@ -174,27 +174,34 @@
                 <v-card-text class="pa-0">
                   <v-text-field
                     v-model="itemEditing.topic"
+                    v-bind:outlined="outline"
                     placeholder="example/topic"
                     label="Topic"
                   />
                   <div v-if="itemEditing.value">
                     <v-textarea
                       v-model="itemEditing.value.payload"
+                      v-bind:outlined="outline"
                       label="Value"
                       rows="2"
                     ></v-textarea>
                     <div row>
                       <v-spacer />
-                      <v-switch
-                        v-model="itemEditing.value.retain"
-                        label="Retain"
-                        inset
-                      />
+                      <div center-vertical>
+                        <v-switch
+                          v-model="itemEditing.value.retain"
+                          class="me-4"
+                          label="Retain"
+                          inset
+                        />
+                      </div>
                       <v-select
                         v-model="itemEditing.value.qos"
                         v-bind:items="qos"
+                        v-bind:outlined="outline"
                         class="small-input"
                         label="QoS"
+                        hide-details
                       />
                     </div>
                     <div v-if="upSupported">
@@ -202,22 +209,36 @@
                       <v-card-title class="ps-0">Properties</v-card-title>
                       <v-text-field
                         v-model="itemEditing.value.properties.contentType"
+                        v-bind:outlined="outline"
                         label="Content type"
                       />
                       <v-card-text class="ps-0">User properties</v-card-text>
                       <div
                         v-for="(prop, i) in userPropertiesArray"
                         v-bind:key="'user-properties-' + i"
+                        class="mb-5"
                         row
                       >
-                        <v-text-field v-model="prop.key" label="Key" />
-                        <v-text-field v-model="prop.value" label="Value" />
-                        <v-btn
-                          v-on:click="userPropertiesArray.splice(i, 1)"
-                          icon
-                        >
-                          <v-icon>mdi-delete</v-icon>
-                        </v-btn>
+                        <v-text-field
+                          v-model="prop.key"
+                          v-bind:outlined="outline"
+                          label="Key"
+                          hide-details
+                        />
+                        <v-text-field
+                          v-model="prop.value"
+                          v-bind:outlined="outline"
+                          label="Value"
+                          hide-details
+                        />
+                        <div center-vertical>
+                          <v-btn
+                            v-on:click="userPropertiesArray.splice(i, 1)"
+                            icon
+                          >
+                            <v-icon>mdi-delete</v-icon>
+                          </v-btn>
+                        </div>
                       </div>
                       <v-tooltip bottom>
                         <template v-slot:activator="{ on, attrs }">
@@ -262,11 +283,11 @@
       <v-card>
         <v-card-title>Confirm delete</v-card-title>
         <v-card-text>
-          Do you want to delete
+          Are you sure you want to delete
           <span class="font-weight-black">
             "{{ itemSelected ? itemSelected.topic : "" }}"
           </span>
-          topic and his childs?
+          topic and its children?
         </v-card-text>
         <v-card-actions>
           <v-spacer />
@@ -288,6 +309,7 @@
     </v-dialog>
   </div>
 </template>
+
 <style scoped>
 .page-grid-container {
   height: 100vh;
@@ -325,7 +347,7 @@ div[wrap-text] {
 div[row] {
   display: flex;
   flex-direction: row;
-  align-items: center;
+  align-content: center;
   gap: 1.5em;
 }
 

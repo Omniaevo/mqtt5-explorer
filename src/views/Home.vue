@@ -25,6 +25,7 @@
             <v-select
               v-model="selectedTheme"
               v-bind:items="['light', 'dark']"
+              v-bind:outlined="outline"
               label="Theme"
             >
               <template v-slot:item="{ item }">
@@ -37,7 +38,26 @@
             </v-select>
           </v-list-item-content>
         </v-list-item>
+
+        <v-list-item>
+          <v-switch v-model="selectedOutline" label="Outlined fields" inset />
+        </v-list-item>
       </v-list>
+
+      <template v-slot:append>
+        <v-list dense>
+          <v-list-item>
+            <v-list-item-content class="d-flex flex-row justify-end caption">
+              <v-img
+                class="me-4"
+                src="../assets/logo.svg"
+                style="max-width: 2em"
+              />
+              v{{ version }}
+            </v-list-item-content>
+          </v-list-item>
+        </v-list>
+      </template>
     </v-navigation-drawer>
 
     <v-card class="card-width">
@@ -62,7 +82,7 @@
         </v-tooltip>
       </v-toolbar>
 
-      <div class="tab-no-overflow" row>
+      <div v-bind:class="'tab-no-overflow-' + outline" row>
         <div class="tab-scroll pe-5">
           <v-tabs v-model="tabId" class="tab-width" vertical>
             <v-tabs-slider color="primary lighten-3"></v-tabs-slider>
@@ -97,7 +117,7 @@
               <v-card>
                 <v-card-title>Confirm delete</v-card-title>
                 <v-card-text>
-                  Do you want to delete
+                  Are you sure you want to delete
                   <span class="font-weight-black">
                     "{{ connection.name }}"?
                   </span>
@@ -150,8 +170,13 @@ div[row] {
   width: 16ch;
 }
 
-.tab-no-overflow {
-  height: 34ch !important;
+.tab-no-overflow-false {
+  height: 33ch !important;
+  overflow: hidden !important;
+}
+
+.tab-no-overflow-true {
+  height: 38ch !important;
   overflow: hidden !important;
 }
 
@@ -184,12 +209,23 @@ export default {
   }),
 
   computed: {
+    version() {
+      return process.env.VUE_APP_VERSION;
+    },
     selectedTheme: {
       get() {
         return this.$store.getters.getTheme;
       },
       set(newValue) {
         this.$store.commit("setTheme", newValue);
+      },
+    },
+    selectedOutline: {
+      get() {
+        return this.$store.getters.getOutline;
+      },
+      set(newValue) {
+        this.$store.commit("setOutline", newValue);
       },
     },
   },

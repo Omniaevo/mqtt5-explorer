@@ -2,12 +2,15 @@
 
 "use strict";
 
-import { app, protocol, BrowserWindow } from "electron";
+import { app, protocol, dialog, Menu, BrowserWindow } from "electron";
 import { createProtocol } from "vue-cli-plugin-electron-builder/lib";
 import path from "path";
 import Store from "electron-store";
 import installExtension, { VUEJS_DEVTOOLS } from "electron-devtools-installer";
 const isDevelopment = process.env.NODE_ENV !== "production";
+
+const isMac = process.platform === "darwin";
+const appName = "MQTT5 Explorer";
 
 // Scheme must be registered before the app is ready
 protocol.registerSchemesAsPrivileged([
@@ -15,13 +18,69 @@ protocol.registerSchemesAsPrivileged([
 ]);
 
 const store = new Store();
+let win;
+
+const aboutMenu = [
+  {
+    label: "About",
+    role: "about",
+    click: () =>
+      dialog.showMessageBox(win, {
+        type: "info",
+        title: "Info",
+        message: appName,
+        detail: `Version: ${app.getVersion()}-${process.platform}`,
+        icon: "public/img/icons/android-chrome-192x192.png",
+      }),
+  },
+];
+
+let menuTemplate = [
+  ...(isMac
+    ? [
+        {
+          label: appName,
+          submenu: aboutMenu,
+        },
+      ]
+    : []),
+  {
+    label: "Window",
+    submenu: [
+      {
+        label: "Reload",
+        role: "reload",
+      },
+      {
+        label: "Force reload",
+        role: "forceReload",
+      },
+      {
+        type: "separator",
+      },
+      ...(isMac ? [{ label: "Close window", role: "close" }] : []),
+      {
+        label: `Quit ${appName}`,
+        role: "quit",
+      },
+    ],
+  },
+  ...(!isMac
+    ? [
+        {
+          label: "Help",
+          submenu: aboutMenu,
+        },
+      ]
+    : []),
+];
 
 async function createWindow() {
   // Create the browser window.
-  const win = new BrowserWindow({
+  win = new BrowserWindow({
     width: store.get("app_width") || 1366,
     height: store.get("app_height") || 768,
-    title: "MQTT5 Explorer",
+    title: appName,
     icon: path.join(__static, "icon.png"),
     webPreferences: {
       // Use pluginOptions.nodeIntegration, leave this alone
@@ -42,6 +101,8 @@ async function createWindow() {
     store.set("app_width", size[0]);
     store.set("app_height", size[1]);
   });
+
+  Menu.setApplicationMenu(Menu.buildFromTemplate(menuTemplate));
 
   if (process.env.WEBPACK_DEV_SERVER_URL) {
     // Load the url of the dev server if in development mode
