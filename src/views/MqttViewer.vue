@@ -266,7 +266,7 @@
           <span class="font-weight-black">
             "{{ itemSelected ? itemSelected.topic : "" }}"
           </span>
-          topic and his childs?
+          topic and his children?
         </v-card-text>
         <v-card-actions>
           <v-spacer />
