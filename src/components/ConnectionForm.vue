@@ -1,13 +1,23 @@
 <template>
   <v-form>
     <div class="input-container">
-      <v-text-field
-        v-model="connectionData.name"
-        v-bind:outlined="outline"
-        v-bind:rules="staticConnectionProperties.rules.name"
-        label="Name"
-        required
-      />
+      <div row>
+        <v-text-field
+          v-model="connectionData.name"
+          v-bind:outlined="outline"
+          v-bind:rules="staticConnectionProperties.rules.name"
+          label="Name"
+          required
+        />
+        <v-select
+          v-model="connectionData.version"
+          v-bind:items="versions"
+          v-bind:outlined="outline"
+          class="me-4"
+          label="Version"
+          style="max-width: 10ch"
+        />
+      </div>
       <div row>
         <v-select
           v-model="connectionData.protocol"
@@ -93,14 +103,6 @@
 
         <v-card-text class="dialog-text-container pt-4">
           <div row>
-            <v-select
-              v-model="connectionData.version"
-              v-bind:items="versions"
-              v-bind:outlined="outline"
-              class="me-4"
-              label="Version"
-              style="max-width: 10ch"
-            />
             <v-switch
               v-model="connectionData.validateCertificate"
               label="Validate Certificate"
