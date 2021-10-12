@@ -2,6 +2,7 @@
 
 "use strict";
 
+import { autoUpdater } from "electron-updater";
 import { app, protocol, dialog, Menu, BrowserWindow } from "electron";
 import { createProtocol } from "vue-cli-plugin-electron-builder/lib";
 import path from "path";
@@ -159,6 +160,10 @@ app.on("ready", async () => {
       console.error("Vue Devtools failed to install:", e.toString());
     }
   }
+
+  // Verify if the app can be updated.
+  autoUpdater.checkForUpdatesAndNotify();
+
   createWindow();
 });
 
