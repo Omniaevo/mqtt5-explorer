@@ -1,22 +1,36 @@
-# mqtt5-explorer
+# MQTT5 Explorer
+
+## About this project
 
 ## Project setup
-```
+
+```bash
 npm install
 ```
 
 ### Compiles and hot-reloads for development
-```
+
+```bash
 npm run electron:serve
 ```
 
-## Generate app images
-```
+### Generate app icons
+
+```bash
 npm run electron:icons
 ```
 
-### Compiles and minifies for production
+### Lints and fixes files
+
+```bash
+npm run lint
 ```
+
+## Compiles and minifies for production
+
+**N.B.**: the build process includes **electron publish**, a *.env* file with the `GITHUB_TOKEN` environment variable set is required.
+
+```bash
 # Linux
 npm run electron:build -- --linux
 
@@ -27,10 +41,10 @@ npm run electron:build -- --mac
 npm run electron:build -- --win
 ```
 
-### Lints and fixes files
-```
-npm run lint
-```
+## Customize configuration
 
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+See:
+
+- [Vue Configuration Reference](https://cli.vuejs.org/config/).
+- [Vuetify Configuration Reference](https://vuetifyjs.com/en/introduction/why-vuetify/#feature-guides).
+- [Electron Build Configuration Reference](https://www.electron.build/configuration/configuration).

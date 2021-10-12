@@ -1,5 +1,23 @@
 process.env.VUE_APP_VERSION = require("./package.json").version || "0.0.0";
 
+const builderOpts = {
+  appRepos: [
+    { provider: "github", publishAutoUpdate: true, releaseType: "release" },
+  ],
+  appStrings: {
+    synopsis: "A simple MQTT client that supports MQTT5 protocol.",
+    executableName: "mqtt5-explorer",
+    description:
+      "MQTT5 Explorer is a simple yet feature-rich client to " +
+      "visualize data of any MQTT broker. Differently from many " +
+      "other clients, it supports version 5 of the MQTT protocol.",
+  },
+  appCategories: {
+    linux: "Development",
+    mac: "public.app-category.developer-tools",
+  },
+};
+
 module.exports = {
   transpileDependencies: ["vuetify"],
   pluginOptions: {
@@ -7,22 +25,34 @@ module.exports = {
       nodeIntegration: true,
       contextIsolation: true,
       builderOptions: {
-        appId: "com.omniaevo.mqtt5explorer",
+        appId: "com.omniaevo.${name}",
+        artifactName: "${name}-${version}-${platform}-${arch}.${ext}",
         productName: "MQTT5 Explorer",
         linux: {
-          category: "Development",
+          executableName: builderOpts.appStrings.executableName,
+          icon: "build/icon/",
+          publish: [...builderOpts.appRepos],
+          target: ["AppImage"],
+        },
+        appImage: {
+          category: builderOpts.appCategories.linux,
+          description: builderOpts.appStrings.description,
           desktop: {
-            StartupWMClass: "mqtt5-explorer",
+            StartupWMClass: builderOpts.appStrings.executableName,
           },
-          executableName: "mqtt5-explorer",
-          target: ["AppImage", "deb"],
+          synopsis: builderOpts.appStrings.synopsis,
         },
         mac: {
-          category: "public.app-category.developer-tools",
+          category: builderOpts.appCategories.mac,
+          publish: [...builderOpts.appRepos],
           target: ["dmg"],
         },
         win: {
+          publish: [...builderOpts.appRepos],
           target: ["nsis:x64"],
+        },
+        nsis: {
+          installerIcon: "build/icon.ico",
         },
       },
     },
