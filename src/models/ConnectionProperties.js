@@ -1,7 +1,7 @@
 class ConnectionProperties {
   name = "new-connection";
   protocol = "mqtt";
-  version = 4;
+  version = 5;
   port = 1883;
   validateCertificate = true;
   topics = ["#", "$SYS/#"];

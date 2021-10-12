@@ -6,16 +6,16 @@
 
 /* Handle */
 ::-webkit-scrollbar-thumb {
-  background: #0094f0;
+  background: #ECEFF1;
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:window-inactive {
-  background: #0094f0;
+  background: #ECEFF1;
   border-radius: 4px;
 }
 
 ::selection {
-  background: #0094f0;
-  color: #121212;
+  background: #ECEFF1;
+  color: #121212 !important;
 }
