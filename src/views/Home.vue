@@ -1,6 +1,12 @@
 <template>
   <v-container class="connection-container">
-    <v-app-bar v-bind:color="darkTheme ? 'gray' : 'white'" app flat>
+    <v-app-bar
+      v-bind:color="darkTheme ? 'gray' : 'white'"
+      class="transparent"
+      app
+      flat
+    >
+      <v-spacer />
       <div class="d-flex align-center">
         <v-tooltip bottom>
           <template v-slot:activator="{ on, attrs }">
@@ -18,7 +24,7 @@
       </div>
     </v-app-bar>
 
-    <v-navigation-drawer v-model="settingsDrawer" app temporary>
+    <v-navigation-drawer v-model="settingsDrawer" app floating right temporary>
       <v-list>
         <v-list-item>
           <v-list-item-content>
@@ -27,6 +33,7 @@
               v-bind:items="['light', 'dark']"
               v-bind:outlined="outline"
               label="Theme"
+              hide-details
             >
               <template v-slot:item="{ item }">
                 <div class="text-capitalize">{{ item }}</div>
@@ -36,6 +43,21 @@
                 <div class="text-capitalize">{{ item }}</div>
               </template>
             </v-select>
+          </v-list-item-content>
+        </v-list-item>
+
+        <v-list-item>
+          <v-list-item-content>
+            <v-select
+              v-model="selectedColor"
+              v-bind:items="colors"
+              v-bind:outlined="outline"
+              item-text="text"
+              item-value="value"
+              label="Primary color"
+              hide-details
+              return-object
+            />
           </v-list-item-content>
         </v-list-item>
 
@@ -85,13 +107,19 @@
       <div v-bind:class="'tab-no-overflow-' + outline" row>
         <div class="tab-scroll pe-5">
           <v-tabs v-model="tabId" class="tab-width" vertical>
-            <v-tabs-slider color="primary lighten-3"></v-tabs-slider>
-
             <v-tab
               v-for="(connection, i) in connectionsAvailable"
               v-bind:key="'tab-' + i"
             >
-              <div class="tab-truncate tab-width text-left">
+              <div
+                v-bind:class="{
+                  'tab-truncate': true,
+                  'tab-width': true,
+                  'text-left': true,
+                  'primary--text': tabId === i,
+                  'text--lighten-2': darkTheme,
+                }"
+              >
                 {{ connection.name }}
               </div>
             </v-tab>
@@ -124,9 +152,7 @@
                 </v-card-text>
                 <v-card-actions>
                   <v-spacer />
-                  <v-btn v-on:click="deleteDialog = false" color="primary" text>
-                    Cancel
-                  </v-btn>
+                  <v-btn v-on:click="deleteDialog = false" text> Cancel </v-btn>
                   <v-btn
                     v-on:click="
                       deleteConnection(i);
@@ -206,6 +232,21 @@ export default {
     settingsDrawer: false,
     defaultConnectionData: new ConnectionProperties(),
     deleteDialog: false,
+    colors: [
+      { text: "Punchy Pink", value: { light: "#E91E63", dark: "#EC407A" } },
+      { text: "Hipster Purple", value: { light: "#9C27B0", dark: "#AB47BC" } },
+      { text: "Sober Purple", value: { light: "#673AB7", dark: "#7E57C2" } },
+      { text: "Indie Indigo", value: { light: "#3F51B5", dark: "#5C6BC0" } },
+      { text: "Usual Blue", value: { light: "#2196F3", dark: "#42A5F5" } },
+      { text: "Delicate Cyan", value: { light: "#00BCD4", dark: "#00BCD4" } },
+      { text: "Tasty Teal", value: { light: "#009688", dark: "#26A69A" } },
+      { text: "Envy Green", value: { light: "#4CAF50", dark: "#66BB6A" } },
+      { text: "Juicy Lime", value: { light: "#C0CA33", dark: "#C0CA33" } },
+      { text: "Precious Amber", value: { light: "#FFB300", dark: "#FFB300" } },
+      { text: "Original Orange", value: { light: "#FF5722", dark: "#FF7043" } },
+      { text: "Boring Brown", value: { light: "#795548", dark: "#8D6E63" } },
+      { text: "Metallic Grey", value: { light: "#607D8B", dark: "#78909C" } },
+    ],
   }),
 
   computed: {
@@ -228,15 +269,29 @@ export default {
         this.$store.commit("setOutline", newValue);
       },
     },
+    selectedColor: {
+      get() {
+        return this.$store.getters.getPrimaryColor;
+      },
+      set(newValue) {
+        this.$store.commit("setPrimaryColor", newValue);
+      },
+    },
   },
 
   beforeMount() {
     if (this.connectionsAvailable.length == 0) this.addTmpConnection();
+    else this.tabId = this.$store.getters.selectedConnectionId;
+  },
+
+  beforeDestroy() {
+    this.$store.commit("setSelectedConnectionId", this.tabId);
   },
 
   methods: {
     addTmpConnection() {
       this.$store.commit("addNewConnection", this.defaultConnectionData);
+      this.tabId = this.connectionsAvailable.length - 1;
     },
     dataChanged(data, index) {
       data.saved = true;

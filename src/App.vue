@@ -1,6 +1,6 @@
 <template>
   <v-app>
-    <v-main>
+    <v-main v-bind:class="{ 'blue-grey': !darkTheme, 'lighten-5': !darkTheme }">
       <router-view />
     </v-main>
 
@@ -41,6 +41,7 @@ export default {
 
   beforeMount() {
     this.loadCustomCssTheme(this.darkTheme);
+    this.loadColors(this.primaryColor);
     this.$bus.$on("error", this.displayMsg);
     this.loadSettings();
     this.loadConnections();
@@ -60,6 +61,13 @@ export default {
     },
     outline() {
       this.persistSettings();
+    },
+    primaryColor: {
+      deep: true,
+      handler(newValue) {
+        this.loadColors(newValue);
+        this.persistSettings();
+      },
     },
   },
 

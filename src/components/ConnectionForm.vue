@@ -80,7 +80,7 @@
             icon
             small
           >
-            <v-icon>mdi-cog</v-icon>
+            <v-icon>mdi-tune-variant</v-icon>
           </v-btn>
         </template>
         <span>Advanced settings</span>

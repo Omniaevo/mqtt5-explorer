@@ -45,23 +45,6 @@ let menuTemplate = [
       ]
     : []),
   {
-    label: "Edit",
-    submenu: [
-      {
-        label: "Copy",
-        role: "copy",
-      },
-      {
-        label: "Paste",
-        role: "paste",
-      },
-      {
-        label: "Cut",
-        role: "cut",
-      },
-    ],
-  },
-  {
     label: "Window",
     submenu: [
       {
@@ -79,6 +62,23 @@ let menuTemplate = [
       {
         label: `Quit ${appName}`,
         role: "quit",
+      },
+    ],
+  },
+  {
+    label: "Edit",
+    submenu: [
+      {
+        label: "Copy",
+        role: "copy",
+      },
+      {
+        label: "Paste",
+        role: "paste",
+      },
+      {
+        label: "Cut",
+        role: "cut",
       },
     ],
   },

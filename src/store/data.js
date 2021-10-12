@@ -3,9 +3,11 @@ import Vue from "vue";
 const dataVuexModule = {
   state: {
     brokerConnections: [],
+    selectedConnectionId: 0,
   },
 
   mutations: {
+    setSelectedConnectionId: (state, id) => (state.selectedConnectionId = id),
     loadPersistentConnections: (state, data) =>
       (state.brokerConnections = data),
     addNewConnection: (state, data) =>
@@ -19,6 +21,7 @@ const dataVuexModule = {
   getters: {
     getAllConnections: (state) => state.brokerConnections,
     getConnectionByIndex: (state) => (index) => state.brokerConnections[index],
+    selectedConnectionId: (state) => state.selectedConnectionId,
   },
 };
 
