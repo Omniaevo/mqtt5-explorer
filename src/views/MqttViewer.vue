@@ -73,7 +73,7 @@
       </v-card>
 
       <div class="properties-container">
-        <v-expansion-panels v-model="packetPanels" flat multiple>
+        <v-expansion-panels v-model="packetPanels" multiple>
           <v-expansion-panel>
             <v-expansion-panel-header>Topic</v-expansion-panel-header>
             <v-expansion-panel-content>
@@ -291,9 +291,7 @@
         </v-card-text>
         <v-card-actions>
           <v-spacer />
-          <v-btn v-on:click="deleteDialog = false" color="primary" text>
-            Cancel
-          </v-btn>
+          <v-btn v-on:click="deleteDialog = false" text> Cancel </v-btn>
           <v-btn
             v-on:click="
               deleteTopic(itemEditing);
@@ -371,7 +369,7 @@ export default {
 
   data: () => ({
     treeData: [],
-    packetPanels: [],
+    dataPacketPanels: [],
     qos: [0, 1, 2],
     connectionProperties: new ConnectionProperties(),
     itemSelected: undefined,
@@ -387,6 +385,16 @@ export default {
     },
     panelsMaxIndex() {
       return this.upSupported ? 3 : 2;
+    },
+    packetPanels: {
+      get() {
+        return this.dataPacketPanels.length > 0
+          ? this.dataPacketPanels
+          : [this.panelsMaxIndex];
+      },
+      set(value) {
+        this.dataPacketPanels = value;
+      },
     },
   },
 

@@ -36,6 +36,9 @@ Vue.mixin({
     darkTheme() {
       return (this.theme || "light") === "dark";
     },
+    primaryColor() {
+      return this.$store.getters.getPrimaryColor;
+    },
   },
 
   methods: {
@@ -59,6 +62,10 @@ Vue.mixin({
         "setAllSettings",
         JSON.parse(this.$estore.get(this.settingsStore) || "{}")
       );
+    },
+    loadColors(color) {
+      this.$vuetify.theme.themes.light.primary = color.value.light;
+      this.$vuetify.theme.themes.dark.primary = color.value.dark;
     },
     loadCustomCssTheme(isDark) {
       const path = isDark
