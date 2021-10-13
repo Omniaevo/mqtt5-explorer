@@ -28,3 +28,11 @@ pnpm-debug.log*
 
 # Electron-icon-builder output
 /build
+
+# package-lock
+*-lock.json
+package-lock.*
+package-lock.json
+./*-lock.json
+./package-lock.*
+./package-lock.json
