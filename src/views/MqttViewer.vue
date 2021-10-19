@@ -211,7 +211,46 @@
                         v-model="itemEditing.value.properties.contentType"
                         v-bind:outlined="outline"
                         label="Content type"
+                        hide-details
                       />
+                      <v-switch
+                        v-model="advancedProperties"
+                        class="me-4"
+                        label="Advanced properties"
+                        inset
+                      />
+                      <div v-if="advancedProperties">
+                        <div row>
+                          <v-text-field
+                            v-model="itemEditing.value.properties.topicAlias"
+                            v-bind:min="1"
+                            v-bind:outlined="outline"
+                            label="Topic alias"
+                            type="number"
+                          />
+                          <v-text-field
+                            v-model="
+                              itemEditing.value.properties.messageExpiryInterval
+                            "
+                            v-bind:min="1"
+                            v-bind:outlined="outline"
+                            label="Expiring interval (s)"
+                            type="number"
+                          />
+                        </div>
+                        <div row>
+                          <v-text-field
+                            v-model="itemEditing.value.properties.responseTopic"
+                            v-bind:outlined="outline"
+                            label="Response topic"
+                          />
+                          <v-text-field
+                            v-model="correlationData"
+                            v-bind:outlined="outline"
+                            label="Correlation data"
+                          />
+                        </div>
+                      </div>
                       <v-card-text class="ps-0">User properties</v-card-text>
                       <div
                         v-for="(prop, i) in userPropertiesArray"
@@ -368,6 +407,7 @@ export default {
   name: "MqttViewer",
 
   data: () => ({
+    advancedProperties: false,
     treeData: [],
     dataPacketPanels: [],
     qos: [0, 1, 2],
@@ -380,6 +420,18 @@ export default {
   }),
 
   computed: {
+    correlationData: {
+      get() {
+        return this.itemEditing.value.properties.correlationData
+          ? Buffer.from(
+              this.itemEditing.value.properties.correlationData
+            ).toString("utf-8")
+          : undefined;
+      },
+      set(value) {
+        this.itemEditing.value.properties.correlationData = value;
+      },
+    },
     upSupported() {
       return this.$connection.protocolVersion > 4;
     },
@@ -434,6 +486,7 @@ export default {
       this.itemEditing = undefined;
       this.userPropertiesArray = [];
       this.packetPanels = [];
+      this.advancedProperties = false;
     },
     newForPublishing() {
       this.loadForPublish(
@@ -503,6 +556,32 @@ export default {
           // eslint-disable-next-line prettier/prettier
           this.itemEditing.value.properties.userProperties[prop.key] = prop.value;
         });
+
+        // eslint-disable-next-line prettier/prettier
+        if (this.itemEditing.value.properties.messageExpiryInterval != undefined) {
+          this.itemEditing.value.properties.messageExpiryInterval = Number(
+            this.itemEditing.value.properties.messageExpiryInterval
+          );
+        }
+
+        if (this.itemEditing.value.properties.topicAlias != undefined) {
+          this.itemEditing.value.properties.topicAlias = Number(
+            this.itemEditing.value.properties.topicAlias
+          );
+        }
+
+        if (this.itemEditing.value.properties.correlationData != undefined) {
+          this.itemEditing.value.properties.correlationData = Buffer.from(
+            this.itemEditing.value.properties.correlationData
+          );
+        }
+
+        if (
+          this.itemEditing.value.properties.correlationData === undefined ||
+          this.itemEditing.value.properties.correlationData.length === 0
+        ) {
+          delete this.itemEditing.value.properties.correlationData;
+        }
       }
 
       this.$connection.publish(this.itemEditing.value);
