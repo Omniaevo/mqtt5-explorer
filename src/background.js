@@ -132,15 +132,7 @@ async function createWindow() {
     win.loadURL("app://./index.html");
 
     // Verify if the app can be updated.
-    autoUpdater.autoDownload = false;
-    autoUpdater
-      .checkForUpdates()
-      .then((updateCheckResult) => {
-        console.log("CHECKING FOR UPDATES", updateCheckResult);
-      })
-      .catch((error) => {
-        console.error("UPDATE ERROR", error);
-      });
+    autoUpdater.checkForUpdatesAndNotify();
   }
 }
 
