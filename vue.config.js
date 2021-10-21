@@ -2,7 +2,13 @@ process.env.VUE_APP_VERSION = require("./package.json").version || "0.0.0";
 
 const builderOpts = {
   appRepos: [
-    { provider: "github", publishAutoUpdate: true, releaseType: "release" },
+    {
+      provider: "github",
+      owner: "Omniaevo",
+      private: false,
+      publishAutoUpdate: true,
+      releaseType: "release",
+    },
   ],
   appStrings: {
     synopsis: "A simple MQTT client that supports MQTT5 protocol.",
@@ -28,10 +34,10 @@ module.exports = {
         appId: "com.omniaevo.${name}",
         artifactName: "${name}-${version}-${platform}-${arch}.${ext}",
         productName: "MQTT5 Explorer",
+        publish: [...builderOpts.appRepos],
         linux: {
           executableName: builderOpts.appStrings.executableName,
           icon: "build/icon/",
-          publish: [...builderOpts.appRepos],
           target: ["AppImage"],
         },
         appImage: {
@@ -44,11 +50,9 @@ module.exports = {
         },
         mac: {
           category: builderOpts.appCategories.mac,
-          publish: [...builderOpts.appRepos],
           target: ["dmg"],
         },
         win: {
-          publish: [...builderOpts.appRepos],
           target: ["nsis:x64"],
         },
         nsis: {

@@ -130,6 +130,17 @@ async function createWindow() {
     createProtocol("app");
     // Load the index.html when not in development
     win.loadURL("app://./index.html");
+
+    // Verify if the app can be updated.
+    autoUpdater.autoDownload = false;
+    autoUpdater
+      .checkForUpdates()
+      .then((updateCheckResult) => {
+        console.log("CHECKING FOR UPDATES", updateCheckResult);
+      })
+      .catch((error) => {
+        console.error("UPDATE ERROR", error);
+      });
   }
 }
 
@@ -160,9 +171,6 @@ app.on("ready", async () => {
       console.error("Vue Devtools failed to install:", e.toString());
     }
   }
-
-  // Verify if the app can be updated.
-  autoUpdater.checkForUpdatesAndNotify();
 
   createWindow();
 });

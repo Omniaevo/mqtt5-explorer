@@ -32,13 +32,16 @@ npm run lint
 
 ```bash
 # Linux
-npm run electron:build -- --linux
+npm run electron:build -- --linux # Without publish
+npm run electron:build -- --linux -p always # With GitHub publish
 
 # MacOS
-npm run electron:build -- --mac
+npm run electron:build -- --mac # Without publish
+npm run electron:build -- --mac -p always # With GitHub publish
 
 # Windows
-npm run electron:build -- --win
+npm run electron:build -- --win # Without publish
+npm run electron:build -- --win -p always # With GitHub publish
 ```
 
 ## Customize configuration
