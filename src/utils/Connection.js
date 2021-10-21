@@ -78,17 +78,21 @@ class Connection {
     };
 
     if (this.#properties.version > 4 && packet.properties) {
-      if (packet.properties.contentType) {
-        options.properties = {};
-        options.properties.contentType = packet.properties.contentType;
-      }
+      const keys = Object.keys(packet.properties);
+
+      if (keys.length > 0) options.properties = {};
+
+      keys.forEach((key) => {
+        if (packet.properties[key]) {
+          options.properties[key] = packet.properties[key];
+        }
+      });
 
       if (
-        packet.properties.userProperties &&
-        Object.keys(packet.properties.userProperties).length > 0
+        options.properties.userProperties != undefined &&
+        Object.keys(options.properties.userProperties).length === 0
       ) {
-        if (!options.properties) options.properties = {};
-        options.properties.userProperties = packet.properties.userProperties;
+        delete options.properties.userProperties;
       }
     }
 
