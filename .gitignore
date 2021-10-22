@@ -27,7 +27,7 @@ pnpm-debug.log*
 /dist_electron
 
 # Electron-icon-builder output
-/build
+/build/icons
 
 # package-lock
 *-lock.json

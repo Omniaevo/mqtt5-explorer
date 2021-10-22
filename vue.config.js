@@ -50,6 +50,7 @@ module.exports = {
         },
         mac: {
           category: builderOpts.appCategories.mac,
+          electronLanguages: ["en"],
           target: ["dmg"],
         },
         win: {
