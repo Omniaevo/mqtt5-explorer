@@ -57,7 +57,21 @@
               label="Primary color"
               hide-details
               return-object
-            />
+            >
+              <template v-slot:item="{ item, on, attrs }">
+                <v-list-item v-bind="attrs" v-on="on" selectable>
+                  <v-list-item-content>{{ item.text }}</v-list-item-content>
+                  <v-list-item-action>
+                    <v-icon v-if="!darkTheme" v-bind:color="item.value.light">
+                      mdi-white-balance-sunny
+                    </v-icon>
+                    <v-icon v-else v-bind:color="item.value.dark">
+                      mdi-moon-waning-crescent
+                    </v-icon>
+                  </v-list-item-action>
+                </v-list-item>
+              </template>
+            </v-select>
           </v-list-item-content>
         </v-list-item>
 
