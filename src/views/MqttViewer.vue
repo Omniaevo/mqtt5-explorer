@@ -16,8 +16,52 @@
           <span>Disconnect</span>
         </v-tooltip>
 
+        <v-tooltip class="ms-4 d-flex align-center" style="height: 100%" bottom>
+          <template v-slot:activator="{ on, attrs }">
+            <v-icon
+              v-bind="attrs"
+              v-on="on"
+              class="grayscale"
+              color="primary"
+              v-if="connectionState === statesList.DISCONNECTED"
+            >
+              mdi-lan-pending
+            </v-icon>
+            <v-icon
+              v-bind="attrs"
+              v-on="on"
+              color="error"
+              v-else-if="connectionState === statesList.ERROR"
+            >
+              mdi-lan-disconnect
+            </v-icon>
+            <v-icon
+              v-bind="attrs"
+              v-on="on"
+              class="pending"
+              color="primary"
+              v-else-if="connectionState === statesList.PENDING"
+            >
+              mdi-lan-pending
+            </v-icon>
+            <v-icon v-bind="attrs" v-on="on" color="primary" v-else>
+              mdi-lan-connect
+            </v-icon>
+          </template>
+          <span v-if="connectionState === statesList.DISCONNECTED">
+            Disconnected
+          </span>
+          <span v-if="connectionState === statesList.ERROR">
+            An error occurred
+          </span>
+          <span v-if="connectionState === statesList.PENDING">
+            Connection pending ...
+          </span>
+          <span v-else> Connected </span>
+        </v-tooltip>
+
         <div class="ms-4">
-          <div class="title">Connected to: {{ connectionProperties.name }}</div>
+          <div class="title">Connection: {{ connectionProperties.name }}</div>
           <div class="caption grey--text small-line">{{ $connection.url }}</div>
         </div>
       </div>
@@ -397,9 +441,38 @@ div[center-vertical] {
 .small-line {
   line-height: 0.5rem;
 }
+
+.grayscale {
+  -webkit-filter: grayscale(100%);
+  -moz-filter: grayscale(100%);
+  filter: grayscale(100%);
+}
+
+.pending {
+  animation-duration: 1s;
+  animation-name: changeGrayscale;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+  animation-timing-function: ease-in-out;
+}
+
+@keyframes changeGrayscale {
+  from {
+    -webkit-filter: grayscale(0%);
+    -moz-filter: grayscale(0%);
+    filter: grayscale(0%);
+  }
+
+  to {
+    -webkit-filter: grayscale(100%);
+    -moz-filter: grayscale(100%);
+    filter: grayscale(100%);
+  }
+}
 </style>
 
 <script>
+import Connection from "../utils/Connection";
 import ConnectionProperties from "../models/ConnectionProperties";
 import TreeNode from "../models/TreeNode";
 
@@ -417,6 +490,10 @@ export default {
     userPropertiesArray: [],
     selectedId: -1,
     deleteDialog: false,
+    connectionState: Connection.connectionStates.PENDING,
+    statesList: Connection.connectionStates,
+    lastWill: undefined,
+    fromClick: false,
   }),
 
   computed: {
@@ -463,15 +540,33 @@ export default {
   },
 
   mounted() {
-    this.$connection.connect((err) => this.disconnectFromMqtt(err.toString()));
+    this.$connection.connect(
+      () => {
+        this.connectionState = this.statesList.CONNECTED;
+        this.lastWill = undefined;
+        this.fromClick = false;
+      },
+      () => {
+        this.$router.replace({ name: "Home" }).then(() => {
+          this.$bus.$emit(
+            this.fromClick ? "info" : "error",
+            this.lastWill !== undefined ? this.lastWill : "Connection timed out"
+          );
+        });
+      },
+      (err) => this.disconnectFromMqtt(err?.toString())
+    );
   },
 
   methods: {
     disconnectFromMqtt(msg = undefined) {
       this.$connection.disconnect(() => {
-        this.$router.replace({ name: "Home" });
-
-        if (msg !== undefined) this.$bus.$emit("error", msg);
+        this.connectionState =
+          msg !== undefined
+            ? this.statesList.ERROR
+            : this.statesList.DISCONNECTED;
+        this.lastWill = msg;
+        this.fromClick = msg === undefined;
       });
     },
     getProperties(item) {
