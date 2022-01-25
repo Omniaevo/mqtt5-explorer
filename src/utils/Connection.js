@@ -3,6 +3,13 @@ import TreeNode from "../models/TreeNode";
 import ConnectionProperties from "../models/ConnectionProperties";
 
 class Connection {
+  static connectionStates = {
+    CONNECTED: 0,
+    PENDING: 1,
+    DISCONNECTED: 2,
+    ERROR: 3,
+  };
+
   #client = undefined;
   #url = undefined;
   #properties = new ConnectionProperties();
@@ -33,7 +40,7 @@ class Connection {
     this.#idCount = 1;
   }
 
-  connect(onError) {
+  connect(onConnect, onClose, onError) {
     const options = {
       username: this.#properties.username,
       password: this.#properties.password,
@@ -41,19 +48,24 @@ class Connection {
       rejectUnauthorized: this.#properties.validateCertificate,
       keepalive: 120,
       reconnectPeriod: 0,
-      connectTimeout: 5000,
+      connectTimeout: 15000,
     };
 
     this.#client = mqtt.connect(this.#url, options);
 
     this.#client.on("error", onError);
+    this.#client.on("close", onClose);
+    this.#client.on("offline", () => onError("The broker is unreachable"));
     this.#client.on("connect", () => {
       const options = { rap: true };
 
       this.#properties.version > 4
         ? this.#client.subscribe(this.#properties.topics, options, () => {})
         : this.#client.subscribe(this.#properties.topics, () => {});
+
+      onConnect();
     });
+
     // when a message arrives
     this.#client.on("message", (_t, _m, packet) => {
       const splitted = packet.topic.split("/");
@@ -100,8 +112,7 @@ class Connection {
   }
 
   disconnect(callback) {
-    this.#client.on("close", callback);
-    this.#client.end(true, {});
+    this.#client.end(true, {}, callback);
   }
 }
 
