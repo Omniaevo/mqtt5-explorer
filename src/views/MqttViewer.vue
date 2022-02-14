@@ -154,7 +154,7 @@
                     <v-icon dark small>mdi-delete</v-icon>
                   </div>
                   <div
-                    class="px-4 flex-fill py-1"
+                    class="px-4 flex-fill py-1 long-payload"
                     style="background: #ff535655"
                   >
                     {{ itemSelected.old.payload }}
@@ -165,7 +165,7 @@
                     <v-icon dark small>mdi-lightning-bolt</v-icon>
                   </div>
                   <div
-                    class="px-4 flex-fill py-1"
+                    class="px-4 flex-fill py-1 long-payload"
                     style="background: #41b05655"
                   >
                     {{ itemSelected.value.payload }}
@@ -419,6 +419,10 @@
 
 .small-input {
   max-width: 10ch;
+}
+
+.long-payload {
+  word-break: break-all;
 }
 
 div[wrap-text] {
