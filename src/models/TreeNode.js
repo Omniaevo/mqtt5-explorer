@@ -62,10 +62,7 @@ class TreeNode {
   search(searchTerm, mode) {
     return (
       SearchEngine.methods[mode](searchTerm, this.topic) ||
-      this.children.reduce(
-        (result, child) => result || child.search(searchTerm, mode),
-        false
-      )
+      SearchEngine.methods[mode](searchTerm, this.name)
     );
   }
 

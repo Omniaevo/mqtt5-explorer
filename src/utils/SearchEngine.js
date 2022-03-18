@@ -25,13 +25,13 @@ class SearchEngine {
       );
     },
     [SearchEngine.modes.CASES]: (searchTerm, target) => {
-      return SearchEngine.normalize(searchTerm).includes(
-        SearchEngine.normalize(target)
+      return SearchEngine.normalize(target).includes(
+        SearchEngine.normalize(searchTerm)
       );
     },
     [SearchEngine.modes.WORDS]: (searchTerm, target) => {
       return (
-        SearchEngine.normalize(searchTerm) == SearchEngine.normalize(target)
+        SearchEngine.normalize(target) == SearchEngine.normalize(searchTerm)
       );
     },
     [SearchEngine.modes.REG_EXP]: (regExp, target) => {

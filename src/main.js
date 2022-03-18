@@ -6,6 +6,7 @@ import store from "./store";
 import vuetify from "./plugins/vuetify";
 import Connection from "./utils/Connection";
 import Store from "electron-store";
+import ShortKey from "vue-shortkey";
 
 document.documentElement.style.overflow = "hidden";
 Vue.config.productionTip = false;
@@ -13,6 +14,8 @@ Vue.config.productionTip = false;
 Vue.prototype.$bus = new Vue();
 Vue.prototype.$connection = new Connection();
 Vue.prototype.$estore = new Store();
+
+Vue.use(ShortKey);
 
 Vue.mixin({
   data: () => ({
