@@ -66,7 +66,38 @@
         </div>
       </div>
       <v-spacer />
-      <div v-if="selectedId !== -1" center-vertical>
+      <!-- TODO: search filed -->
+      <v-expand-x-transition>
+        <v-text-field
+          v-show="searchFileTextVisible"
+          v-model="searchTerm"
+          class="me-2"
+          label="Search"
+          dense
+          hide-details
+          outlined
+        />
+      </v-expand-x-transition>
+      <v-tooltip bottom>
+        <template v-slot:activator="{ on, attrs }">
+          <v-btn
+            v-bind="attrs"
+            v-on="on"
+            v-on:click="searchFileTextVisible = !searchFileTextVisible"
+            icon
+          >
+            <v-icon>
+              {{
+                searchFileTextVisible
+                  ? "mdi-magnify-minus-outline"
+                  : "mdi-magnify"
+              }}
+            </v-icon>
+          </v-btn>
+        </template>
+        <span>{{ searchFileTextVisible ? "Close" : "Open" }} search</span>
+      </v-tooltip>
+      <div v-if="selectedId !== -1" center-vertical class="ms-2">
         <v-tooltip bottom>
           <template v-slot:activator="{ on, attrs }">
             <v-btn
@@ -498,6 +529,8 @@ export default {
     statesList: Connection.connectionStates,
     lastWill: undefined,
     fromClick: false,
+    searchFileTextVisible: false,
+    searchTerm: undefined,
   }),
 
   computed: {
