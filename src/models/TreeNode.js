@@ -1,3 +1,5 @@
+import SearchEngine from "../utils/SearchEngine";
+
 class TreeNode {
   id = undefined;
   name = undefined;
@@ -55,6 +57,13 @@ class TreeNode {
     }
 
     return this.size === 0 && this.value === undefined;
+  }
+
+  search(searchTerm, mode) {
+    return (
+      SearchEngine.methods[mode](searchTerm, this.topic) ||
+      SearchEngine.methods[mode](searchTerm, this.name)
+    );
   }
 
   #idFun = () => {};
