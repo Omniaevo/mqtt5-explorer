@@ -3,7 +3,7 @@
 "use strict";
 
 import { autoUpdater } from "electron-updater";
-import { app, protocol, dialog, Menu, BrowserWindow } from "electron";
+import { app, protocol, dialog, Menu, BrowserWindow, shell } from "electron";
 import { createProtocol } from "vue-cli-plugin-electron-builder/lib";
 import path from "path";
 import Store from "electron-store";
@@ -25,14 +25,26 @@ const aboutMenu = [
   {
     label: "About",
     role: "about",
-    click: () =>
-      dialog.showMessageBox(win, {
-        type: "info",
-        title: "Info",
-        message: appName,
-        detail: `Version: ${app.getVersion()}-${process.platform}`,
-        icon: "public/img/icons/android-chrome-192x192.png",
-      }),
+    click: () => {
+      dialog
+        .showMessageBox(win, {
+          type: "info",
+          title: `About ${appName}`,
+          message: appName,
+          detail: `Version: ${app.getVersion()}-${process.platform}`,
+          icon: path.join(__static, "img/icons/android-chrome-192x192.png"),
+          buttons: ["GitHub page", "Close"],
+        })
+        .then((box) => {
+          if (box.response === 0) {
+            // Open GitHub page
+            shell.openExternal(process.env.VUE_GITHUB_PAGE);
+          }
+        })
+        .catch((err) => {
+          if (isDevelopment) console.error(err);
+        });
+    },
   },
 ];
 

@@ -1,6 +1,11 @@
 <template>
   <div class="page-grid-container">
-    <v-app-bar v-bind:color="darkTheme ? 'gray' : 'white'" flat>
+    <v-app-bar
+      v-bind:color="darkTheme ? 'gray' : 'white'"
+      v-shortkey.once="shortKeys"
+      v-on:shortkey="toggleSearchField"
+      flat
+    >
       <div class="d-flex align-center">
         <v-tooltip bottom>
           <template v-slot:activator="{ on, attrs }">
@@ -66,6 +71,54 @@
         </div>
       </div>
       <v-spacer />
+      <v-slide-y-transition>
+        <v-text-field
+          v-show="searchTreeVisible"
+          v-model="searchTerm"
+          class="me-2"
+          label="Search"
+          ref="searchField"
+          dense
+          hide-details
+          outlined
+        >
+          <template slot="append">
+            <v-btn-toggle v-model="filterType" dense>
+              <v-btn
+                v-bind:value="searchModes.CASES"
+                v-on:click.stop
+                title="Uppercase/Lowercase"
+                small
+                icon
+              >
+                <v-icon small>mdi-format-letter-case</v-icon>
+              </v-btn>
+              <v-btn
+                v-bind:value="searchModes.WORDS"
+                v-on:click.stop
+                title="Entire word"
+                small
+                icon
+              >
+                <v-icon small>mdi-format-letter-matches</v-icon>
+              </v-btn>
+              <v-btn
+                v-bind:value="searchModes.REG_EXP"
+                v-on:click.stop
+                title="Regular expression"
+                small
+                icon
+              >
+                <v-icon small>mdi-regex</v-icon>
+              </v-btn>
+            </v-btn-toggle>
+            <v-btn v-on:click="toggleSearchField" class="ms-2" icon small>
+              <v-icon small>mdi-close</v-icon>
+            </v-btn>
+          </template>
+        </v-text-field>
+      </v-slide-y-transition>
+      <v-spacer />
       <div v-if="selectedId !== -1" center-vertical>
         <v-tooltip bottom>
           <template v-slot:activator="{ on, attrs }">
@@ -87,7 +140,9 @@
     <div class="mx-4 my-2 explorer-grid-container">
       <v-card class="treeview-container" flat>
         <v-treeview
+          v-bind:filter="filterTree"
           v-bind:items="treeData"
+          v-bind:search="searchTerm"
           dense
           hoverable
           open-on-click
@@ -478,6 +533,7 @@ div[center-vertical] {
 <script>
 import Connection from "../utils/Connection";
 import ConnectionProperties from "../models/ConnectionProperties";
+import SearchEngine from "../utils/SearchEngine";
 import TreeNode from "../models/TreeNode";
 
 export default {
@@ -498,6 +554,14 @@ export default {
     statesList: Connection.connectionStates,
     lastWill: undefined,
     fromClick: false,
+    searchTreeVisible: false,
+    searchTerm: undefined,
+    filterType: undefined,
+    searchModes: SearchEngine.modes,
+    shortKeys: {
+      main: ["meta", "f"],
+      alt: ["ctrl", "f"],
+    },
   }),
 
   computed: {
@@ -528,6 +592,10 @@ export default {
       set(value) {
         this.dataPacketPanels = value;
       },
+    },
+    filterTree() {
+      return (item, search) =>
+        item.search(search, this.filterType || SearchEngine.modes.ALL);
     },
   },
 
@@ -563,6 +631,16 @@ export default {
   },
 
   methods: {
+    toggleSearchField() {
+      if (this.searchTreeVisible) this.$refs.searchField.blur();
+
+      this.searchTreeVisible = !this.searchTreeVisible;
+
+      this.$nextTick(() => {
+        if (!this.searchTreeVisible) this.searchTerm = undefined;
+        else this.$refs.searchField.focus();
+      });
+    },
     disconnectFromMqtt(msg = undefined) {
       this.$connection.disconnect(() => {
         this.connectionState =
