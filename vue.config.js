@@ -7,7 +7,7 @@ const builderOpts = {
   appRepos: [
     {
       provider: "github",
-      owner: pkg.author.name,
+      owner: "Omniaevo",
       private: false,
       publishAutoUpdate: true,
       releaseType: "release",
