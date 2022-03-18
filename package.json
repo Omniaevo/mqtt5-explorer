@@ -2,6 +2,7 @@
   "name": "mqtt5-explorer",
   "version": "1.4.2",
   "private": false,
+  "license": "GPLv3",
   "description": "A simple MQTT client that supports MQTT5 protocol.",
   "homepage": "https://github.com/Omniaevo/mqtt5-explorer",
   "bugs": {
@@ -24,7 +25,7 @@
   ],
   "scripts": {
     "serve": "vue-cli-service serve",
-    "build": "vue-cli-service build",
+    "build": "vue-cli-service build --modern --inline-vue --mode production",
     "lint": "vue-cli-service lint",
     "electron:icons": "electron-icon-builder --input=./public/icon.png --output=build --flatten",
     "electron:build": "vue-cli-service electron:build",

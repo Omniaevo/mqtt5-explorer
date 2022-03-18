@@ -36,6 +36,7 @@ module.exports = {
       builderOptions: {
         appId: "com.omniaevo.${name}",
         artifactName: "${name}-${version}-${platform}-${arch}.${ext}",
+        compression: "maximum",
         productName: "MQTT5 Explorer",
         publish: [...builderOpts.appRepos],
         linux: {
