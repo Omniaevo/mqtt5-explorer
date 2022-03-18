@@ -51,3 +51,7 @@ See:
 - [Vue Configuration Reference](https://cli.vuejs.org/config/).
 - [Vuetify Configuration Reference](https://vuetifyjs.com/en/introduction/why-vuetify/#feature-guides).
 - [Electron Build Configuration Reference](https://www.electron.build/configuration/configuration).
+
+## Contributors
+
+[![Contributors](https://contrib.rocks/image?repo=Omniaevo/mqtt5-explorer)](https://github.com/Omniaevo/mqtt5-explorer/graphs/contributors)

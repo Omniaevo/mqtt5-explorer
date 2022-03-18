@@ -4,11 +4,24 @@
   "private": false,
   "description": "A simple MQTT client that supports MQTT5 protocol.",
   "homepage": "https://github.com/Omniaevo/mqtt5-explorer",
+  "bugs": {
+    "url": "https://github.com/Omniaevo/mqtt5-explorer/issues"
+  },
   "author": {
     "name": "Omniaevo S.R.L.",
     "email": "software@omniaevo.it",
     "url": "https://www.omniaevo.it"
   },
+  "contributors": [
+    {
+      "name": "Mauro Nonis",
+      "email": "mauro.nonis@omniaevo.it"
+    },
+    {
+      "name": "Leonardo Cossutta",
+      "email": "leonardo.cossutta@omniaevo.it"
+    }
+  ],
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",

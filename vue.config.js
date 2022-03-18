@@ -1,18 +1,21 @@
-process.env.VUE_APP_VERSION = require("./package.json").version || "0.0.0";
+const pkg = require("./package.json");
+
+process.env.VUE_APP_VERSION = pkg.version || "0.0.0";
+process.env.VUE_GITHUB_PAGE = pkg.homepage || "";
 
 const builderOpts = {
   appRepos: [
     {
       provider: "github",
-      owner: "Omniaevo",
+      owner: pkg.author.name,
       private: false,
       publishAutoUpdate: true,
       releaseType: "release",
     },
   ],
   appStrings: {
-    synopsis: "A simple MQTT client that supports MQTT5 protocol.",
-    executableName: "mqtt5-explorer",
+    synopsis: pkg.description,
+    executableName: pkg.name,
     description:
       "MQTT5 Explorer is a simple yet feature-rich client to " +
       "visualize data of any MQTT broker. Differently from many " +
