@@ -42,6 +42,9 @@ Vue.mixin({
     primaryColor() {
       return this.$store.getters.getPrimaryColor;
     },
+    shortKeys() {
+      return JSON.parse(this.$store.getters.getShortKeys);
+    },
   },
 
   methods: {

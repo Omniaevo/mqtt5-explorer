@@ -24,7 +24,6 @@ let win;
 const aboutMenu = [
   {
     label: "About",
-    role: "about",
     click: () => {
       dialog
         .showMessageBox(win, {
@@ -38,7 +37,7 @@ const aboutMenu = [
         .then((box) => {
           if (box.response === 0) {
             // Open GitHub page
-            shell.openExternal(process.env.VUE_GITHUB_PAGE);
+            shell.openExternal(process.env.VUE_APP_GITHUB_PAGE);
           }
         })
         .catch((err) => {

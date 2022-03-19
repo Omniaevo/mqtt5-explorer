@@ -139,6 +139,13 @@
 
     <div class="mx-4 my-2 explorer-grid-container">
       <v-card class="treeview-container" flat>
+        <v-slide-y-transition>
+          <div v-if="!pressedSearch" class="pa-2 caption d-flex justify-center">
+            Press&nbsp;
+            <strong>{{ shortKeys.join(" + ") }}</strong>
+            &nbsp;to search
+          </div>
+        </v-slide-y-transition>
         <v-treeview
           v-bind:filter="filterTree"
           v-bind:items="treeData"
@@ -554,14 +561,11 @@ export default {
     statesList: Connection.connectionStates,
     lastWill: undefined,
     fromClick: false,
+    pressedSearch: false,
     searchTreeVisible: false,
     searchTerm: undefined,
     filterType: undefined,
     searchModes: SearchEngine.modes,
-    shortKeys: {
-      main: ["meta", "f"],
-      alt: ["ctrl", "f"],
-    },
   }),
 
   computed: {
@@ -628,12 +632,15 @@ export default {
       },
       (err) => this.disconnectFromMqtt(err?.toString())
     );
+
+    setTimeout(() => (this.pressedSearch = true), 5000);
   },
 
   methods: {
     toggleSearchField() {
       if (this.searchTreeVisible) this.$refs.searchField.blur();
 
+      this.pressedSearch = true;
       this.searchTreeVisible = !this.searchTreeVisible;
 
       this.$nextTick(() => {

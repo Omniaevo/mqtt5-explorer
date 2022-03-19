@@ -1,7 +1,8 @@
 const pkg = require("./package.json");
 
 process.env.VUE_APP_VERSION = pkg.version || "0.0.0";
-process.env.VUE_GITHUB_PAGE = pkg.homepage || "";
+process.env.VUE_APP_GITHUB_PAGE = pkg.homepage || "";
+process.env.VUE_APP_GITHUB_BUGS = pkg.bugs.url || "";
 
 const builderOpts = {
   appRepos: [
@@ -36,7 +37,6 @@ module.exports = {
       builderOptions: {
         appId: "com.omniaevo.${name}",
         artifactName: "${name}-${version}-${platform}-${arch}.${ext}",
-        compression: "maximum",
         productName: "MQTT5 Explorer",
         publish: [...builderOpts.appRepos],
         linux: {

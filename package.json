@@ -1,6 +1,6 @@
 {
   "name": "mqtt5-explorer",
-  "version": "1.5.0",
+  "version": "1.5.1",
   "private": false,
   "license": "GPLv3",
   "description": "A simple MQTT client that supports MQTT5 protocol.",
@@ -25,7 +25,7 @@
   ],
   "scripts": {
     "serve": "vue-cli-service serve",
-    "build": "vue-cli-service build --modern --inline-vue --mode production",
+    "build": "vue-cli-service build",
     "lint": "vue-cli-service lint",
     "electron:icons": "electron-icon-builder --input=./public/icon.png --output=build --flatten",
     "electron:build": "vue-cli-service electron:build",

@@ -78,21 +78,81 @@
         <v-list-item>
           <v-switch v-model="selectedOutline" label="Outlined fields" inset />
         </v-list-item>
+
+        <v-divider class="mb-5" />
+
+        <v-dialog v-model="shortKeysDialog" width="unset" persistent>
+          <template v-slot:activator="{ on, attrs }">
+            <div class="px-3">
+              <div class="caption mb-1">Search hotkeys:</div>
+              <v-btn v-bind="attrs" v-on="on" color="primary" block small>
+                {{
+                  selectedShortKeys.length > 0
+                    ? selectedShortKeys.join(" + ")
+                    : "Select hotkeys"
+                }}
+              </v-btn>
+            </div>
+          </template>
+
+          <v-card v-if="shortKeysDialog">
+            <v-card-title>Select search hotkeys</v-card-title>
+            <v-card-subtitle>
+              Press desired keys in sequence to select them
+            </v-card-subtitle>
+            <v-card-text>
+              <div
+                class="d-flex align-center justify-center"
+                style="height: 20ch; width: 50ch"
+              >
+                <template v-if="newShortKeys.length === 0">
+                  <img src="../assets/keys.svg" width="100%" />
+                </template>
+                <template v-else>
+                  <span class="font-weight-bold title">
+                    {{ newShortKeys.join(" + ") }}
+                  </span>
+                </template>
+              </div>
+            </v-card-text>
+            <v-card-actions>
+              <v-spacer />
+              <v-btn v-on:click.stop="cancelShortKeys" color="error" text>
+                Cancel
+              </v-btn>
+              <v-btn
+                v-bind:disabled="newShortKeys.length === 0"
+                v-on:click.stop="setShortKeys"
+                color="primary"
+                text
+              >
+                Save
+              </v-btn>
+            </v-card-actions>
+          </v-card>
+        </v-dialog>
       </v-list>
 
       <template v-slot:append>
-        <v-list dense>
-          <v-list-item>
-            <v-list-item-content class="d-flex flex-row justify-end caption">
-              <v-img
-                class="me-4"
-                src="../assets/logo.svg"
-                style="max-width: 2em"
-              />
-              v{{ version }}
-            </v-list-item-content>
-          </v-list-item>
-        </v-list>
+        <v-list-item dense>
+          <v-list-item-content>
+            <div
+              class="d-flex flex-row justify-space-between align-center caption"
+            >
+              <v-btn v-on:click="openBugsUrl" color="primary" text x-small>
+                Report a bug
+              </v-btn>
+              <div class="d-flex align-center">
+                <v-img
+                  class="me-2"
+                  src="../assets/logo.svg"
+                  style="max-width: 1.5em"
+                />
+                v{{ version }}
+              </div>
+            </div>
+          </v-list-item-content>
+        </v-list-item>
       </template>
     </v-navigation-drawer>
 
@@ -235,6 +295,8 @@ div[row] {
 <script>
 import ConnectionForm from "../components/ConnectionForm.vue";
 import ConnectionProperties from "../models/ConnectionProperties";
+import KeysMap from "../utils/KeysMap";
+import { shell } from "electron";
 
 export default {
   name: "Home",
@@ -246,6 +308,8 @@ export default {
     settingsDrawer: false,
     defaultConnectionData: new ConnectionProperties(),
     deleteDialog: false,
+    shortKeysDialog: false,
+    newShortKeys: [],
     colors: [
       { text: "Punchy Pink", value: { light: "#E91E63", dark: "#EC407A" } },
       { text: "Hipster Purple", value: { light: "#9C27B0", dark: "#AB47BC" } },
@@ -291,6 +355,28 @@ export default {
         this.$store.commit("setPrimaryColor", newValue);
       },
     },
+    selectedShortKeys: {
+      get() {
+        return JSON.parse(this.$store.getters.getShortKeys);
+      },
+      set(newValue) {
+        this.$store.commit("setShortKeys", JSON.stringify(newValue));
+      },
+    },
+  },
+
+  watch: {
+    shortKeysDialog(open) {
+      if (open) {
+        this.$nextTick(() => {
+          document.addEventListener("keydown", this.setKeyCombo);
+          document.addEventListener("keyup", this.setKeyCombo);
+        });
+      } else {
+        document.removeEventListener("keydown", this.setKeyCombo);
+        document.removeEventListener("keyup", this.setKeyCombo);
+      }
+    },
   },
 
   beforeMount() {
@@ -320,6 +406,23 @@ export default {
     connect(data, index) {
       this.dataChanged(data, index);
       this.$router.push({ path: `viewer/${index}` });
+    },
+    setKeyCombo(payload) {
+      payload.preventDefault();
+      const newKey = KeysMap[payload.key] || payload.key.toLowerCase();
+      if (!this.newShortKeys.includes(newKey)) this.newShortKeys.push(newKey);
+    },
+    cancelShortKeys() {
+      this.shortKeysDialog = false;
+      this.newShortKeys = [];
+    },
+    setShortKeys() {
+      this.shortKeysDialog = false;
+      this.selectedShortKeys = [...this.newShortKeys];
+      this.newShortKeys = [];
+    },
+    openBugsUrl() {
+      shell.openExternal(process.env.VUE_APP_GITHUB_BUGS);
     },
   },
 };
