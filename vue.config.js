@@ -60,7 +60,7 @@ module.exports = {
           target: ["nsis:x64"],
         },
         nsis: {
-          installerIcon: "build/icon.ico",
+          installerIcon: "build/icons/icon.ico",
         },
       },
     },
