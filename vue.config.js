@@ -57,10 +57,8 @@ module.exports = {
           target: ["dmg"],
         },
         win: {
-          target: ["nsis:x64"],
-        },
-        nsis: {
-          installerIcon: "build/icons/icon.ico",
+          target: ["portable:x64"],
+          icon: "build/icons/icon.ico",
         },
       },
     },
