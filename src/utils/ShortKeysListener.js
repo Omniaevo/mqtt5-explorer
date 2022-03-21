@@ -1,4 +1,8 @@
+import KeyboardMap from "./KeyboardMap";
+
 class ShortKeysListener {
+  static META = "META";
+
   #keysList = [];
   #element = undefined;
   #callback = () => {};
@@ -16,6 +20,10 @@ class ShortKeysListener {
   }
 
   // Public methods
+
+  static keyCodeToDescription(keyCode) {
+    return keyCode === ShortKeysListener.META ? keyCode : KeyboardMap[keyCode];
+  }
 
   startListener(element) {
     this.#element = element;
@@ -40,27 +48,35 @@ class ShortKeysListener {
   // Private methods
 
   #keyDownHandler = (event) => {
-    if (this.#keysList.includes(event.key)) {
+    if (this.#keysList.includes(event.keyCode)) {
       event.preventDefault();
 
-      this.#keyTracker[event.key] = true;
+      this.#keyTracker[event.keyCode] = true;
+
+      // Manage `META` key
+      if (
+        Object.keys(this.#keyTracker).includes(ShortKeysListener.META) &&
+        event.metaKey
+      ) {
+        this.#keyTracker[ShortKeysListener.META] = true;
+      }
 
       const isComboPressed = Object.keys(this.#keyTracker).reduce(
         (pressed, key) => pressed && this.#keyTracker[key],
         true
       );
 
-      if (this.#lastKey === event.key && isComboPressed) {
+      if (this.#lastKey === event.keyCode && isComboPressed) {
         this.#callback();
       }
     }
   };
 
   #keyUpHandler = (event) => {
-    if (this.#keysList.includes(event.key)) {
+    if (this.#keysList.includes(event.keyCode)) {
       event.preventDefault();
 
-      this.#keyTracker[event.key] = false;
+      this.#keyTracker[event.keyCode] = false;
     }
   };
 }

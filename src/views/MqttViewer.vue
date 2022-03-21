@@ -137,7 +137,7 @@
         <v-slide-y-transition>
           <div v-if="!pressedSearch" class="pa-2 caption d-flex justify-center">
             Press&nbsp;
-            <strong>{{ searchShortKeys.join(" + ") }}</strong>
+            <strong>{{ shortKeysDescription(searchShortKeys) }}</strong>
             &nbsp;to search
           </div>
         </v-slide-y-transition>

@@ -5,6 +5,7 @@ import router from "./router";
 import store from "./store";
 import vuetify from "./plugins/vuetify";
 import Connection from "./utils/Connection";
+import ShortKeysListener from "./utils/ShortKeysListener";
 import Store from "electron-store";
 
 document.documentElement.style.overflow = "hidden";
@@ -87,6 +88,11 @@ Vue.mixin({
       }
 
       document.head.appendChild(scrollTheme);
+    },
+    shortKeysDescription(keyCodesArray) {
+      return keyCodesArray
+        .map(ShortKeysListener.keyCodeToDescription)
+        .join(" + ");
     },
   },
 });

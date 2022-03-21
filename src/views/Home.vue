@@ -88,7 +88,7 @@
               <v-btn v-bind="attrs" v-on="on" color="primary" block small>
                 {{
                   selectedShortKeys.length > 0
-                    ? selectedShortKeys.join(" + ")
+                    ? shortKeysDescription(selectedShortKeys)
                     : "Select hotkeys"
                 }}
               </v-btn>
@@ -110,7 +110,7 @@
                 </template>
                 <template v-else>
                   <span class="font-weight-bold title">
-                    {{ newShortKeys.join(" + ") }}
+                    {{ shortKeysDescription(newShortKeys) }}
                   </span>
                 </template>
               </div>
@@ -295,6 +295,7 @@ div[row] {
 <script>
 import ConnectionForm from "../components/ConnectionForm.vue";
 import ConnectionProperties from "../models/ConnectionProperties";
+import ShortKeysListener from "../utils/ShortKeysListener";
 import { shell } from "electron";
 
 export default {
@@ -368,12 +369,12 @@ export default {
     searchShortKeysDialog(open) {
       if (open) {
         this.$nextTick(() => {
-          document.addEventListener("keydown", this.setKeyCombo);
-          document.addEventListener("keyup", this.setKeyCombo);
+          document.addEventListener("keydown", this.setSearchKeyCombo);
+          document.addEventListener("keyup", this.setSearchKeyCombo);
         });
       } else {
-        document.removeEventListener("keydown", this.setKeyCombo);
-        document.removeEventListener("keyup", this.setKeyCombo);
+        document.removeEventListener("keydown", this.setSearchKeyCombo);
+        document.removeEventListener("keyup", this.setSearchKeyCombo);
       }
     },
   },
@@ -406,12 +407,18 @@ export default {
       this.dataChanged(data, index);
       this.$router.push({ path: `viewer/${index}` });
     },
-    setKeyCombo(payload) {
-      payload.preventDefault();
+    setSearchKeyCombo(event) {
+      this.setKeyCombo(event, this.newShortKeys);
+    },
+    setKeyCombo(event, array) {
+      event.preventDefault();
 
-      if (!this.newShortKeys.includes(payload.key)) {
-        this.newShortKeys.push(payload.key);
-      }
+      const insertKey = (key) => {
+        if (!array.includes(key)) array.push(key);
+      };
+
+      if (event.metaKey) insertKey(ShortKeysListener.META);
+      insertKey(event.keyCode);
     },
     cancelShortKeys() {
       this.searchShortKeysDialog = false;
