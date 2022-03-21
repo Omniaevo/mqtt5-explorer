@@ -22,6 +22,10 @@ protocol.registerSchemesAsPrivileged([
 const store = new Store();
 let win;
 
+const pages = {
+  HOME: "homePage",
+  VIEWER: "viewerPage",
+};
 const aboutMenu = [
   {
     label: "About",
@@ -49,7 +53,7 @@ const aboutMenu = [
   },
 ];
 
-let menuTemplate = (search = false) => [
+let menuTemplate = (page = pages.HOME) => [
   ...(isMac
     ? [
         {
@@ -94,7 +98,7 @@ let menuTemplate = (search = false) => [
         label: "Cut",
         role: "cut",
       },
-      ...(search
+      ...(page === pages.VIEWER
         ? [
             {
               type: "separator",
@@ -151,14 +155,14 @@ async function createWindow() {
   });
 
   // Manage renderer messages
-  ipcMain.on("menuSearchAdd", () => {
-    Menu.setApplicationMenu(Menu.buildFromTemplate(menuTemplate(true)));
+  ipcMain.on("enterViewerPage", () => {
+    Menu.setApplicationMenu(Menu.buildFromTemplate(menuTemplate(pages.VIEWER)));
   });
-  ipcMain.on("menuSearchRemove", () => {
-    Menu.setApplicationMenu(Menu.buildFromTemplate(menuTemplate(false)));
+  ipcMain.on("enterHomePage", () => {
+    Menu.setApplicationMenu(Menu.buildFromTemplate(menuTemplate(pages.HOME)));
   });
 
-  Menu.setApplicationMenu(Menu.buildFromTemplate(menuTemplate(false)));
+  Menu.setApplicationMenu(Menu.buildFromTemplate(menuTemplate()));
 
   if (process.env.WEBPACK_DEV_SERVER_URL) {
     // Load the url of the dev server if in development mode

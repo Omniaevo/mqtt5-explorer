@@ -602,7 +602,7 @@ export default {
       () => this.treeData.length
     );
 
-    ipcRenderer.send("menuSearchAdd");
+    ipcRenderer.send("enterViewerPage");
     ipcRenderer.on("searchPressed", this.toggleSearchField);
   },
 
@@ -626,7 +626,6 @@ export default {
   },
 
   beforeDestroy() {
-    ipcRenderer.send("menuSearchRemove");
     ipcRenderer.removeListener("searchPressed", this.toggleSearchField);
   },
 

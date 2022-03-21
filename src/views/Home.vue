@@ -258,7 +258,7 @@ div[row] {
 <script>
 import ConnectionForm from "../components/ConnectionForm.vue";
 import ConnectionProperties from "../models/ConnectionProperties";
-import { shell } from "electron";
+import { shell, ipcRenderer } from "electron";
 
 export default {
   name: "Home",
@@ -320,6 +320,8 @@ export default {
   beforeMount() {
     if (this.connectionsAvailable.length == 0) this.addTmpConnection();
     else this.tabId = this.$store.getters.selectedConnectionId;
+
+    ipcRenderer.send("enterHomePage");
   },
 
   beforeDestroy() {
