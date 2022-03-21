@@ -1,11 +1,6 @@
 <template>
   <div class="page-grid-container">
-    <v-app-bar
-      v-bind:color="darkTheme ? 'gray' : 'white'"
-      v-shortkey.once="searchShortKeys"
-      v-on:shortkey="toggleSearchField"
-      flat
-    >
+    <v-app-bar v-bind:color="darkTheme ? 'gray' : 'white'" flat>
       <div class="d-flex align-center">
         <v-tooltip bottom>
           <template v-slot:activator="{ on, attrs }">
@@ -542,6 +537,7 @@ import Connection from "../utils/Connection";
 import ConnectionProperties from "../models/ConnectionProperties";
 import SearchEngine from "../utils/SearchEngine";
 import TreeNode from "../models/TreeNode";
+import ShortKeysListener from "../utils/ShortKeysListener";
 
 export default {
   name: "MqttViewer",
@@ -566,6 +562,7 @@ export default {
     searchTerm: undefined,
     filterType: undefined,
     searchModes: SearchEngine.modes,
+    searchListener: undefined,
   }),
 
   computed: {
@@ -613,6 +610,11 @@ export default {
       this.merge,
       () => this.treeData.length
     );
+
+    this.searchListener = new ShortKeysListener(
+      this.searchShortKeys,
+      this.toggleSearchField
+    );
   },
 
   mounted() {
@@ -633,7 +635,15 @@ export default {
       (err) => this.disconnectFromMqtt(err?.toString())
     );
 
+    this.searchListener.startListener(document);
     setTimeout(() => (this.pressedSearch = true), 5000);
+  },
+
+  beforeDestroy() {
+    if (this.searchListener) {
+      this.searchListener.destroyListener();
+      this.searchListener = undefined;
+    }
   },
 
   methods: {

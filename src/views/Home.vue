@@ -295,7 +295,6 @@ div[row] {
 <script>
 import ConnectionForm from "../components/ConnectionForm.vue";
 import ConnectionProperties from "../models/ConnectionProperties";
-import KeysMap from "../utils/KeysMap";
 import { shell } from "electron";
 
 export default {
@@ -409,8 +408,10 @@ export default {
     },
     setKeyCombo(payload) {
       payload.preventDefault();
-      const newKey = KeysMap[payload.key] || payload.key.toLowerCase();
-      if (!this.newShortKeys.includes(newKey)) this.newShortKeys.push(newKey);
+
+      if (!this.newShortKeys.includes(payload.key)) {
+        this.newShortKeys.push(payload.key);
+      }
     },
     cancelShortKeys() {
       this.searchShortKeysDialog = false;
