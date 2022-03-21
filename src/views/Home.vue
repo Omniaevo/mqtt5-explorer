@@ -81,7 +81,7 @@
 
         <v-divider class="mb-5" />
 
-        <v-dialog v-model="shortKeysDialog" width="unset" persistent>
+        <v-dialog v-model="searchShortKeysDialog" width="unset" persistent>
           <template v-slot:activator="{ on, attrs }">
             <div class="px-3">
               <div class="caption mb-1">Search hotkeys:</div>
@@ -95,7 +95,7 @@
             </div>
           </template>
 
-          <v-card v-if="shortKeysDialog">
+          <v-card v-if="searchShortKeysDialog">
             <v-card-title>Select search hotkeys</v-card-title>
             <v-card-subtitle>
               Press desired keys in sequence to select them
@@ -122,7 +122,7 @@
               </v-btn>
               <v-btn
                 v-bind:disabled="newShortKeys.length === 0"
-                v-on:click.stop="setShortKeys"
+                v-on:click.stop="setSearchShortKeys"
                 color="primary"
                 text
               >
@@ -308,7 +308,7 @@ export default {
     settingsDrawer: false,
     defaultConnectionData: new ConnectionProperties(),
     deleteDialog: false,
-    shortKeysDialog: false,
+    searchShortKeysDialog: false,
     newShortKeys: [],
     colors: [
       { text: "Punchy Pink", value: { light: "#E91E63", dark: "#EC407A" } },
@@ -357,16 +357,16 @@ export default {
     },
     selectedShortKeys: {
       get() {
-        return JSON.parse(this.$store.getters.getShortKeys);
+        return JSON.parse(this.$store.getters.getSearchShortKeys);
       },
       set(newValue) {
-        this.$store.commit("setShortKeys", JSON.stringify(newValue));
+        this.$store.commit("setSearchShortKeys", JSON.stringify(newValue));
       },
     },
   },
 
   watch: {
-    shortKeysDialog(open) {
+    searchShortKeysDialog(open) {
       if (open) {
         this.$nextTick(() => {
           document.addEventListener("keydown", this.setKeyCombo);
@@ -413,11 +413,11 @@ export default {
       if (!this.newShortKeys.includes(newKey)) this.newShortKeys.push(newKey);
     },
     cancelShortKeys() {
-      this.shortKeysDialog = false;
+      this.searchShortKeysDialog = false;
       this.newShortKeys = [];
     },
-    setShortKeys() {
-      this.shortKeysDialog = false;
+    setSearchShortKeys() {
+      this.searchShortKeysDialog = false;
       this.selectedShortKeys = [...this.newShortKeys];
       this.newShortKeys = [];
     },

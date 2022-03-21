@@ -62,7 +62,7 @@ export default {
     outline() {
       this.persistSettings();
     },
-    shortKeys() {
+    searchShortKeys() {
       this.persistSettings();
     },
     primaryColor: {

@@ -2,7 +2,7 @@
   <div class="page-grid-container">
     <v-app-bar
       v-bind:color="darkTheme ? 'gray' : 'white'"
-      v-shortkey.once="shortKeys"
+      v-shortkey.once="searchShortKeys"
       v-on:shortkey="toggleSearchField"
       flat
     >
@@ -142,7 +142,7 @@
         <v-slide-y-transition>
           <div v-if="!pressedSearch" class="pa-2 caption d-flex justify-center">
             Press&nbsp;
-            <strong>{{ shortKeys.join(" + ") }}</strong>
+            <strong>{{ searchShortKeys.join(" + ") }}</strong>
             &nbsp;to search
           </div>
         </v-slide-y-transition>

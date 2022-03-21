@@ -2,7 +2,7 @@ const settingsVuexModule = {
   state: {
     theme: "light",
     outline: false,
-    shortKeys: `["ctrl", "f"]`,
+    searchShortKeys: `["ctrl", "f"]`,
     primaryColor: {
       text: "Indie Indigo",
       value: { light: "#3F51B5", dark: "#5C6BC0" },
@@ -13,11 +13,11 @@ const settingsVuexModule = {
     setTheme: (state, theme) => (state.theme = theme),
     setOutline: (state, outline) => (state.outline = outline),
     setPrimaryColor: (state, primary) => (state.primaryColor = primary),
-    setShortKeys: (state, short) => (state.shortKeys = short),
+    setSearchShortKeys: (state, short) => (state.searchShortKeys = short),
     setAllSettings: (state, data) => {
       state.theme = data.theme || "light";
       state.outline = data.outline;
-      state.shortKeys = data.shortKeys || `["ctrl", "f"]`;
+      state.searchShortKeys = data.searchShortKeys || `["ctrl", "f"]`;
       // eslint-disable-next-line prettier/prettier
       state.primaryColor = data.primaryColor || { text: "Indie Indigo", value: { light: "#3F51B5", dark: "#5C6BC0" } };
     },
@@ -28,7 +28,7 @@ const settingsVuexModule = {
     getTheme: (state) => state.theme,
     getOutline: (state) => state.outline,
     getPrimaryColor: (state) => state.primaryColor,
-    getShortKeys: (state) => state.shortKeys,
+    getSearchShortKeys: (state) => state.searchShortKeys,
   },
 };
 
