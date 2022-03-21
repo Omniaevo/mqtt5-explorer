@@ -62,9 +62,6 @@ export default {
     outline() {
       this.persistSettings();
     },
-    searchShortKeys() {
-      this.persistSettings();
-    },
     primaryColor: {
       deep: true,
       handler(newValue) {

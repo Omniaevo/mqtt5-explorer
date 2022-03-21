@@ -79,58 +79,21 @@
           <v-switch v-model="selectedOutline" label="Outlined fields" inset />
         </v-list-item>
 
-        <v-divider class="mb-5" />
+        <v-divider class="mx-3" />
 
-        <v-dialog v-model="searchShortKeysDialog" width="unset" persistent>
-          <template v-slot:activator="{ on, attrs }">
-            <div class="px-3">
-              <div class="caption mb-1">Search hotkeys:</div>
-              <v-btn v-bind="attrs" v-on="on" color="primary" block small>
-                {{
-                  selectedShortKeys.length > 0
-                    ? shortKeysDescription(selectedShortKeys)
-                    : "Select hotkeys"
-                }}
-              </v-btn>
-            </div>
-          </template>
-
-          <v-card v-if="searchShortKeysDialog">
-            <v-card-title>Select search hotkeys</v-card-title>
-            <v-card-subtitle>
-              Press desired keys in sequence to select them
-            </v-card-subtitle>
-            <v-card-text>
-              <div
-                class="d-flex align-center justify-center"
-                style="height: 20ch; width: 50ch"
-              >
-                <template v-if="newShortKeys.length === 0">
-                  <img src="../assets/keys.svg" width="100%" />
-                </template>
-                <template v-else>
-                  <span class="font-weight-bold title">
-                    {{ shortKeysDescription(newShortKeys) }}
-                  </span>
-                </template>
-              </div>
-            </v-card-text>
-            <v-card-actions>
-              <v-spacer />
-              <v-btn v-on:click.stop="cancelShortKeys" color="error" text>
-                Cancel
-              </v-btn>
-              <v-btn
-                v-bind:disabled="newShortKeys.length === 0"
-                v-on:click.stop="setSearchShortKeys"
-                color="primary"
-                text
-              >
-                Save
-              </v-btn>
-            </v-card-actions>
-          </v-card>
-        </v-dialog>
+        <v-list dense>
+          <v-list-item>
+            <v-list-item-action-text>
+              Available shortcuts
+            </v-list-item-action-text>
+          </v-list-item>
+          <v-list-item>
+            <v-list-item-content>Toggle search</v-list-item-content>
+            <v-list-item-action-text>
+              {{ isMacOs ? "Cmd" : "Ctrl" }} + F
+            </v-list-item-action-text>
+          </v-list-item>
+        </v-list>
       </v-list>
 
       <template v-slot:append>
@@ -295,7 +258,6 @@ div[row] {
 <script>
 import ConnectionForm from "../components/ConnectionForm.vue";
 import ConnectionProperties from "../models/ConnectionProperties";
-import ShortKeysListener from "../utils/ShortKeysListener";
 import { shell } from "electron";
 
 export default {
@@ -308,8 +270,6 @@ export default {
     settingsDrawer: false,
     defaultConnectionData: new ConnectionProperties(),
     deleteDialog: false,
-    searchShortKeysDialog: false,
-    newShortKeys: [],
     colors: [
       { text: "Punchy Pink", value: { light: "#E91E63", dark: "#EC407A" } },
       { text: "Hipster Purple", value: { light: "#9C27B0", dark: "#AB47BC" } },
@@ -355,28 +315,6 @@ export default {
         this.$store.commit("setPrimaryColor", newValue);
       },
     },
-    selectedShortKeys: {
-      get() {
-        return JSON.parse(this.$store.getters.getSearchShortKeys);
-      },
-      set(newValue) {
-        this.$store.commit("setSearchShortKeys", JSON.stringify(newValue));
-      },
-    },
-  },
-
-  watch: {
-    searchShortKeysDialog(open) {
-      if (open) {
-        this.$nextTick(() => {
-          document.addEventListener("keydown", this.setSearchKeyCombo);
-          document.addEventListener("keyup", this.setSearchKeyCombo);
-        });
-      } else {
-        document.removeEventListener("keydown", this.setSearchKeyCombo);
-        document.removeEventListener("keyup", this.setSearchKeyCombo);
-      }
-    },
   },
 
   beforeMount() {
@@ -406,28 +344,6 @@ export default {
     connect(data, index) {
       this.dataChanged(data, index);
       this.$router.push({ path: `viewer/${index}` });
-    },
-    setSearchKeyCombo(event) {
-      this.setKeyCombo(event, this.newShortKeys);
-    },
-    setKeyCombo(event, array) {
-      event.preventDefault();
-
-      const insertKey = (key) => {
-        if (!array.includes(key)) array.push(key);
-      };
-
-      if (event.metaKey) insertKey(ShortKeysListener.META);
-      insertKey(event.keyCode);
-    },
-    cancelShortKeys() {
-      this.searchShortKeysDialog = false;
-      this.newShortKeys = [];
-    },
-    setSearchShortKeys() {
-      this.searchShortKeysDialog = false;
-      this.selectedShortKeys = [...this.newShortKeys];
-      this.newShortKeys = [];
     },
     openBugsUrl() {
       shell.openExternal(process.env.VUE_APP_GITHUB_BUGS);

@@ -134,13 +134,6 @@
 
     <div class="mx-4 my-2 explorer-grid-container">
       <v-card class="treeview-container" flat>
-        <v-slide-y-transition>
-          <div v-if="!pressedSearch" class="pa-2 caption d-flex justify-center">
-            Press&nbsp;
-            <strong>{{ shortKeysDescription(searchShortKeys) }}</strong>
-            &nbsp;to search
-          </div>
-        </v-slide-y-transition>
         <v-treeview
           v-bind:filter="filterTree"
           v-bind:items="treeData"
@@ -537,7 +530,7 @@ import Connection from "../utils/Connection";
 import ConnectionProperties from "../models/ConnectionProperties";
 import SearchEngine from "../utils/SearchEngine";
 import TreeNode from "../models/TreeNode";
-import ShortKeysListener from "../utils/ShortKeysListener";
+import { ipcRenderer } from "electron";
 
 export default {
   name: "MqttViewer",
@@ -557,12 +550,10 @@ export default {
     statesList: Connection.connectionStates,
     lastWill: undefined,
     fromClick: false,
-    pressedSearch: false,
     searchTreeVisible: false,
     searchTerm: undefined,
     filterType: undefined,
     searchModes: SearchEngine.modes,
-    searchListener: undefined,
   }),
 
   computed: {
@@ -611,10 +602,8 @@ export default {
       () => this.treeData.length
     );
 
-    this.searchListener = new ShortKeysListener(
-      this.searchShortKeys,
-      this.toggleSearchField
-    );
+    ipcRenderer.send("menuSearchAdd");
+    ipcRenderer.on("searchPressed", this.toggleSearchField);
   },
 
   mounted() {
@@ -634,23 +623,17 @@ export default {
       },
       (err) => this.disconnectFromMqtt(err?.toString())
     );
-
-    this.searchListener.startListener(document);
-    setTimeout(() => (this.pressedSearch = true), 5000);
   },
 
   beforeDestroy() {
-    if (this.searchListener) {
-      this.searchListener.destroyListener();
-      this.searchListener = undefined;
-    }
+    ipcRenderer.send("menuSearchRemove");
+    ipcRenderer.removeListener("searchPressed", this.toggleSearchField);
   },
 
   methods: {
     toggleSearchField() {
       if (this.searchTreeVisible) this.$refs.searchField.blur();
 
-      this.pressedSearch = true;
       this.searchTreeVisible = !this.searchTreeVisible;
 
       this.$nextTick(() => {

@@ -3,7 +3,8 @@
 "use strict";
 
 import { autoUpdater } from "electron-updater";
-import { app, protocol, dialog, Menu, BrowserWindow, shell } from "electron";
+// eslint-disable-next-line prettier/prettier
+import { app, protocol, dialog, Menu, BrowserWindow, shell, ipcMain } from "electron";
 import { createProtocol } from "vue-cli-plugin-electron-builder/lib";
 import path from "path";
 import Store from "electron-store";
@@ -24,6 +25,7 @@ let win;
 const aboutMenu = [
   {
     label: "About",
+    accelerator: "CommandOrControl+I",
     click: () => {
       dialog
         .showMessageBox(win, {
@@ -47,7 +49,7 @@ const aboutMenu = [
   },
 ];
 
-let menuTemplate = [
+let menuTemplate = (search = false) => [
   ...(isMac
     ? [
         {
@@ -92,6 +94,22 @@ let menuTemplate = [
         label: "Cut",
         role: "cut",
       },
+      ...(search
+        ? [
+            {
+              type: "separator",
+            },
+            {
+              label: "Toggle search",
+              accelerator: "CommandOrControl+F",
+              click: () => {
+                if (win != undefined && win.webContents != undefined) {
+                  win.webContents.send("searchPressed");
+                }
+              },
+            },
+          ]
+        : []),
     ],
   },
   ...(!isMac
@@ -132,7 +150,15 @@ async function createWindow() {
     store.set("app_height", size[1]);
   });
 
-  Menu.setApplicationMenu(Menu.buildFromTemplate(menuTemplate));
+  // Manage renderer messages
+  ipcMain.on("menuSearchAdd", () => {
+    Menu.setApplicationMenu(Menu.buildFromTemplate(menuTemplate(true)));
+  });
+  ipcMain.on("menuSearchRemove", () => {
+    Menu.setApplicationMenu(Menu.buildFromTemplate(menuTemplate(false)));
+  });
+
+  Menu.setApplicationMenu(Menu.buildFromTemplate(menuTemplate(false)));
 
   if (process.env.WEBPACK_DEV_SERVER_URL) {
     // Load the url of the dev server if in development mode
