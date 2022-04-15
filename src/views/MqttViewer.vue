@@ -668,10 +668,10 @@ export default {
       this.packetPanels = [...Array(this.panelsMaxIndex).keys()];
     },
     getCountMessage(count, truncate) {
-      const num = truncate && count > 1_000_000 ? "1000000+" : count;
+      const truncatedNum = truncate && count > 1000000 ? "1000000+" : count;
       const plural = count > 1 ? "s" : "";
 
-      return `${num} message${plural} received`;
+      return `${truncatedNum} message${plural} received`;
     },
     resetSelection() {
       this.itemSelected = undefined;
