@@ -91,7 +91,7 @@
               <v-btn
                 v-bind:value="searchModes.WORDS"
                 v-on:click.stop
-                title="Entire word"
+                title="Match whole word"
                 small
                 icon
               >
@@ -192,7 +192,18 @@
           </v-expansion-panel>
 
           <v-expansion-panel>
-            <v-expansion-panel-header>Value</v-expansion-panel-header>
+            <v-expansion-panel-header>
+              <div>
+                <span>Value</span>
+                <span
+                  v-if="itemSelected && itemSelected.counter > 0"
+                  v-bind:title="getCountMessage(itemSelected.counter, false)"
+                  class="caption ms-2 grey--text"
+                >
+                  ({{ getCountMessage(itemSelected.counter, true) }})
+                </span>
+              </div>
+            </v-expansion-panel-header>
             <v-expansion-panel-content>
               <div v-if="itemSelected">
                 <div
@@ -655,6 +666,12 @@ export default {
       this.selectedId = item.id;
       this.loadForPublish(item);
       this.packetPanels = [...Array(this.panelsMaxIndex).keys()];
+    },
+    getCountMessage(count, truncate) {
+      const num = truncate && count > 1_000_000 ? "1000000+" : count;
+      const plural = count > 1 ? "s" : "";
+
+      return `${num} message${plural} received`;
     },
     resetSelection() {
       this.itemSelected = undefined;
