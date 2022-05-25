@@ -163,7 +163,7 @@
           </v-tabs>
         </div>
 
-        <v-tabs-items v-model="tabId">
+        <v-tabs-items v-model="tabId" class="tab-items-container">
           <v-tab-item
             v-for="(connection, i) in connectionsAvailable"
             v-bind:key="i"
@@ -226,20 +226,26 @@ div[row] {
 }
 
 .card-width {
-  width: 70ch;
+  width: 80ch;
 }
 
 .tab-width {
   width: 16ch;
 }
 
+.tab-items-container {
+  width: 100%;
+}
+
 .tab-no-overflow-false {
-  height: 33ch !important;
+  min-height: 33ch !important;
+  max-height: 40ch !important;
   overflow: hidden !important;
 }
 
 .tab-no-overflow-true {
-  height: 38ch !important;
+  min-height: 38ch !important;
+  max-height: 42ch !important;
   overflow: hidden !important;
 }
 

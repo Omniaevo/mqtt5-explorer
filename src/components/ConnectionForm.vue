@@ -13,9 +13,8 @@
           v-model="connectionData.version"
           v-bind:items="versions"
           v-bind:outlined="outline"
-          class="me-4"
           label="Version"
-          style="max-width: 10ch"
+          style="max-width: 12ch"
         />
       </div>
       <div row>
@@ -25,7 +24,7 @@
           v-bind:outlined="outline"
           v-bind:rules="staticConnectionProperties.rules.protocol"
           label="Protocol"
-          style="max-width: 10ch"
+          style="max-width: 15ch"
           required
         />
         <v-text-field
@@ -40,7 +39,7 @@
           v-bind:outlined="outline"
           v-bind:rules="staticConnectionProperties.rules.port"
           label="Port"
-          style="max-width: 10ch"
+          style="max-width: 12ch"
           required
         />
       </div>
@@ -193,7 +192,7 @@
 }
 
 .dialog-text-container {
-  max-height: 35ch;
+  max-height: 40ch;
 }
 
 div[row] {
