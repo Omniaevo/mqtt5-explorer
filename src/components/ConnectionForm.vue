@@ -13,9 +13,8 @@
           v-model="connectionData.version"
           v-bind:items="versions"
           v-bind:outlined="outline"
-          class="me-4"
           label="Version"
-          style="max-width: 10ch"
+          style="max-width: 12ch"
         />
       </div>
       <div row>
@@ -25,7 +24,7 @@
           v-bind:outlined="outline"
           v-bind:rules="staticConnectionProperties.rules.protocol"
           label="Protocol"
-          style="max-width: 10ch"
+          style="max-width: 15ch"
           required
         />
         <v-text-field
@@ -40,7 +39,7 @@
           v-bind:outlined="outline"
           v-bind:rules="staticConnectionProperties.rules.port"
           label="Port"
-          style="max-width: 10ch"
+          style="max-width: 12ch"
           required
         />
       </div>
@@ -110,6 +109,45 @@
             />
           </div>
           <div row>
+            <div v-on:click="selectFile('caCert')" class="d-flex align-center">
+              <v-text-field
+                v-model="connectionData.caCert"
+                label="CA cert file"
+                disabled
+              />
+              <v-btn v-on:click.stop="deselectFile('caCert')" icon>
+                <v-icon>mdi-close</v-icon>
+              </v-btn>
+            </div>
+            <div
+              v-on:click="selectFile('clientCert')"
+              class="d-flex align-center"
+            >
+              <v-text-field
+                v-model="connectionData.clientCert"
+                label="Client cert file"
+                disabled
+              />
+              <v-btn v-on:click.stop="deselectFile('clientCert')" icon>
+                <v-icon>mdi-close</v-icon>
+              </v-btn>
+            </div>
+            <div
+              v-on:click="selectFile('clientKey')"
+              class="d-flex align-center"
+            >
+              <v-text-field
+                v-model="connectionData.clientKey"
+                label="Client key file"
+                disabled
+              />
+              <v-btn v-on:click.stop="deselectFile('clientKey')" icon>
+                <v-icon>mdi-close</v-icon>
+              </v-btn>
+            </div>
+          </div>
+          <v-divider class="mb-2" />
+          <div row>
             <v-combobox
               v-model="connectionData.topics"
               v-bind:outlined="outline"
@@ -154,7 +192,7 @@
 }
 
 .dialog-text-container {
-  max-height: 35ch;
+  max-height: 40ch;
 }
 
 div[row] {
@@ -216,6 +254,22 @@ export default {
 
       clone.init(this.connectionData);
       this.$emit(event, clone);
+    },
+    selectFile(destination) {
+      const fakeInput = document.createElement("input");
+
+      fakeInput.type = "file";
+      fakeInput.multiple = false;
+      fakeInput.onchange = () => {
+        this.connectionData[destination] = fakeInput.files[0].name;
+        this.connectionData[`${destination}Path`] = fakeInput.files[0].path;
+      };
+
+      fakeInput.click();
+    },
+    deselectFile(destination) {
+      this.connectionData[destination] = undefined;
+      this.connectionData[`${destination}Path`] = undefined;
     },
   },
 };
