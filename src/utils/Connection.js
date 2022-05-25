@@ -1,6 +1,7 @@
 import mqtt from "mqtt";
 import TreeNode from "../models/TreeNode";
 import ConnectionProperties from "../models/ConnectionProperties";
+import fs from "fs";
 
 class Connection {
   static connectionStates = {
@@ -42,8 +43,6 @@ class Connection {
 
   connect(onConnect, onClose, onError) {
     const options = {
-      username: this.#properties.username,
-      password: this.#properties.password,
       protocolVersion: this.#properties.version,
       rejectUnauthorized: this.#properties.validateCertificate,
       keepalive: 120,
@@ -51,7 +50,33 @@ class Connection {
       connectTimeout: 15000,
     };
 
-    this.#client = mqtt.connect(this.#url, options);
+    if (this.#properties.username) {
+      options.username = this.#properties.username;
+    }
+
+    if (this.#properties.password) {
+      options.password = this.#properties.password;
+    }
+
+    if (this.#properties.tls) {
+      options.ca = this.#properties.caCertPath
+        ? [fs.readFileSync(this.#properties.caCertPath)]
+        : undefined;
+      options.cert = this.#properties.clientCertPath
+        ? fs.readFileSync(this.#properties.clientCertPath)
+        : undefined;
+      options.key = this.#properties.clientKeyPath
+        ? fs.readFileSync(this.#properties.clientKeyPath)
+        : undefined;
+
+      options.protocol = this.#properties.protocol;
+      options.host = this.#properties.host;
+      options.port = this.#properties.port;
+    }
+
+    this.#client = this.#properties.tls
+      ? mqtt.connect(options)
+      : mqtt.connect(this.#url, options);
 
     this.#client.on("error", onError);
     this.#client.on("close", onClose);

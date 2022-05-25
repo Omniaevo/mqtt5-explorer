@@ -8,6 +8,13 @@ class ConnectionProperties {
   host = undefined;
   username = undefined;
   password = undefined;
+  tls = false;
+  caCert = undefined;
+  clientCert = undefined;
+  clientKey = undefined;
+  caCertPath = undefined;
+  clientCertPath = undefined;
+  clientKeyPath = undefined;
   saved = false;
 
   static rules = {
@@ -41,6 +48,14 @@ class ConnectionProperties {
     this.host = properties.host;
     this.username = properties.username;
     this.password = properties.password;
+    this.caCert = properties.caCert;
+    this.clientCert = properties.clientCert;
+    this.clientKey = properties.clientKey;
+    this.caCertPath = properties.caCertPath;
+    this.clientCertPath = properties.clientCertPath;
+    this.clientKeyPath = properties.clientKeyPath;
+
+    this.tls = this.protocol.replace("mqtt", "").replace("ws", "") === "s";
   }
 }
 
