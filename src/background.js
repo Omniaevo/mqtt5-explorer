@@ -98,6 +98,22 @@ let menuTemplate = (page = pages.HOME) => [
         label: "Cut",
         role: "cut",
       },
+      ...(page === pages.HOME
+        ? [
+            {
+              type: "separator",
+            },
+            {
+              label: "Settings",
+              accelerator: "CommandOrControl+,",
+              click: () => {
+                if (win != undefined && win.webContents != undefined) {
+                  win.webContents.send("settingsPressed");
+                }
+              },
+            },
+          ]
+        : []),
       ...(page === pages.VIEWER
         ? [
             {

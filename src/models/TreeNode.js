@@ -63,7 +63,8 @@ class TreeNode {
   search(searchTerm, mode) {
     return (
       SearchEngine.methods[mode](searchTerm, this.topic) ||
-      SearchEngine.methods[mode](searchTerm, this.name)
+      SearchEngine.methods[mode](searchTerm, this.name) ||
+      SearchEngine.methods[mode](searchTerm, this.value)
     );
   }
 
