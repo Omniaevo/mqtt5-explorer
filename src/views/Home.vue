@@ -1,30 +1,13 @@
 <template>
   <v-container class="connection-container">
-    <v-app-bar
-      v-bind:color="darkTheme ? 'gray' : 'white'"
-      class="transparent"
+    <v-navigation-drawer
+      v-model="settingsDrawer"
+      width="50ch"
       app
-      flat
+      floating
+      right
+      temporary
     >
-      <v-spacer />
-      <div class="d-flex align-center">
-        <v-tooltip bottom>
-          <template v-slot:activator="{ on, attrs }">
-            <v-btn
-              v-bind="attrs"
-              v-on:click="settingsDrawer = !settingsDrawer"
-              v-on="on"
-              icon
-            >
-              <v-icon>mdi-cog</v-icon>
-            </v-btn>
-          </template>
-          <span>{{ settingsDrawer ? "Close a" : "A" }}pp settings</span>
-        </v-tooltip>
-      </div>
-    </v-app-bar>
-
-    <v-navigation-drawer v-model="settingsDrawer" app floating right temporary>
       <v-list>
         <v-list-item>
           <v-list-item-content>
@@ -85,6 +68,12 @@
           <v-list-item>
             <v-list-item-action-text>
               Available shortcuts
+            </v-list-item-action-text>
+          </v-list-item>
+          <v-list-item>
+            <v-list-item-content>Edit settings</v-list-item-content>
+            <v-list-item-action-text>
+              {{ isMacOs ? "Cmd" : "Ctrl" }} + COMMA
             </v-list-item-action-text>
           </v-list-item>
           <v-list-item>
@@ -226,11 +215,11 @@ div[row] {
 }
 
 .card-width {
-  width: 80ch;
+  width: 94ch;
 }
 
 .tab-width {
-  width: 16ch;
+  width: 30ch;
 }
 
 .tab-items-container {
@@ -328,13 +317,18 @@ export default {
     else this.tabId = this.$store.getters.selectedConnectionId;
 
     ipcRenderer.send("enterHomePage");
+    ipcRenderer.on("settingsPressed", this.toggleSettingsDrawer);
   },
 
   beforeDestroy() {
     this.$store.commit("setSelectedConnectionId", this.tabId);
+    ipcRenderer.removeListener("settingsPressed", this.toggleSettingsDrawer);
   },
 
   methods: {
+    toggleSettingsDrawer() {
+      this.settingsDrawer = !this.settingsDrawer;
+    },
     addTmpConnection() {
       this.$store.commit("addNewConnection", this.defaultConnectionData);
       this.tabId = this.connectionsAvailable.length - 1;
