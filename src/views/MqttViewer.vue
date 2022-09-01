@@ -70,6 +70,8 @@
         <v-text-field
           v-show="searchTreeVisible"
           v-model="searchTerm"
+          v-on:click:append-outer="searchInfoDialog = true"
+          append-outer-icon="mdi-information-outline"
           class="me-2"
           label="Search"
           ref="searchField"
@@ -194,7 +196,7 @@
           <v-expansion-panel>
             <v-expansion-panel-header>
               <div>
-                <span>Value</span>
+                <span>Payload</span>
                 <span
                   v-if="itemSelected && itemSelected.counter > 0"
                   v-bind:title="getCountMessage(itemSelected.counter, false)"
@@ -449,6 +451,54 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+
+    <v-dialog v-model="searchInfoDialog" max-width="70ch" persistent scrollable>
+      <v-card>
+        <v-card-title>How to search</v-card-title>
+        <v-card-text>
+          <p>
+            <strong>Basic search.</strong> Normally the search will be performed
+            on all topics full names or the leaves names (the last portion of a
+            topic).
+          </p>
+          <p>Example: <em>measures/device/sensor</em></p>
+          <p>
+            <strong>Advanced search.</strong> Use the prefix
+            <kbd>{{ searchQuery }}</kbd> to perform a search inside of the value
+            object (it is in <em>JSON</em> format), the root fields are
+            typically: <strong>payload</strong> and
+            <strong>properties</strong> (consult the MQTT protocol
+            specifications for more); the next part of the string contains the
+            sequence of keys to search in (<em>dot</em>
+            notation) and the value to search, the two parts are separated by a
+            <code>=</code>.
+          </p>
+          <p>
+            Example:
+            <em>{{ searchQuery }}properties.userProperties.key=value</em>
+          </p>
+          <span>Search types applicable for all above cases:</span>
+          <ul>
+            <li>
+              <v-icon small>mdi-format-letter-case</v-icon>: select this option
+              if the search has to be case sensitive;
+            </li>
+            <li>
+              <v-icon small>mdi-format-letter-matches</v-icon>: select this
+              option if the searched word has to perfectly match;
+            </li>
+            <li>
+              <v-icon small>mdi-regex</v-icon>: select this option to use
+              regular expressions.
+            </li>
+          </ul>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer />
+          <v-btn v-on:click="searchInfoDialog = false" text> Got it </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 
@@ -562,9 +612,11 @@ export default {
     lastWill: undefined,
     fromClick: false,
     searchTreeVisible: false,
+    searchInfoDialog: false,
     searchTerm: undefined,
     filterType: undefined,
     searchModes: SearchEngine.modes,
+    searchQuery: SearchEngine.QUERY,
   }),
 
   computed: {
