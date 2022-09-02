@@ -340,8 +340,13 @@ export default {
       this.persistConnections();
     },
     deleteConnection(index) {
-      this.tabId = 0;
-      this.$store.commit("removeConnection", index);
+      this.$store.commit("removeConnection", {
+        index,
+        callback: () => {
+          this.persistConnections();
+          this.tabId = 0;
+        },
+      });
     },
     connect(data, index) {
       this.dataChanged(data, index);
