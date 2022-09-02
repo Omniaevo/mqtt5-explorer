@@ -57,19 +57,21 @@ let menuTemplate = (page = pages.HOME) => [
     ? [
         {
           label: appName,
-          submenu: aboutMenu,
-        },
-        {
-          type: "separator",
-        },
-        {
-          label: "Settings",
-          accelerator: "CommandOrControl+,",
-          click: () => {
-            if (win != undefined && win.webContents != undefined) {
-              win.webContents.send("settingsPressed");
-            }
-          },
+          submenu: [
+            ...aboutMenu,
+            {
+              type: "separator",
+            },
+            {
+              label: "Settings",
+              accelerator: "CommandOrControl+,",
+              click: () => {
+                if (win != undefined && win.webContents != undefined) {
+                  win.webContents.send("settingsPressed");
+                }
+              },
+            },
+          ],
         },
       ]
     : []),
