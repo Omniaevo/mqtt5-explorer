@@ -6,7 +6,13 @@ The aim of this project is to bring the users a client app capable of making use
 
 ## Screenshots
 
-![Client screenshot](screenshots/client-connection.png)
+### Dark theme
+
+![Client screenshot (dark theme)](screenshots/client-connection.png)
+
+### Light theme
+
+![Client screenshot (light theme)](screenshots/client-connection-white.png)
 
 ## Project setup
 
