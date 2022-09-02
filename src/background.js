@@ -4,7 +4,7 @@
 
 import { autoUpdater } from "electron-updater";
 // eslint-disable-next-line prettier/prettier
-import { app, protocol, dialog, Menu, BrowserWindow, shell, ipcMain } from "electron";
+import { app, protocol, dialog, Menu, BrowserWindow, shell, ipcMain, session } from "electron";
 import { createProtocol } from "vue-cli-plugin-electron-builder/lib";
 import path from "path";
 import Store from "electron-store";
@@ -60,6 +60,18 @@ let menuTemplate = (page = pages.HOME) => [
           label: appName,
           submenu: aboutMenu,
         },
+        {
+          type: "separator",
+        },
+        {
+          label: "Settings",
+          accelerator: "CommandOrControl+,",
+          click: () => {
+            if (win != undefined && win.webContents != undefined) {
+              win.webContents.send("settingsPressed");
+            }
+          },
+        },
       ]
     : []),
   {
@@ -98,7 +110,7 @@ let menuTemplate = (page = pages.HOME) => [
         label: "Cut",
         role: "cut",
       },
-      ...(page === pages.HOME
+      ...(page === pages.HOME && !isMac
         ? [
             {
               type: "separator",
@@ -143,6 +155,10 @@ let menuTemplate = (page = pages.HOME) => [
 ];
 
 async function createWindow() {
+  // Clear session
+  session.defaultSession.flushStorageData();
+  session.defaultSession.clearStorageData({ storages: ["serviceworkers"] });
+
   // Create the browser window.
   win = new BrowserWindow({
     width: store.get("app_width") || 1366,
