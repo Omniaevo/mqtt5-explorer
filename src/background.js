@@ -8,8 +8,8 @@ import { app, protocol, dialog, Menu, BrowserWindow, shell, ipcMain, session } f
 import { createProtocol } from "vue-cli-plugin-electron-builder/lib";
 import path from "path";
 import Store from "electron-store";
-const isDevelopment = process.env.NODE_ENV !== "production";
 
+const isDevelopment = process.env.NODE_ENV !== "production";
 const isMac = process.platform === "darwin";
 const appName = "MQTT5 Explorer";
 
@@ -228,9 +228,7 @@ app.on("activate", () => {
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-app.on("ready", async () => {
-  createWindow();
-});
+app.on("ready", async () => createWindow());
 
 // Exit cleanly on request from parent process in development mode.
 if (isDevelopment) {
