@@ -44,6 +44,7 @@
     "vuetify": "^2.4.0",
     "vuex": "^3.4.0"
   },
+  "main": "background.js",
   "devDependencies": {
     "@mdi/font": "^6.1.95",
     "@vue/cli-plugin-babel": "~4.5.0",
