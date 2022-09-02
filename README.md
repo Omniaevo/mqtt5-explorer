@@ -2,6 +2,12 @@
 
 ## About this project
 
+The aim of this project is to bring the users a client app capable of making use of all the features of the version 5 of the MQTT protocol. The lack of any application that can offer the compatibility with the newer version of the protocol forced us to implement one to test the data of MQTT brokers workwise, why not to share this tool with others that may have the same issue?
+
+## Screenshots
+
+![Client screenshot](screenshots/client-connection.png)
+
 ## Project setup
 
 ```bash
