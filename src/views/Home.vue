@@ -263,7 +263,6 @@ export default {
   data: () => ({
     tabId: 0,
     settingsDrawer: false,
-    defaultConnectionData: new ConnectionProperties(),
     deleteDialog: false,
     colors: [
       { text: "Punchy Pink", value: { light: "#E91E63", dark: "#EC407A" } },
@@ -330,7 +329,7 @@ export default {
       this.settingsDrawer = !this.settingsDrawer;
     },
     addTmpConnection() {
-      this.$store.commit("addNewConnection", this.defaultConnectionData);
+      this.$store.commit("addNewConnection", new ConnectionProperties());
       this.tabId = this.connectionsAvailable.length - 1;
     },
     dataChanged(data, index) {
