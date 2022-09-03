@@ -30,7 +30,9 @@ Scan through our [existing issues](https://github.com/Omniaevo/mqtt5-explorer/is
 
 3. [Fork the repository](https://docs.github.com/en/get-started/quickstart/fork-a-repo).
 
-4. Create a working branch and start with your changes!
+4. Follow the **Project setup** instruction in the [README](../README.md).
+
+5. Create a working branch and start with your changes!
 
 ### Commit your update
 
