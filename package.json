@@ -39,6 +39,7 @@
     "electron-updater": "^5.2.1",
     "mqtt": "^4.3.7",
     "register-service-worker": "^1.7.2",
+    "uuid": "^8.3.2",
     "vue": "^2.6.11",
     "vue-router": "^3.2.0",
     "vuetify": "^2.4.0",

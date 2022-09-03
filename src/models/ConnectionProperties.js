@@ -1,4 +1,7 @@
+import { v4 as uuidv4 } from "uuid";
+
 class ConnectionProperties {
+  id = uuidv4();
   name = "new-connection";
   protocol = "mqtt";
   version = 5;
@@ -39,6 +42,7 @@ class ConnectionProperties {
   init(properties = undefined) {
     if (properties === undefined) return;
 
+    this.id = properties.id;
     this.name = properties.name;
     this.protocol = properties.protocol;
     this.version = properties.version;
