@@ -64,6 +64,13 @@ See:
 - [Vuetify Configuration Reference](https://vuetifyjs.com/en/introduction/why-vuetify/#feature-guides).
 - [Electron Build Configuration Reference](https://www.electron.build/configuration/configuration).
 
+## Get involved
+
+See:
+
+- [The code of conduct](CODE_OF_CONDUCT.md).
+- [The contribution guidelines](.github/contributing.md).
+
 ## Contributors
 
 [![Contributors](https://contrib.rocks/image?repo=Omniaevo/mqtt5-explorer)](https://github.com/Omniaevo/mqtt5-explorer/graphs/contributors)
