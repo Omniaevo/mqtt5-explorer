@@ -6,6 +6,7 @@ import store from "./store";
 import vuetify from "./plugins/vuetify";
 import Connection from "./utils/Connection";
 import Store from "electron-store";
+import { v4 as uuidv4 } from "uuid";
 
 document.documentElement.style.overflow = "hidden";
 Vue.config.productionTip = false;
@@ -52,10 +53,16 @@ Vue.mixin({
       );
     },
     loadConnections() {
-      this.$store.commit(
-        "loadPersistentConnections",
-        JSON.parse(this.$estore.get(this.connectionsStore) || "[]")
+      const savedConnections = JSON.parse(
+        this.$estore.get(this.connectionsStore) || "[]"
       );
+
+      // Generate new UUIDs if not present (for retro-compatibility)
+      savedConnections.forEach((connection) => {
+        connection.id = connection.id || uuidv4();
+      });
+
+      this.$store.commit("loadPersistentConnections", savedConnections);
     },
     persistSettings() {
       this.$estore.set(this.settingsStore, JSON.stringify(this.allSettings));

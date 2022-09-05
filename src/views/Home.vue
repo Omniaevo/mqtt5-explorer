@@ -155,47 +155,61 @@
         <v-tabs-items v-model="tabId" class="tab-items-container">
           <v-tab-item
             v-for="(connection, i) in connectionsAvailable"
-            v-bind:key="i"
+            v-bind:key="'connection-' + connection.id"
           >
             <v-card-text>
               <!-- Input form -->
               <ConnectionForm
                 v-bind:properties="connection"
                 v-on:connect="connect($event, i)"
-                v-on:delete="deleteDialog = true"
+                v-on:delete="confirmDelete(i)"
                 v-on:updated="dataChanged($event, i)"
               />
             </v-card-text>
-
-            <v-dialog v-model="deleteDialog" max-width="50ch" persistent>
-              <v-card>
-                <v-card-title>Confirm delete</v-card-title>
-                <v-card-text>
-                  Are you sure you want to delete
-                  <span class="font-weight-black">
-                    "{{ connection.name }}"?
-                  </span>
-                </v-card-text>
-                <v-card-actions>
-                  <v-spacer />
-                  <v-btn v-on:click="deleteDialog = false" text> Cancel </v-btn>
-                  <v-btn
-                    v-on:click="
-                      deleteConnection(i);
-                      deleteDialog = false;
-                    "
-                    color="error"
-                    text
-                  >
-                    Delete
-                  </v-btn>
-                </v-card-actions>
-              </v-card>
-            </v-dialog>
           </v-tab-item>
         </v-tabs-items>
       </div>
     </v-card>
+
+    <!-- Connection deletion confirmation -->
+    <v-dialog
+      v-if="deleteIndex >= 0 && deleteIndex < connectionsAvailable.length"
+      v-model="deleteDialog"
+      max-width="50ch"
+      persistent
+    >
+      <v-card>
+        <v-card-title>Confirm delete</v-card-title>
+        <v-card-text>
+          Are you sure you want to delete
+          <span class="font-weight-black">
+            "{{ connectionsAvailable[deleteIndex].name }}"?
+          </span>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer />
+          <v-btn
+            v-on:click="
+              deleteDialog = false;
+              deleteIndex = -1;
+            "
+            text
+          >
+            Cancel
+          </v-btn>
+          <v-btn
+            v-on:click="
+              deleteConnection(deleteIndex);
+              deleteDialog = false;
+            "
+            color="error"
+            text
+          >
+            Delete
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </v-container>
 </template>
 
@@ -262,8 +276,8 @@ export default {
 
   data: () => ({
     tabId: 0,
+    deleteIndex: -1,
     settingsDrawer: false,
-    defaultConnectionData: new ConnectionProperties(),
     deleteDialog: false,
     colors: [
       { text: "Punchy Pink", value: { light: "#E91E63", dark: "#EC407A" } },
@@ -330,7 +344,7 @@ export default {
       this.settingsDrawer = !this.settingsDrawer;
     },
     addTmpConnection() {
-      this.$store.commit("addNewConnection", this.defaultConnectionData);
+      this.$store.commit("addNewConnection", new ConnectionProperties());
       this.tabId = this.connectionsAvailable.length - 1;
     },
     dataChanged(data, index) {
@@ -339,9 +353,18 @@ export default {
       this.$store.commit("updateConnection", { data, index });
       this.persistConnections();
     },
+    confirmDelete(index) {
+      this.deleteIndex = index;
+      this.deleteDialog = true;
+    },
     deleteConnection(index) {
-      this.tabId = 0;
-      this.$store.commit("removeConnection", index);
+      this.$store.commit("removeConnection", {
+        index,
+        callback: () => {
+          this.persistConnections();
+          this.tabId = 0;
+        },
+      });
     },
     connect(data, index) {
       this.dataChanged(data, index);

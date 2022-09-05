@@ -4,13 +4,12 @@
 
 import { autoUpdater } from "electron-updater";
 // eslint-disable-next-line prettier/prettier
-import { app, protocol, dialog, Menu, BrowserWindow, shell, ipcMain } from "electron";
+import { app, protocol, dialog, Menu, BrowserWindow, shell, ipcMain, session } from "electron";
 import { createProtocol } from "vue-cli-plugin-electron-builder/lib";
 import path from "path";
 import Store from "electron-store";
-import installExtension, { VUEJS_DEVTOOLS } from "electron-devtools-installer";
-const isDevelopment = process.env.NODE_ENV !== "production";
 
+const isDevelopment = process.env.NODE_ENV !== "production";
 const isMac = process.platform === "darwin";
 const appName = "MQTT5 Explorer";
 
@@ -58,7 +57,21 @@ let menuTemplate = (page = pages.HOME) => [
     ? [
         {
           label: appName,
-          submenu: aboutMenu,
+          submenu: [
+            ...aboutMenu,
+            {
+              type: "separator",
+            },
+            {
+              label: "Settings",
+              accelerator: "CommandOrControl+,",
+              click: () => {
+                if (win != undefined && win.webContents != undefined) {
+                  win.webContents.send("settingsPressed");
+                }
+              },
+            },
+          ],
         },
       ]
     : []),
@@ -98,7 +111,7 @@ let menuTemplate = (page = pages.HOME) => [
         label: "Cut",
         role: "cut",
       },
-      ...(page === pages.HOME
+      ...(page === pages.HOME && !isMac
         ? [
             {
               type: "separator",
@@ -143,6 +156,10 @@ let menuTemplate = (page = pages.HOME) => [
 ];
 
 async function createWindow() {
+  // Clear session
+  session.defaultSession.flushStorageData();
+  session.defaultSession.clearStorageData({ storages: ["serviceworkers"] });
+
   // Create the browser window.
   win = new BrowserWindow({
     width: store.get("app_width") || 1366,
@@ -213,18 +230,7 @@ app.on("activate", () => {
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-app.on("ready", async () => {
-  if (isDevelopment && !process.env.IS_TEST) {
-    // Install Vue Devtools
-    try {
-      await installExtension(VUEJS_DEVTOOLS);
-    } catch (e) {
-      console.error("Vue Devtools failed to install:", e.toString());
-    }
-  }
-
-  createWindow();
-});
+app.on("ready", async () => createWindow());
 
 // Exit cleanly on request from parent process in development mode.
 if (isDevelopment) {

@@ -14,8 +14,10 @@ const dataVuexModule = {
       Vue.set(state.brokerConnections, state.brokerConnections.length, data),
     updateConnection: (state, update) =>
       Vue.set(state.brokerConnections, update.index, update.data),
-    removeConnection: (state, index) =>
-      Vue.delete(state.brokerConnections, index),
+    removeConnection: (state, { index, callback }) => {
+      Vue.delete(state.brokerConnections, index);
+      if (callback != undefined) callback();
+    },
   },
 
   getters: {
