@@ -21,7 +21,7 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
-      - run: npm install
+      - run: npm ci
       - run: npm run electron:icons
       - run: npm run electron:build -- --linux -p always
         env:
@@ -37,7 +37,7 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
-      - run: npm install
+      - run: npm ci
       - run: npm run electron:icons
       - run: npm run electron:build -- --mac -p always
         env:
@@ -53,7 +53,7 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
-      - run: npm install
+      - run: npm ci
       - run: npm run electron:icons
       - run: npm run electron:build -- --win -p always
         env:
