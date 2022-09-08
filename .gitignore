@@ -30,9 +30,9 @@ pnpm-debug.log*
 /build/icons
 
 # package-lock
-*-lock.json
-package-lock.*
-package-lock.json
-./*-lock.json
-./package-lock.*
-./package-lock.json
+#*-lock.json
+#package-lock.*
+#package-lock.json
+#./*-lock.json
+#./package-lock.*
+#./package-lock.json
