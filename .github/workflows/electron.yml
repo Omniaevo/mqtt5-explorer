@@ -24,7 +24,7 @@ jobs:
       - run: npm install
       - run: npm run electron:icons
       - run: npm run electron:build -- --linux -p always
-        env: 
+        env:
           GH_TOKEN: ${{ secrets.PUBLISHING_TOKEN }}
 
   build-macos:
@@ -40,7 +40,7 @@ jobs:
       - run: npm install
       - run: npm run electron:icons
       - run: npm run electron:build -- --mac -p always
-        env: 
+        env:
           GH_TOKEN: ${{ secrets.PUBLISHING_TOKEN }}
 
   build-windows:
@@ -56,5 +56,5 @@ jobs:
       - run: npm install
       - run: npm run electron:icons
       - run: npm run electron:build -- --win -p always
-        env: 
+        env:
           GH_TOKEN: ${{ secrets.PUBLISHING_TOKEN }}
