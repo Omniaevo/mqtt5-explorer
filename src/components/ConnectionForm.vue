@@ -17,19 +17,6 @@
           style="max-width: 12ch"
         />
       </div>
-      <div v-if="connectionData.version === 3" row>
-        <v-alert
-          icon="mdi-alert-outline"
-          type="warning"
-          width="100%"
-          dense
-          outlined
-          text
-        >
-          <strong>Warning!</strong> MQTT <strong>3.1.1</strong> compliant
-          brokers only are supported
-        </v-alert>
-      </div>
       <div row>
         <v-select
           v-model="connectionData.protocol"
@@ -233,7 +220,11 @@ export default {
   data: () => ({
     connectionData: new ConnectionProperties(),
     protocols: ["mqtt", "mqtts", "ws", "wss"],
-    versions: [3, 4, 5],
+    versions: [
+      { text: "3.1", value: 3 },
+      { text: "3.1.1", value: 4 },
+      { text: "5.0", value: 5 },
+    ],
     settingsDialog: false,
     showPassword: false,
     staticConnectionProperties: ConnectionProperties,
