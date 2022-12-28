@@ -220,7 +220,11 @@ export default {
   data: () => ({
     connectionData: new ConnectionProperties(),
     protocols: ["mqtt", "mqtts", "ws", "wss"],
-    versions: [4, 5],
+    versions: [
+      { text: "3.1", value: 3 },
+      { text: "3.1.1", value: 4 },
+      { text: "5.0", value: 5 },
+    ],
     settingsDialog: false,
     showPassword: false,
     staticConnectionProperties: ConnectionProperties,
