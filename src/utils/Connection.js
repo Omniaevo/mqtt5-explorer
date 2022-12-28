@@ -126,14 +126,14 @@ class Connection {
       });
 
       if (
-        options.properties.userProperties != undefined &&
+        options.properties?.userProperties != undefined &&
         Object.keys(options.properties.userProperties).length === 0
       ) {
         delete options.properties.userProperties;
       }
     }
 
-    this.#client.publish(topic, message, options);
+    if (topic != undefined) this.#client.publish(topic, message, options);
   }
 
   disconnect(callback) {

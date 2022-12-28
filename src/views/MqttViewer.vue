@@ -832,18 +832,33 @@ export default {
       this.$connection.publish(this.itemEditing.value);
     },
     deleteTopic(item) {
-      if (item.children?.length > 0) {
-        item.children.forEach((c) => this.deleteTopic(c));
-      }
+      const childrenList = this.getAllChildren(item);
 
-      if (item.value) {
-        item.value.payload = null;
-      } else {
-        item.value = { payload: null, topic: item.topic, qos: 0, retain: true };
-      }
+      childrenList.forEach((node) => {
+        if (node.value) {
+          node.value.payload = undefined;
+        } else {
+          node.value = {
+            payload: undefined,
+            topic: node.topic,
+            qos: 0,
+            retain: true,
+          };
+        }
 
-      this.$connection.publish(item.value);
+        this.$connection.publish(node.value);
+      });
+
       this.resetSelection();
+    },
+    getAllChildren(item) {
+      if ((item.children?.length || 0) > 0) {
+        return item.children.reduce((childrenList, current) => {
+          return [...childrenList, ...this.getAllChildren(current)];
+        }, []);
+      }
+
+      return [item];
     },
   },
 };
