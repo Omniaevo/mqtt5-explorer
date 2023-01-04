@@ -47,7 +47,7 @@ jobs:
       - run: npm run electron:build -- --mac -p always
         env:
           GH_TOKEN: ${{ secrets.PUBLISHING_TOKEN }}
-          PYTHON_PATH: "usr/bin/python2"
+          PYTHON_PATH: "/usr/bin/python2"
 
   build-windows:
     name: Create EXE for Windows
