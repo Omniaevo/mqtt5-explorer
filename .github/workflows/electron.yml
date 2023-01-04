@@ -9,7 +9,7 @@ on:
 
 env:
   NODE_VERSION: 14.x
-  PYTHON_VERSION: 2.7
+  PYTHON_VERSION: 2.x
 
 jobs:
   build-linux:
@@ -37,6 +37,7 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: ${{ env.PYTHON_VERSION }}
+          cache: "pip"
       - name: Use Node.js ${{ env.NODE_VERSION }}
         uses: actions/setup-node@v3
         with:
@@ -47,6 +48,7 @@ jobs:
       - run: npm run electron:build -- --mac -p always
         env:
           GH_TOKEN: ${{ secrets.PUBLISHING_TOKEN }}
+          PYTHON_PATH: "usr/bin/python2"
 
   build-windows:
     name: Create EXE for Windows
