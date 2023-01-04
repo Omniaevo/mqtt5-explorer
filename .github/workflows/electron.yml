@@ -3,12 +3,13 @@ name: electron-builder
 on:
   push:
     branches-ignore:
-      - '**'
+      - "**"
     tags:
       - v[0-9]+.[0-9]+.[0-9]+
 
 env:
   NODE_VERSION: 14.x
+  PYTHON_VERSION: 2.7
 
 jobs:
   build-linux:
@@ -20,8 +21,8 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-      - run: npm ci
+          cache: "npm"
+      - run: npm install
       - run: npm run electron:icons
       - run: npm run electron:build -- --linux -p always
         env:
@@ -32,12 +33,16 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v3
+      - name: Use Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
       - name: Use Node.js ${{ env.NODE_VERSION }}
         uses: actions/setup-node@v3
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-      - run: npm ci
+          cache: "npm"
+      - run: npm install
       - run: npm run electron:icons
       - run: npm run electron:build -- --mac -p always
         env:
@@ -52,8 +57,8 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-      - run: npm ci
+          cache: "npm"
+      - run: npm install
       - run: npm run electron:icons
       - run: npm run electron:build -- --win -p always
         env:
