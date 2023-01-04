@@ -54,10 +54,7 @@ module.exports = {
         },
         mac: {
           category: builderOpts.appCategories.mac,
-          target: {
-            target: "dmg",
-            arch: ["x64", "arm64"],
-          },
+          target: ["dmg"],
         },
         win: {
           target: ["portable:x64"],
