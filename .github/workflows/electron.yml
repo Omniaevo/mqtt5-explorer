@@ -9,7 +9,7 @@ on:
 
 env:
   NODE_VERSION: 14.x
-  PYTHON_VERSION: 2.7
+  PYTHON_VERSION: 2.x
 
 jobs:
   build-linux:
@@ -47,6 +47,7 @@ jobs:
       - run: npm run electron:build -- --mac -p always
         env:
           GH_TOKEN: ${{ secrets.PUBLISHING_TOKEN }}
+          PYTHON_PATH: "/Library/Frameworks/Python.framework/Versions/2.7/bin/python"
 
   build-windows:
     name: Create EXE for Windows
