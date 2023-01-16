@@ -102,14 +102,19 @@ class Connection {
         this.#closeCallback("");
       }
     });
-    this.#client.on("reconnect", () => (this.#totalReconnects += 1));
+    this.#client.on("reconnect", () => {
+      this.#totalReconnects += 1;
+    });
     this.#client.on("connect", () => {
       const options = { rap: true };
 
+      if (this.#totalReconnects === 0) {
+        this.#properties.version > 4
+          ? this.#client.subscribe(this.#properties.topics, options, () => {})
+          : this.#client.subscribe(this.#properties.topics, () => {});
+      }
+
       this.#totalReconnects = 0;
-      this.#properties.version > 4
-        ? this.#client.subscribe(this.#properties.topics, options, () => {})
-        : this.#client.subscribe(this.#properties.topics, () => {});
 
       onConnect();
     });

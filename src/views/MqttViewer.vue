@@ -699,7 +699,7 @@ export default {
         this.$router.replace({ name: "Home" }).then(() => {
           this.$bus.$emit(
             msg === undefined ? "info" : "error",
-            msg || "Connection timed out"
+            msg || "The broker is unreachable"
           );
         });
       });
