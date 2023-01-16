@@ -9,6 +9,7 @@ const settingsVuexModule = {
     keepalive: 120, // In seconds
     reconnectPeriod: 2, // In seconds
     connectTimeout: 20, // In seconds
+    maxReconnects: 5,
   },
 
   mutations: {
@@ -18,6 +19,7 @@ const settingsVuexModule = {
     setKeepalive: (state, keepalive) => (state.keepalive = keepalive),
     setReconnect: (state, reconnect) => (state.reconnectPeriod = reconnect),
     setConnectTimeout: (state, timeout) => (state.connectTimeout = timeout),
+    setMaxReconnects: (state, reconnects) => (state.maxReconnects = reconnects),
     setAllSettings: (state, data) => {
       state.theme = data.theme || "light";
       state.outline = data.outline;
@@ -29,6 +31,7 @@ const settingsVuexModule = {
       state.keepalive = Math.max(Number(data.keepalive || 0), 120);
       state.reconnectPeriod = Math.max(Number(data.reconnectPeriod || 0), 2);
       state.connectTimeout = Math.max(Number(data.connectTimeout || 0), 20);
+      state.maxReconnects = Number(data.maxReconnects || 0);
     },
   },
 
@@ -40,10 +43,12 @@ const settingsVuexModule = {
     getKeepalive: (state) => state.keepalive,
     getReconnect: (state) => state.reconnectPeriod,
     getConnectTimeout: (state) => state.connectTimeout,
+    getMaxReconnects: (state) => state.maxReconnects,
     getMqttClientSettings: (state) => ({
       keepalive: Number(state.keepalive),
       reconnectPeriod: Number(state.reconnectPeriod),
       connectTimeout: Number(state.connectTimeout),
+      maxReconnects: Number(state.maxReconnects),
     }),
   },
 };

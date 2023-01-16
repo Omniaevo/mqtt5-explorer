@@ -2,7 +2,7 @@
   <v-container class="connection-container">
     <v-navigation-drawer
       v-model="settingsDrawer"
-      width="50ch"
+      width="62ch"
       app
       floating
       right
@@ -79,13 +79,23 @@
 
           <v-list-item>
             <v-list-item-content>
-              <v-select
-                v-model.number="selectedReconnectPeriod"
-                v-bind:items="[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]"
-                v-bind:outlined="outline"
-                label="MQTT Reconnect period (in seconds)"
-                hide-details
-              />
+              <div class="d-flex" style="gap: 1em">
+                <v-select
+                  v-model.number="selectedReconnectPeriod"
+                  v-bind:items="[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]"
+                  v-bind:outlined="outline"
+                  label="MQTT Reconnect period (in seconds)"
+                  hide-details
+                />
+
+                <v-select
+                  v-model.number="selectedMaxReconnects"
+                  v-bind:items="[0, 5, 10, 15, 20]"
+                  v-bind:outlined="outline"
+                  label="Max number of reconnects (0 for disabling)"
+                  hide-details
+                />
+              </div>
             </v-list-item-content>
           </v-list-item>
 
@@ -110,13 +120,13 @@
               Available shortcuts
             </v-list-item-action-text>
           </v-list-item>
-          <v-list-item>
+          <v-list-item link>
             <v-list-item-content>Edit settings</v-list-item-content>
             <v-list-item-action-text>
               {{ isMacOs ? "Cmd" : "Ctrl" }} + COMMA
             </v-list-item-action-text>
           </v-list-item>
-          <v-list-item>
+          <v-list-item link>
             <v-list-item-content>Toggle search</v-list-item-content>
             <v-list-item-action-text>
               {{ isMacOs ? "Cmd" : "Ctrl" }} + F
@@ -400,6 +410,14 @@ export default {
       },
       set(newValue) {
         this.$store.commit("setConnectTimeout", newValue);
+      },
+    },
+    selectedMaxReconnects: {
+      get() {
+        return this.$store.getters.getMaxReconnects;
+      },
+      set(newValue) {
+        this.$store.commit("setMaxReconnects", newValue);
       },
     },
   },

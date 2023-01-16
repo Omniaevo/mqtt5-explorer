@@ -93,6 +93,7 @@ class Connection {
       options.port = this.#properties.port;
     }
 
+    this.#maxReconnects = clientProps.maxReconnects;
     this.#closeCallback = onClose;
     this.#client = this.#properties.tls
       ? mqtt.connect(options)

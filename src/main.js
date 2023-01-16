@@ -49,6 +49,9 @@ Vue.mixin({
     connectTimeout() {
       return this.$store.getters.getConnectTimeout;
     },
+    maxReconnects() {
+      return this.$store.getters.getMaxReconnects;
+    },
     isMacOs() {
       return process.platform === "darwin";
     },

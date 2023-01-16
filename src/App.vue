@@ -71,6 +71,9 @@ export default {
     connectTimeout() {
       this.persistSettings();
     },
+    maxReconnects() {
+      this.persistSettings();
+    },
     primaryColor: {
       deep: true,
       handler(newValue) {
