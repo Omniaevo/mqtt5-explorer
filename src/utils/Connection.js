@@ -5,6 +5,7 @@ import fs from "fs";
 import { v4 as uuidv4 } from "uuid";
 
 class Connection {
+  static MAX_RECONNECTS = 5;
   static connectionStates = {
     CONNECTED: 0,
     PENDING: 1,
@@ -12,6 +13,8 @@ class Connection {
     ERROR: 3,
   };
 
+  #totalReconnects = 0;
+  #clientId = undefined;
   #client = undefined;
   #url = undefined;
   #properties = new ConnectionProperties();
@@ -21,6 +24,10 @@ class Connection {
   #addCallback = () => {};
   #mergeCallback = () => {};
   #getSize = () => 0;
+
+  constructor() {
+    this.#clientId = `mqtt5-explorer-${uuidv4()}`;
+  }
 
   get url() {
     return this.#url;
@@ -40,6 +47,7 @@ class Connection {
     this.#mergeCallback = mergeCallback;
     this.#getSize = getSize;
 
+    this.#totalReconnects = 0;
     this.#client = undefined;
     this.#map = {};
     this.#idCount = 1;
@@ -47,12 +55,13 @@ class Connection {
 
   connect(onConnect, onClose) {
     const options = {
-      clientId: `mqtt5-explorer-${uuidv4()}`,
+      clientId: this.#clientId,
       protocolVersion: this.#properties.version,
       rejectUnauthorized: this.#properties.validateCertificate,
       keepalive: 120,
-      reconnectPeriod: 1000,
-      connectTimeout: 30000,
+      reconnectPeriod: 2 * 1000, // 2 seconds
+      connectTimeout: 20 * 1000, // 20 seconds
+      resubscribe: true,
       clean: true,
     };
 
@@ -86,11 +95,18 @@ class Connection {
       : mqtt.connect(this.#url, options);
 
     this.#client.on("error", (err) => {
-      this.#closeCallback(err?.toString());
+      this.#closeCallback(err?.toString() ?? "");
     });
+    this.#client.on("close", () => {
+      if (this.#totalReconnects >= Connection.MAX_RECONNECTS) {
+        this.#closeCallback("");
+      }
+    });
+    this.#client.on("reconnect", () => (this.#totalReconnects += 1));
     this.#client.on("connect", () => {
       const options = { rap: true };
 
+      this.#totalReconnects = 0;
       this.#properties.version > 4
         ? this.#client.subscribe(this.#properties.topics, options, () => {})
         : this.#client.subscribe(this.#properties.topics, () => {});
