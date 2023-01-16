@@ -2,6 +2,7 @@ import mqtt from "mqtt";
 import TreeNode from "../models/TreeNode";
 import ConnectionProperties from "../models/ConnectionProperties";
 import fs from "fs";
+import { v4 as uuidv4 } from "uuid";
 
 class Connection {
   static connectionStates = {
@@ -16,6 +17,7 @@ class Connection {
   #properties = new ConnectionProperties();
   #map = {};
   #idCount = 1;
+  #closeCallback = () => {};
   #addCallback = () => {};
   #mergeCallback = () => {};
   #getSize = () => 0;
@@ -31,7 +33,9 @@ class Connection {
   init(properties, addCallback, mergeCallback, getSize) {
     this.#properties = properties;
     // eslint-disable-next-line prettier/prettier
-    this.#url = `${this.#properties.protocol}://${this.#properties.host}:${this.#properties.port}`;
+    this.#url = `${this.#properties.protocol}://${this.#properties.host}:${
+      this.#properties.port
+    }`;
     this.#addCallback = addCallback;
     this.#mergeCallback = mergeCallback;
     this.#getSize = getSize;
@@ -41,13 +45,15 @@ class Connection {
     this.#idCount = 1;
   }
 
-  connect(onConnect, onClose, onError) {
+  connect(onConnect, onClose) {
     const options = {
+      clientId: `mqtt5-explorer-${uuidv4()}`,
       protocolVersion: this.#properties.version,
       rejectUnauthorized: this.#properties.validateCertificate,
       keepalive: 120,
-      reconnectPeriod: 0,
-      connectTimeout: 15000,
+      reconnectPeriod: 1000,
+      connectTimeout: 30000,
+      clean: true,
     };
 
     if (this.#properties.username) {
@@ -74,13 +80,14 @@ class Connection {
       options.port = this.#properties.port;
     }
 
+    this.#closeCallback = onClose;
     this.#client = this.#properties.tls
       ? mqtt.connect(options)
       : mqtt.connect(this.#url, options);
 
-    this.#client.on("error", onError);
-    this.#client.on("close", onClose);
-    this.#client.on("offline", () => onError("The broker is unreachable"));
+    this.#client.on("error", (err) => {
+      this.#closeCallback(err?.toString());
+    });
     this.#client.on("connect", () => {
       const options = { rap: true };
 
