@@ -119,6 +119,7 @@ class Connection {
           : this.#client.subscribe(this.#properties.topics, () => {});
       }
 
+      this.#maxReconnects = 1;
       this.#totalReconnects = 0;
 
       onConnect();
