@@ -49,7 +49,7 @@ jobs:
           PYTHON_PATH: "/Library/Frameworks/Python.framework/Versions/2.7/bin/python"
 
   build-windows:
-    needs: build-linux
+    needs: build-macos
     name: Create EXE for Windows
     runs-on: windows-latest
     steps:
