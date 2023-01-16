@@ -2,6 +2,7 @@ import mqtt from "mqtt";
 import TreeNode from "../models/TreeNode";
 import ConnectionProperties from "../models/ConnectionProperties";
 import fs from "fs";
+import { v4 as uuidv4 } from "uuid";
 
 class Connection {
   static connectionStates = {
@@ -11,14 +12,22 @@ class Connection {
     ERROR: 3,
   };
 
+  #maxReconnects = 5;
+  #totalReconnects = 0;
+  #clientId = undefined;
   #client = undefined;
   #url = undefined;
   #properties = new ConnectionProperties();
   #map = {};
   #idCount = 1;
+  #closeCallback = () => {};
   #addCallback = () => {};
   #mergeCallback = () => {};
   #getSize = () => 0;
+
+  constructor() {
+    this.#clientId = `m5-${uuidv4()}`;
+  }
 
   get url() {
     return this.#url;
@@ -28,26 +37,36 @@ class Connection {
     return this.#properties.version;
   }
 
+  get clientId() {
+    return this.#clientId;
+  }
+
   init(properties, addCallback, mergeCallback, getSize) {
     this.#properties = properties;
     // eslint-disable-next-line prettier/prettier
-    this.#url = `${this.#properties.protocol}://${this.#properties.host}:${this.#properties.port}`;
+    this.#url = `${this.#properties.protocol}://${this.#properties.host}:${
+      this.#properties.port
+    }`;
     this.#addCallback = addCallback;
     this.#mergeCallback = mergeCallback;
     this.#getSize = getSize;
 
+    this.#totalReconnects = 0;
     this.#client = undefined;
     this.#map = {};
     this.#idCount = 1;
   }
 
-  connect(onConnect, onClose, onError) {
+  connect(clientProps, onConnect, onClose) {
     const options = {
+      clientId: this.#clientId,
       protocolVersion: this.#properties.version,
       rejectUnauthorized: this.#properties.validateCertificate,
-      keepalive: 120,
-      reconnectPeriod: 0,
-      connectTimeout: 15000,
+      keepalive: clientProps.keepalive,
+      reconnectPeriod: clientProps.reconnectPeriod * 1000,
+      connectTimeout: clientProps.connectTimeout * 1000,
+      resubscribe: true,
+      clean: true,
     };
 
     if (this.#properties.username) {
@@ -74,19 +93,33 @@ class Connection {
       options.port = this.#properties.port;
     }
 
+    this.#maxReconnects = clientProps.maxReconnects;
+    this.#closeCallback = onClose;
     this.#client = this.#properties.tls
       ? mqtt.connect(options)
       : mqtt.connect(this.#url, options);
 
-    this.#client.on("error", onError);
-    this.#client.on("close", onClose);
-    this.#client.on("offline", () => onError("The broker is unreachable"));
+    this.#client.on("error", (err) => {
+      this.#closeCallback(err?.toString() ?? "");
+    });
+    this.#client.on("close", () => {
+      if (this.#totalReconnects >= this.#maxReconnects) {
+        this.#closeCallback("");
+      }
+    });
+    this.#client.on("reconnect", () => {
+      this.#totalReconnects += 1;
+    });
     this.#client.on("connect", () => {
       const options = { rap: true };
 
-      this.#properties.version > 4
-        ? this.#client.subscribe(this.#properties.topics, options, () => {})
-        : this.#client.subscribe(this.#properties.topics, () => {});
+      if (this.#totalReconnects === 0) {
+        this.#properties.version > 4
+          ? this.#client.subscribe(this.#properties.topics, options, () => {})
+          : this.#client.subscribe(this.#properties.topics, () => {});
+      }
+
+      this.#totalReconnects = 0;
 
       onConnect();
     });

@@ -609,8 +609,6 @@ export default {
     deleteDialog: false,
     connectionState: Connection.connectionStates.PENDING,
     statesList: Connection.connectionStates,
-    lastWill: undefined,
-    fromClick: false,
     searchTreeVisible: false,
     searchInfoDialog: false,
     searchTerm: undefined,
@@ -671,20 +669,9 @@ export default {
 
   mounted() {
     this.$connection.connect(
-      () => {
-        this.connectionState = this.statesList.CONNECTED;
-        this.lastWill = undefined;
-        this.fromClick = false;
-      },
-      () => {
-        this.$router.replace({ name: "Home" }).then(() => {
-          this.$bus.$emit(
-            this.fromClick ? "info" : "error",
-            this.lastWill !== undefined ? this.lastWill : "Connection timed out"
-          );
-        });
-      },
-      (err) => this.disconnectFromMqtt(err?.toString())
+      this.$store.getters.getMqttClientSettings,
+      () => (this.connectionState = this.statesList.CONNECTED),
+      (err) => this.disconnectFromMqtt(err)
     );
   },
 
@@ -709,8 +696,13 @@ export default {
           msg !== undefined
             ? this.statesList.ERROR
             : this.statesList.DISCONNECTED;
-        this.lastWill = msg;
-        this.fromClick = msg === undefined;
+
+        this.$router.replace({ name: "Home" }).then(() => {
+          this.$bus.$emit(
+            msg === undefined ? "info" : "error",
+            msg || "The broker is unreachable"
+          );
+        });
       });
     },
     getProperties(item) {
@@ -799,11 +791,14 @@ export default {
 
         this.userPropertiesArray.forEach((prop) => {
           // eslint-disable-next-line prettier/prettier
-          this.itemEditing.value.properties.userProperties[prop.key] = prop.value;
+          this.itemEditing.value.properties.userProperties[prop.key] =
+            prop.value;
         });
 
         // eslint-disable-next-line prettier/prettier
-        if (this.itemEditing.value.properties.messageExpiryInterval != undefined) {
+        if (
+          this.itemEditing.value.properties.messageExpiryInterval != undefined
+        ) {
           this.itemEditing.value.properties.messageExpiryInterval = Number(
             this.itemEditing.value.properties.messageExpiryInterval
           );

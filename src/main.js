@@ -40,6 +40,18 @@ Vue.mixin({
     primaryColor() {
       return this.$store.getters.getPrimaryColor;
     },
+    keepalive() {
+      return this.$store.getters.getKeepalive;
+    },
+    reconnectPeriod() {
+      return this.$store.getters.getReconnect;
+    },
+    connectTimeout() {
+      return this.$store.getters.getConnectTimeout;
+    },
+    maxReconnects() {
+      return this.$store.getters.getMaxReconnects;
+    },
     isMacOs() {
       return process.platform === "darwin";
     },
