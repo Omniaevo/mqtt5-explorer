@@ -5,7 +5,6 @@ import fs from "fs";
 import { v4 as uuidv4 } from "uuid";
 
 class Connection {
-  static MAX_RECONNECTS = 5;
   static connectionStates = {
     CONNECTED: 0,
     PENDING: 1,
@@ -13,6 +12,7 @@ class Connection {
     ERROR: 3,
   };
 
+  #maxReconnects = 5;
   #totalReconnects = 0;
   #clientId = undefined;
   #client = undefined;
@@ -26,7 +26,7 @@ class Connection {
   #getSize = () => 0;
 
   constructor() {
-    this.#clientId = `mqtt5-explorer-${uuidv4()}`;
+    this.#clientId = `m5-${uuidv4()}`;
   }
 
   get url() {
@@ -35,6 +35,10 @@ class Connection {
 
   get protocolVersion() {
     return this.#properties.version;
+  }
+
+  get clientId() {
+    return this.#clientId;
   }
 
   init(properties, addCallback, mergeCallback, getSize) {
@@ -53,14 +57,14 @@ class Connection {
     this.#idCount = 1;
   }
 
-  connect(onConnect, onClose) {
+  connect(clientProps, onConnect, onClose) {
     const options = {
       clientId: this.#clientId,
       protocolVersion: this.#properties.version,
       rejectUnauthorized: this.#properties.validateCertificate,
-      keepalive: 120,
-      reconnectPeriod: 2 * 1000, // 2 seconds
-      connectTimeout: 20 * 1000, // 20 seconds
+      keepalive: clientProps.keepalive,
+      reconnectPeriod: clientProps.reconnectPeriod * 1000,
+      connectTimeout: clientProps.connectTimeout * 1000,
       resubscribe: true,
       clean: true,
     };
@@ -98,7 +102,7 @@ class Connection {
       this.#closeCallback(err?.toString() ?? "");
     });
     this.#client.on("close", () => {
-      if (this.#totalReconnects >= Connection.MAX_RECONNECTS) {
+      if (this.#totalReconnects >= this.#maxReconnects) {
         this.#closeCallback("");
       }
     });

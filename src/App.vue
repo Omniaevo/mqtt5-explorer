@@ -62,6 +62,15 @@ export default {
     outline() {
       this.persistSettings();
     },
+    keepalive() {
+      this.persistSettings();
+    },
+    reconnectPeriod() {
+      this.persistSettings();
+    },
+    connectTimeout() {
+      this.persistSettings();
+    },
     primaryColor: {
       deep: true,
       handler(newValue) {

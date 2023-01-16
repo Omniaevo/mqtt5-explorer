@@ -64,6 +64,46 @@
 
         <v-divider class="mx-3" />
 
+        <v-list>
+          <v-list-item>
+            <v-list-item-content>
+              <v-select
+                v-model.number="selectedKeepalive"
+                v-bind:items="[60, 120, 180, 240, 300]"
+                v-bind:outlined="outline"
+                label="MQTT Keepalive (in seconds)"
+                hide-details
+              />
+            </v-list-item-content>
+          </v-list-item>
+
+          <v-list-item>
+            <v-list-item-content>
+              <v-select
+                v-model.number="selectedReconnectPeriod"
+                v-bind:items="[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]"
+                v-bind:outlined="outline"
+                label="MQTT Reconnect period (in seconds)"
+                hide-details
+              />
+            </v-list-item-content>
+          </v-list-item>
+
+          <v-list-item>
+            <v-list-item-content>
+              <v-select
+                v-model.number="selectedConnectTimeout"
+                v-bind:items="[10, 20, 30, 40, 50, 60, 120, 180, 240, 300]"
+                v-bind:outlined="outline"
+                label="MQTT Connection timeout (in seconds)"
+                hide-details
+              />
+            </v-list-item-content>
+          </v-list-item>
+        </v-list>
+
+        <v-divider class="mx-3" />
+
         <v-list dense>
           <v-list-item>
             <v-list-item-action-text>
@@ -88,25 +128,27 @@
       <template v-slot:append>
         <v-list-item dense>
           <v-list-item-content>
-            <div
-              class="d-flex flex-row justify-space-between align-center caption"
-            >
+            <div class="d-flex flex-row justify-center caption">
               <v-btn v-on:click="openBugsUrl" color="primary" text x-small>
+                <v-icon class="me-2" small>mdi-bug</v-icon>
                 Report a bug
               </v-btn>
-              <div class="d-flex align-center">
-                <v-img
-                  class="me-2"
-                  src="../assets/logo.svg"
-                  style="max-width: 1.5em"
-                />
-                v{{ version }}
-              </div>
             </div>
           </v-list-item-content>
         </v-list-item>
       </template>
     </v-navigation-drawer>
+
+    <div class="caption client-id grey--text pa-2">
+      Client ID: {{ $connection.clientId }}
+    </div>
+
+    <div class="caption version-number grey--text pa-2">
+      <div class="d-flex align-center">
+        <v-img class="me-2" src="../assets/logo.svg" style="max-width: 1.5em" />
+        v{{ version }}
+      </div>
+    </div>
 
     <v-card class="card-width">
       <v-toolbar color="primary" dark flat text>
@@ -262,6 +304,18 @@ div[row] {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+.version-number {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+}
+
+.client-id {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+}
 </style>
 
 <script>
@@ -322,6 +376,30 @@ export default {
       },
       set(newValue) {
         this.$store.commit("setPrimaryColor", newValue);
+      },
+    },
+    selectedKeepalive: {
+      get() {
+        return this.$store.getters.getKeepalive;
+      },
+      set(newValue) {
+        this.$store.commit("setKeepalive", newValue);
+      },
+    },
+    selectedReconnectPeriod: {
+      get() {
+        return this.$store.getters.getReconnect;
+      },
+      set(newValue) {
+        this.$store.commit("setReconnect", newValue);
+      },
+    },
+    selectedConnectTimeout: {
+      get() {
+        return this.$store.getters.getConnectTimeout;
+      },
+      set(newValue) {
+        this.$store.commit("setConnectTimeout", newValue);
       },
     },
   },

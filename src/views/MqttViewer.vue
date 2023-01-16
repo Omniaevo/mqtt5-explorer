@@ -669,6 +669,7 @@ export default {
 
   mounted() {
     this.$connection.connect(
+      this.$store.getters.getMqttClientSettings,
       () => (this.connectionState = this.statesList.CONNECTED),
       (err) => this.disconnectFromMqtt(err)
     );
