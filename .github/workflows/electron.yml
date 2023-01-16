@@ -21,7 +21,6 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: "npm"
       - run: npm install
       - run: npm run electron:icons
       - run: npm run electron:build -- --linux -p always
@@ -29,6 +28,7 @@ jobs:
           GH_TOKEN: ${{ secrets.PUBLISHING_TOKEN }}
 
   build-macos:
+    needs: build-linux
     name: Create DMG for MacOS
     runs-on: macos-latest
     steps:
@@ -41,7 +41,6 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: "npm"
       - run: npm install
       - run: npm run electron:icons
       - run: npm run electron:build -- --mac -p always
@@ -50,6 +49,7 @@ jobs:
           PYTHON_PATH: "/Library/Frameworks/Python.framework/Versions/2.7/bin/python"
 
   build-windows:
+    needs: build-linux
     name: Create EXE for Windows
     runs-on: windows-latest
     steps:
@@ -58,7 +58,6 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: "npm"
       - run: npm install
       - run: npm run electron:icons
       - run: npm run electron:build -- --win -p always
