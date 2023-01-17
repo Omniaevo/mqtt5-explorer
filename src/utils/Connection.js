@@ -113,12 +113,14 @@ class Connection {
     this.#client.on("connect", () => {
       const options = { rap: true };
 
+      // The resubscription is automatically managed by MQTT.js
       if (this.#totalReconnects === 0) {
         this.#properties.version > 4
           ? this.#client.subscribe(this.#properties.topics, options, () => {})
           : this.#client.subscribe(this.#properties.topics, () => {});
       }
 
+      this.#maxReconnects = 1;
       this.#totalReconnects = 0;
 
       onConnect();
