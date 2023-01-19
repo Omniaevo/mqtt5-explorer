@@ -4,7 +4,7 @@
 
 [![Issues](https://img.shields.io/github/issues/Omniaevo/mqtt5-explorer)](https://github.com/Omniaevo/mqtt5-explorer/issues) [![Workflow status](https://img.shields.io/github/actions/workflow/status/Omniaevo/mqtt5-explorer/electron.yml)](https://github.com/Omniaevo/mqtt5-explorer/actions) [![Latest release](https://img.shields.io/github/v/release/Omniaevo/mqtt5-explorer)](https://github.com/Omniaevo/mqtt5-explorer/releases) [![License](https://img.shields.io/github/license/Omniaevo/mqtt5-explorer)](https://github.com/Omniaevo/mqtt5-explorer/blob/master/LICENSE)
 
-![Contributors](https://img.shields.io/github/contributors/Omniaevo/mqtt5-explorer) ![Last commit](https://img.shields.io/github/last-commit/Omniaevo/mqtt5-explorer)
+![Contributors](https://img.shields.io/github/contributors/Omniaevo/mqtt5-explorer) ![Last commit](https://img.shields.io/github/last-commit/Omniaevo/mqtt5-explorer) ![Hits](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2FOmniaevo%2Fmqtt5-explorer&count_bg=%230F80C1&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=hits&edge_flat=false)
 
 ## About this project
 
