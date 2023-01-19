@@ -1,5 +1,11 @@
 # MQTT5 Explorer
 
+![Repo stars](https://img.shields.io/github/stars/Omniaevo/mqtt5-explorer?style=social) ![Repo watchers](https://img.shields.io/github/watchers/Omniaevo/mqtt5-explorer?style=social) ![Repo forks](https://img.shields.io/github/forks/Omniaevo/mqtt5-explorer?style=social)
+
+[![Issues](https://img.shields.io/github/issues/Omniaevo/mqtt5-explorer)](https://github.com/Omniaevo/mqtt5-explorer/issues) [![Workflow status](https://img.shields.io/github/actions/workflow/status/Omniaevo/mqtt5-explorer/electron.yml)](https://github.com/Omniaevo/mqtt5-explorer/actions) [![Latest release](https://img.shields.io/github/v/release/Omniaevo/mqtt5-explorer)](https://github.com/Omniaevo/mqtt5-explorer/releases) [![License](https://img.shields.io/github/license/Omniaevo/mqtt5-explorer)](https://github.com/Omniaevo/mqtt5-explorer/blob/master/LICENSE)
+
+![Contributors](https://img.shields.io/github/contributors/Omniaevo/mqtt5-explorer) ![Last commit](https://img.shields.io/github/last-commit/Omniaevo/mqtt5-explorer)
+
 ## About this project
 
 The aim of this project is to bring the users a client app capable of making use of all the features of the version 5 of the MQTT protocol. The lack of any application that can offer the compatibility with the newer version of the protocol forced us to implement one to test the data of MQTT brokers workwise, why not to share this tool with others that may have the same issue?
