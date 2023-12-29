@@ -8,7 +8,7 @@ on:
       - v[0-9]+.[0-9]+.[0-9]+
 
 env:
-  NODE_VERSION: 18.x
+  NODE_VERSION: 16.x
   PYTHON_VERSION: 3.x
 
 jobs:
