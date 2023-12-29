@@ -9,7 +9,6 @@ on:
 
 env:
   NODE_VERSION: 16.x
-  PYTHON_VERSION: 3.x
 
 jobs:
   build-linux:
@@ -33,10 +32,6 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v3
-      - name: Use Python ${{ env.PYTHON_VERSION }}
-        uses: actions/setup-python@v2
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
       - name: Use Node.js ${{ env.NODE_VERSION }}
         uses: actions/setup-node@v3
         with:
@@ -46,7 +41,6 @@ jobs:
       - run: npm run electron:build -- --mac -p always
         env:
           GH_TOKEN: ${{ secrets.PUBLISHING_TOKEN }}
-          PYTHON_PATH: "/Library/Frameworks/Python.framework/Versions/2.7/bin/python"
 
   build-windows:
     needs: build-macos
