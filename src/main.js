@@ -40,6 +40,9 @@ Vue.mixin({
     primaryColor() {
       return this.$store.getters.getPrimaryColor;
     },
+    clientId() {
+      return this.$store.getters.getClientId;
+    },
     keepalive() {
       return this.$store.getters.getKeepalive;
     },

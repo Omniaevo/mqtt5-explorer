@@ -2,7 +2,6 @@ import mqtt from "mqtt";
 import TreeNode from "../models/TreeNode";
 import ConnectionProperties from "../models/ConnectionProperties";
 import fs from "fs";
-import { v4 as uuidv4 } from "uuid";
 
 class Connection {
   static connectionStates = {
@@ -14,7 +13,6 @@ class Connection {
 
   #maxReconnects = 5;
   #totalReconnects = 0;
-  #clientId = undefined;
   #client = undefined;
   #url = undefined;
   #properties = new ConnectionProperties();
@@ -26,7 +24,7 @@ class Connection {
   #getSize = () => 0;
 
   constructor() {
-    this.#clientId = `m5-${uuidv4()}`;
+    // DO nothing
   }
 
   get url() {
@@ -35,10 +33,6 @@ class Connection {
 
   get protocolVersion() {
     return this.#properties.version;
-  }
-
-  get clientId() {
-    return this.#clientId;
   }
 
   init(properties, addCallback, mergeCallback, getSize) {
@@ -59,7 +53,7 @@ class Connection {
 
   connect(clientProps, onConnect, onClose) {
     const options = {
-      clientId: this.#clientId,
+      clientId: clientProps.clientId,
       protocolVersion: this.#properties.version,
       rejectUnauthorized: this.#properties.validateCertificate,
       keepalive: clientProps.keepalive,

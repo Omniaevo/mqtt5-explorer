@@ -67,6 +67,18 @@
         <v-list>
           <v-list-item>
             <v-list-item-content>
+              <v-text-field
+                v-model="selectClientId"
+                v-bind:outlined="outline"
+                label="MQTT Client ID"
+                clearable
+                hide-details
+              />
+            </v-list-item-content>
+          </v-list-item>
+
+          <v-list-item>
+            <v-list-item-content>
               <v-select
                 v-model.number="selectedKeepalive"
                 v-bind:items="[60, 120, 180, 240, 300]"
@@ -150,7 +162,7 @@
     </v-navigation-drawer>
 
     <div class="caption client-id grey--text pa-2">
-      Client ID: {{ $connection.clientId }}
+      Client ID: {{ clientId }}
     </div>
 
     <div class="caption version-number grey--text pa-2">
@@ -386,6 +398,14 @@ export default {
       },
       set(newValue) {
         this.$store.commit("setPrimaryColor", newValue);
+      },
+    },
+    selectClientId: {
+      get() {
+        return this.$store.getters.getClientId;
+      },
+      set(newValue) {
+        this.$store.commit("setClientId", newValue);
       },
     },
     selectedKeepalive: {

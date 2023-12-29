@@ -62,6 +62,9 @@ export default {
     outline() {
       this.persistSettings();
     },
+    clientId() {
+      this.persistSettings();
+    },
     keepalive() {
       this.persistSettings();
     },
