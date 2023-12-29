@@ -8,8 +8,8 @@ on:
       - v[0-9]+.[0-9]+.[0-9]+
 
 env:
-  NODE_VERSION: 14.x
-  PYTHON_VERSION: 2.x
+  NODE_VERSION: 18.x
+  PYTHON_VERSION: 3.x
 
 jobs:
   build-linux:
