@@ -162,7 +162,8 @@
     </v-navigation-drawer>
 
     <div class="caption client-id grey--text pa-2">
-      Client ID: {{ clientId }}
+      <span>Client ID:</span>
+      <span class="primary--text font-weight-bold">{{ clientId }}</span>
     </div>
 
     <div class="caption version-number grey--text pa-2">
@@ -337,6 +338,9 @@ div[row] {
   position: absolute;
   bottom: 0;
   left: 0;
+  display: flex;
+  gap: 0.5em;
+  align-items: center;
 }
 </style>
 
