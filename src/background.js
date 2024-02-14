@@ -4,13 +4,25 @@
 
 import { autoUpdater } from "electron-updater";
 // eslint-disable-next-line prettier/prettier
-import { app, protocol, dialog, Menu, BrowserWindow, shell, ipcMain, session } from "electron";
+import {
+  app,
+  protocol,
+  dialog,
+  Menu,
+  BrowserWindow,
+  shell,
+  ipcMain,
+  session,
+  Tray,
+} from "electron";
 import { createProtocol } from "vue-cli-plugin-electron-builder/lib";
 import path from "path";
 import Store from "electron-store";
 
 const isDevelopment = process.env.NODE_ENV !== "production";
+const isSingleInstance = app.requestSingleInstanceLock();
 const isMac = process.platform === "darwin";
+const isWindows = process.platform === "win32";
 const appName = "MQTT5 Explorer";
 
 // Scheme must be registered before the app is ready
@@ -20,6 +32,7 @@ protocol.registerSchemesAsPrivileged([
 
 const store = new Store();
 let win;
+let tray;
 
 const pages = {
   HOME: "homePage",
@@ -154,6 +167,32 @@ let menuTemplate = (page = pages.HOME) => [
       ]
     : []),
 ];
+let trayTemplate = [
+  {
+    label: `Show/hide ${appName}`,
+    click: () => {
+      // Show/hide the app window
+      if (!win) return;
+
+      if (win.isVisible()) win.hide();
+      else win.show();
+    },
+  },
+  {
+    label: "Show/hide settings",
+    click: () => {
+      if (!win) return;
+      if (!win.webContents) return;
+
+      if (!win.isVisible()) win.show();
+      if (win.isMinimized()) win.restore();
+
+      win.webContents.send("settingsPressed");
+    },
+  },
+  { type: "separator" },
+  { label: `Quit ${appName}`, role: "quit" },
+];
 
 async function createWindow() {
   // Clear session
@@ -176,6 +215,22 @@ async function createWindow() {
     },
   });
 
+  // Create the tray icon
+  tray = new Tray(
+    path.join(
+      __static,
+      isWindows
+        ? "img/tray/tray.ico"
+        : isMac
+        ? "img/tray/trayTemplate.png"
+        : "img/tray/tray.png"
+    )
+  );
+
+  tray.setToolTip(appName);
+  tray.setIgnoreDoubleClickEvents(true);
+  tray.setContextMenu(Menu.buildFromTemplate(trayTemplate));
+
   // Use the custom title
   win.on("page-title-updated", (event) => event.preventDefault());
 
@@ -186,6 +241,12 @@ async function createWindow() {
     // Save to local storage
     store.set("app_width", size[0]);
     store.set("app_height", size[1]);
+  });
+
+  // Close to tray
+  win.on("close", (event) => {
+    event.preventDefault();
+    win.hide();
   });
 
   // Manage renderer messages
@@ -212,13 +273,25 @@ async function createWindow() {
   }
 }
 
+// Prevent multiple windows
+if (!isSingleInstance) {
+  app.quit();
+} else {
+  app.on("second-instance", () => {
+    if (!win) return;
+
+    if (!win.isVisible()) win.show();
+    if (win.isMinimized()) win.restore();
+
+    win.focus();
+  });
+}
+
 // Quit when all windows are closed.
 app.on("window-all-closed", () => {
   // On macOS it is common for applications and their menu bar
   // to stay active until the user quits explicitly with Cmd + Q
-  if (process.platform !== "darwin") {
-    app.quit();
-  }
+  if (!isMac) app.quit();
 });
 
 app.on("activate", () => {
@@ -232,9 +305,13 @@ app.on("activate", () => {
 // Some APIs can only be used after this event occurs.
 app.on("ready", async () => createWindow());
 
+app.on("before-quit", () => {
+  if (tray) tray.destroy();
+});
+
 // Exit cleanly on request from parent process in development mode.
 if (isDevelopment) {
-  if (process.platform === "win32") {
+  if (isWindows) {
     process.on("message", (data) => {
       if (data === "graceful-exit") {
         app.quit();
