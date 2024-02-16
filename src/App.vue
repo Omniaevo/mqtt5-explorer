@@ -62,6 +62,9 @@ export default {
     outline() {
       this.persistSettings();
     },
+    closeToTray() {
+      this.persistSettings();
+    },
     clientId() {
       this.persistSettings();
     },

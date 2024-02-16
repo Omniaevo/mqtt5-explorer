@@ -305,8 +305,14 @@ app.on("activate", () => {
 // Some APIs can only be used after this event occurs.
 app.on("ready", async () => createWindow());
 
-app.on("before-quit", () => {
+app.on("before-quit", (event) => {
+  event.preventDefault();
+
+  if (win) win.destroy();
   if (tray) tray.destroy();
+
+  app.removeAllListeners();
+  app.exit();
 });
 
 // Exit cleanly on request from parent process in development mode.
