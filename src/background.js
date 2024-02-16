@@ -31,6 +31,7 @@ protocol.registerSchemesAsPrivileged([
 ]);
 
 const store = new Store();
+
 let win;
 let tray;
 
@@ -245,8 +246,10 @@ async function createWindow() {
 
   // Close to tray
   win.on("close", (event) => {
-    event.preventDefault();
-    win.hide();
+    if (store.get("close_to_tray") !== "false") {
+      event.preventDefault();
+      win.hide();
+    }
   });
 
   // Manage renderer messages
@@ -305,8 +308,14 @@ app.on("activate", () => {
 // Some APIs can only be used after this event occurs.
 app.on("ready", async () => createWindow());
 
-app.on("before-quit", () => {
+app.on("before-quit", (event) => {
+  event.preventDefault();
+
+  if (win) win.destroy();
   if (tray) tray.destroy();
+
+  app.removeAllListeners();
+  app.exit();
 });
 
 // Exit cleanly on request from parent process in development mode.

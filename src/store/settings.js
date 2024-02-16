@@ -4,6 +4,7 @@ const settingsVuexModule = {
   state: {
     theme: "light",
     outline: false,
+    closeTray: true,
     primaryColor: {
       text: "Indie Indigo",
       value: { light: "#3F51B5", dark: "#5C6BC0" },
@@ -18,6 +19,7 @@ const settingsVuexModule = {
   mutations: {
     setTheme: (state, theme) => (state.theme = theme),
     setOutline: (state, outline) => (state.outline = outline),
+    setCloseToTray: (state, tray) => (state.closeTray = tray),
     setPrimaryColor: (state, primary) => (state.primaryColor = primary),
     setClientId: (state, clientId) => (state.clientId = clientId),
     setKeepalive: (state, keepalive) => (state.keepalive = keepalive),
@@ -27,6 +29,7 @@ const settingsVuexModule = {
     setAllSettings: (state, data) => {
       state.theme = data.theme || "light";
       state.outline = data.outline;
+      state.closeTray = data.closeTray ?? true;
       // eslint-disable-next-line prettier/prettier
       state.primaryColor = data.primaryColor || {
         text: "Indie Indigo",
@@ -44,6 +47,7 @@ const settingsVuexModule = {
     getAllSettings: (state) => state,
     getTheme: (state) => state.theme,
     getOutline: (state) => state.outline,
+    getCloseToTray: (state) => state.closeTray,
     getPrimaryColor: (state) => state.primaryColor,
     getClientId: (state) => state.clientId,
     getKeepalive: (state) => state.keepalive,

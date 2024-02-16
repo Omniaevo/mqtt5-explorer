@@ -59,7 +59,20 @@
         </v-list-item>
 
         <v-list-item>
-          <v-switch v-model="selectedOutline" label="Outlined fields" inset />
+          <v-list-item-content class="px-3">
+            <div class="d-flex justify-space-between" style="gap: 1em">
+              <v-switch
+                v-model="selectedOutline"
+                label="Outlined fields"
+                inset
+              />
+              <v-switch
+                v-model="selectedCloseToTray"
+                label="Close to system tray"
+                inset
+              />
+            </div>
+          </v-list-item-content>
         </v-list-item>
 
         <v-divider class="mx-3" />
@@ -394,6 +407,14 @@ export default {
       },
       set(newValue) {
         this.$store.commit("setOutline", newValue);
+      },
+    },
+    selectedCloseToTray: {
+      get() {
+        return this.$store.getters.getCloseToTray;
+      },
+      set(newValue) {
+        this.$store.commit("setCloseToTray", newValue);
       },
     },
     selectedColor: {

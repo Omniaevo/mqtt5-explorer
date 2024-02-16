@@ -34,6 +34,9 @@ Vue.mixin({
     outline() {
       return this.$store.getters.getOutline;
     },
+    closeToTray() {
+      return this.$store.getters.getCloseToTray;
+    },
     darkTheme() {
       return (this.theme || "light") === "dark";
     },
@@ -81,6 +84,7 @@ Vue.mixin({
     },
     persistSettings() {
       this.$estore.set(this.settingsStore, JSON.stringify(this.allSettings));
+      this.$estore.set("close_to_tray", `${this.allSettings.closeTray}`);
     },
     loadSettings() {
       this.$store.commit(
