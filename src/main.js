@@ -84,6 +84,7 @@ Vue.mixin({
     },
     persistSettings() {
       this.$estore.set(this.settingsStore, JSON.stringify(this.allSettings));
+      this.$estore.set("close_to_tray", `${this.allSettings.closeTray}`);
     },
     loadSettings() {
       this.$store.commit(

@@ -31,6 +31,7 @@ protocol.registerSchemesAsPrivileged([
 ]);
 
 const store = new Store();
+
 let win;
 let tray;
 
@@ -245,8 +246,10 @@ async function createWindow() {
 
   // Close to tray
   win.on("close", (event) => {
-    event.preventDefault();
-    win.hide();
+    if (store.get("close_to_tray") !== "false") {
+      event.preventDefault();
+      win.hide();
+    }
   });
 
   // Manage renderer messages
