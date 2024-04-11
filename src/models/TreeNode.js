@@ -68,6 +68,13 @@ class TreeNode {
     );
   }
 
+  deepSearch(searchTerm, mode) {
+    return [
+      this.search(searchTerm, mode) ? this : undefined,
+      ...(this.child?.deepSearch(searchTerm, mode) ?? []),
+    ];
+  }
+
   #idFun = () => {};
 
   #blink = () => {

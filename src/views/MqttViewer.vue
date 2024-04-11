@@ -116,7 +116,22 @@
         </v-text-field>
       </v-slide-y-transition>
       <v-spacer />
-      <div v-if="selectedId !== -1" center-vertical>
+      <div>
+        <v-tooltip bottom>
+          <template v-slot:activator="{ on, attrs }">
+            <v-btn
+              v-bind="attrs"
+              v-on:click="notifySettings = true"
+              v-on="on"
+              icon
+            >
+              <v-icon>mdi-bell-cog-outline</v-icon>
+            </v-btn>
+          </template>
+          <span>Enable notifications</span>
+        </v-tooltip>
+      </div>
+      <div v-if="selectedId !== -1" center-vertical class="ms-2">
         <v-tooltip bottom>
           <template v-slot:activator="{ on, attrs }">
             <v-btn
@@ -145,12 +160,13 @@
           open-on-click
           rounded
         >
-          <template slot="label" slot-scope="{ item, leaf }" class="ma-0">
+          <template slot="label" slot-scope="{ item, leaf }">
             <div
               v-bind:class="{
                 primary: item.blink || selectedId === item.id,
                 'white--text': item.blink || selectedId === item.id,
                 'px-2': true,
+                'ma-0': true,
                 rounded: true,
               }"
               v-on:click="getProperties(item)"
@@ -452,6 +468,98 @@
       </v-card>
     </v-dialog>
 
+    <v-dialog v-model="notifySettings" max-width="70ch" persistent scrollable>
+      <v-card>
+        <v-card-title>Notifications</v-card-title>
+        <v-card-text class="d-flex flex-column">
+          <div class="d-flex align-center">
+            <v-text-field
+              v-model="notifyEntry"
+              v-bind:outlined="outline"
+              v-on:click:append-outer="addNotifyEntry"
+              v-on:keyup.enter="addNotifyEntry"
+              append-outer-icon="mdi-bell-plus-outline"
+              clear-icon="mdi-close"
+              label="Notify topic"
+              clearable
+            />
+            <v-btn-toggle v-model="notifyFilterType" class="ms-4">
+              <v-btn
+                v-bind:value="searchModes.CASES"
+                v-on:click.stop
+                title="Uppercase/Lowercase"
+                small
+                icon
+              >
+                <v-icon small>mdi-format-letter-case</v-icon>
+              </v-btn>
+              <v-btn
+                v-bind:value="searchModes.WORDS"
+                v-on:click.stop
+                title="Match whole word"
+                small
+                icon
+              >
+                <v-icon small>mdi-format-letter-matches</v-icon>
+              </v-btn>
+              <v-btn
+                v-bind:value="searchModes.REG_EXP"
+                v-on:click.stop
+                title="Regular expression"
+                small
+                icon
+              >
+                <v-icon small>mdi-regex</v-icon>
+              </v-btn>
+            </v-btn-toggle>
+            <v-tooltip bottom>
+              <template v-slot:activator="{ on, attrs }">
+                <v-btn
+                  v-bind="attrs"
+                  v-on="on"
+                  v-on:click="searchInfoDialog = true"
+                  class="ms-2"
+                  icon
+                >
+                  <v-icon>mdi-information-outline</v-icon>
+                </v-btn>
+              </template>
+              <span>Information about searching</span>
+            </v-tooltip>
+          </div>
+          <div class="mt-2">
+            <div>Notifications active for:</div>
+            <v-list>
+              <div v-for="(entry, i) in notifyEntries" v-bind:key="entry">
+                <v-list-item>
+                  <v-list-item-avatar>
+                    <v-icon>mdi-bell-outline</v-icon>
+                  </v-list-item-avatar>
+                  <v-list-item-content>
+                    <v-list-item-title>{{ entry }}</v-list-item-title>
+                  </v-list-item-content>
+                  <v-list-item-action>
+                    <v-btn
+                      v-on:click="deleteNotifyEntry(entry)"
+                      color="error"
+                      icon
+                    >
+                      <v-icon>mdi-delete-outline</v-icon>
+                    </v-btn>
+                  </v-list-item-action>
+                </v-list-item>
+                <v-divider v-if="i < notifyEntries.length - 1" />
+              </div>
+            </v-list>
+          </div>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer />
+          <v-btn v-on:click="notifySettings = false" text> Done </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
     <v-dialog v-model="searchInfoDialog" max-width="70ch" persistent scrollable>
       <v-card>
         <v-card-title>How to search</v-card-title>
@@ -615,6 +723,10 @@ export default {
     filterType: undefined,
     searchModes: SearchEngine.modes,
     searchQuery: SearchEngine.QUERY,
+    notifySettings: false,
+    notifyFilterType: undefined,
+    notifyEntry: undefined,
+    notifyEntries: [],
   }),
 
   computed: {
@@ -777,7 +889,35 @@ export default {
         this.treeData.splice(index, 1);
       }
 
+      if (!toDelete) {
+        this.notify(node);
+      }
+
       return toDelete;
+    },
+    addNotifyEntry() {
+      if (!this.notifyEntry) return;
+
+      this.notifyEntries.push(this.notifyEntry);
+
+      this.notifyEntries = [...new Set(this.notifyEntries)];
+      this.notifyEntry = undefined;
+    },
+    deleteNotifyEntry(entry) {
+      this.notifyEntries = this.notifyEntries.filter((item) => item !== entry);
+    },
+    notify(node) {
+      this.notifyEntries
+        .flatMap((entry) => {
+          return node.deepSearch(
+            entry,
+            this.notifyFilterType || SearchEngine.modes.ALL
+          );
+        })
+        .forEach((foundNode) => {
+          if (!foundNode?.value) return;
+          this.sendNotification(foundNode.value.topic, foundNode.value.payload);
+        });
     },
     publishItem() {
       this.itemEditing.value.topic = this.itemEditing.topic;
