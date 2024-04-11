@@ -114,6 +114,9 @@ Vue.mixin({
 
       document.head.appendChild(scrollTheme);
     },
+    sendNotification(title, body, onClick = () => {}) {
+      new window.Notification(title, { body }).onclick = onClick;
+    },
   },
 });
 
