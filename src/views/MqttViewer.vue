@@ -476,49 +476,60 @@
             <v-text-field
               v-model="notifyEntry"
               v-bind:outlined="outline"
-              v-on:click:append-outer="addNotifyEntry"
               v-on:keyup.enter="addNotifyEntry"
-              append-outer-icon="mdi-bell-plus-outline"
               clear-icon="mdi-close"
-              label="Notify topic"
+              label="Add condition"
               clearable
-            />
-            <v-btn-toggle v-model="notifyFilterType" class="ms-4">
-              <v-btn
-                v-bind:value="searchModes.CASES"
-                v-on:click.stop
-                title="Uppercase/Lowercase"
-                small
-                icon
-              >
-                <v-icon small>mdi-format-letter-case</v-icon>
-              </v-btn>
-              <v-btn
-                v-bind:value="searchModes.WORDS"
-                v-on:click.stop
-                title="Match whole word"
-                small
-                icon
-              >
-                <v-icon small>mdi-format-letter-matches</v-icon>
-              </v-btn>
-              <v-btn
-                v-bind:value="searchModes.REG_EXP"
-                v-on:click.stop
-                title="Regular expression"
-                small
-                icon
-              >
-                <v-icon small>mdi-regex</v-icon>
-              </v-btn>
-            </v-btn-toggle>
+            >
+              <template slot="append-outer">
+                <div class="d-flex align-center">
+                  <v-btn-toggle v-model="notifyFilterType">
+                    <v-btn
+                      v-bind:value="searchModes.CASES"
+                      v-on:click.stop
+                      title="Uppercase/Lowercase"
+                      small
+                      icon
+                    >
+                      <v-icon small>mdi-format-letter-case</v-icon>
+                    </v-btn>
+                    <v-btn
+                      v-bind:value="searchModes.WORDS"
+                      v-on:click.stop
+                      title="Match whole word"
+                      small
+                      icon
+                    >
+                      <v-icon small>mdi-format-letter-matches</v-icon>
+                    </v-btn>
+                    <v-btn
+                      v-bind:value="searchModes.REG_EXP"
+                      v-on:click.stop
+                      title="Regular expression"
+                      small
+                      icon
+                    >
+                      <v-icon small>mdi-regex</v-icon>
+                    </v-btn>
+                  </v-btn-toggle>
+                  <v-btn
+                    v-bind:disabled="!notifyEntry"
+                    v-on:click="addNotifyEntry"
+                    class="ms-1"
+                    icon
+                  >
+                    <v-icon>mdi-plus</v-icon>
+                  </v-btn>
+                </div>
+              </template>
+            </v-text-field>
             <v-tooltip bottom>
               <template v-slot:activator="{ on, attrs }">
                 <v-btn
                   v-bind="attrs"
                   v-on="on"
                   v-on:click="searchInfoDialog = true"
-                  class="ms-2"
+                  class="ms-4"
                   icon
                 >
                   <v-icon>mdi-information-outline</v-icon>
@@ -528,32 +539,90 @@
             </v-tooltip>
           </div>
           <div class="mt-2">
-            <div>Notifications active for:</div>
-            <v-list>
-              <div v-for="(entry, i) in notifyEntries" v-bind:key="entry">
-                <v-list-item>
+            <div class="d-flex justify-space-between align-center">
+              <span>Notification conditions:</span>
+              <v-btn-toggle v-model="notifyJoinType">
+                <v-btn
+                  v-bind:value="joinModes.OR"
+                  v-on:click.stop
+                  title="Join conditions with OR operator"
+                  small
+                  icon
+                >
+                  <span class="px-2">{{ joinModes.OR }}</span>
+                </v-btn>
+                <v-btn
+                  v-bind:value="joinModes.AND"
+                  v-on:click.stop
+                  title="Join conditions with AND operator"
+                  small
+                  icon
+                >
+                  <span class="px-2">{{ joinModes.AND }}</span>
+                </v-btn>
+              </v-btn-toggle>
+            </div>
+            <v-list dense>
+              <div
+                v-for="(entry, i) in notifyEntries"
+                v-bind:key="entry.notifyEntry"
+              >
+                <v-list-item dense>
                   <v-list-item-avatar>
-                    <v-icon>mdi-bell-outline</v-icon>
+                    <v-icon color="primary" small>mdi-pin-outline</v-icon>
                   </v-list-item-avatar>
                   <v-list-item-content>
-                    <v-list-item-title>{{ entry }}</v-list-item-title>
+                    <v-list-item-title
+                      style="font-size: 1.1em"
+                      class="d-flex align-center justify-space-between"
+                    >
+                      <span>{{ entry.notifyEntry }}</span>
+                      <v-tooltip bottom>
+                        <template v-slot:activator="{ attr, on }">
+                          <v-chip
+                            v-bind="attr"
+                            v-on="on"
+                            class="me-4"
+                            color="primary"
+                            outlined
+                            small
+                          >
+                            <v-icon small>
+                              {{ getFilterTypeIcon(entry.filterType) }}
+                            </v-icon>
+                          </v-chip>
+                        </template>
+                        <span>Selected match mode</span>
+                      </v-tooltip>
+                    </v-list-item-title>
                   </v-list-item-content>
                   <v-list-item-action>
                     <v-btn
                       v-on:click="deleteNotifyEntry(entry)"
                       color="error"
                       icon
+                      small
                     >
-                      <v-icon>mdi-delete-outline</v-icon>
+                      <v-icon small>mdi-delete-outline</v-icon>
                     </v-btn>
                   </v-list-item-action>
                 </v-list-item>
-                <v-divider v-if="i < notifyEntries.length - 1" />
+                <div
+                  v-if="i < notifyEntries.length - 1"
+                  class="d-flex align-center"
+                >
+                  <v-divider />
+                  <span class="mx-4 caption"> {{ notifyJoinType }} </span>
+                  <v-divider />
+                </div>
               </div>
             </v-list>
           </div>
         </v-card-text>
         <v-card-actions>
+          <v-btn v-on:click="notifyEntries = []" color="error" text>
+            Reset
+          </v-btn>
           <v-spacer />
           <v-btn v-on:click="notifySettings = false" text> Done </v-btn>
         </v-card-actions>
@@ -695,6 +764,7 @@ div[center-vertical] {
 </style>
 
 <script>
+import Vue from "vue";
 import Connection from "../utils/Connection";
 import ConnectionProperties from "../models/ConnectionProperties";
 import SearchEngine from "../utils/SearchEngine";
@@ -727,6 +797,11 @@ export default {
     notifyFilterType: undefined,
     notifyEntry: undefined,
     notifyEntries: [],
+    notifyJoinType: "or",
+    joinModes: {
+      OR: "or",
+      AND: "and",
+    },
   }),
 
   computed: {
@@ -898,26 +973,65 @@ export default {
     addNotifyEntry() {
       if (!this.notifyEntry) return;
 
-      this.notifyEntries.push(this.notifyEntry);
+      const entry = {
+        notifyEntry: this.notifyEntry,
+        filterType: this.notifyFilterType || SearchEngine.modes.ALL,
+      };
+      const entryIndex = this.notifyEntries.findIndex(
+        (e) => e.notifyEntry === entry.notifyEntry
+      );
 
-      this.notifyEntries = [...new Set(this.notifyEntries)];
+      if (entryIndex < 0) this.notifyEntries.push(entry);
+      else Vue.set(this.notifyEntries, entryIndex, entry);
+
       this.notifyEntry = undefined;
+      this.notifyFilterType = undefined;
+    },
+    getFilterTypeIcon(filterType) {
+      switch (filterType) {
+        case this.searchModes.CASES:
+          return "mdi-format-letter-case";
+        case this.searchModes.WORDS:
+          return "mdi-format-letter-matches";
+        case this.searchModes.REG_EXP:
+          return "mdi-regex";
+        default:
+          return "mdi-equal";
+      }
     },
     deleteNotifyEntry(entry) {
       this.notifyEntries = this.notifyEntries.filter((item) => item !== entry);
     },
     notify(node) {
-      this.notifyEntries
-        .flatMap((entry) => {
-          return node.deepSearch(
-            entry,
-            this.notifyFilterType || SearchEngine.modes.ALL
-          );
-        })
-        .forEach((foundNode) => {
-          if (!foundNode?.value) return;
-          this.sendNotification(foundNode.value.topic, foundNode.value.payload);
+      let foundNodes = this.notifyEntries.flatMap((entry) => {
+        return node.deepSearch(entry.notifyEntry, entry.filterType);
+      });
+
+      if (this.notifyJoinType === this.joinModes.AND) {
+        foundNodes = foundNodes.filter((foundNode) => {
+          return foundNode
+            ? this.notifyEntries.reduce((previous, entry) => {
+                return (
+                  previous &&
+                  foundNode.search(entry.notifyEntry, entry.filterType)
+                );
+              }, true)
+            : false;
         });
+      }
+
+      foundNodes.forEach((foundNode) => {
+        if (!foundNode?.value) return;
+        this.sendNotification(
+          foundNode.value.topic,
+          foundNode.value.payload,
+          () => {
+            // Open the app if closed/minimized and select the topic
+            this.getProperties(foundNode);
+            ipcRenderer.send("focusWindow");
+          }
+        );
+      });
     },
     publishItem() {
       this.itemEditing.value.topic = this.itemEditing.topic;
