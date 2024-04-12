@@ -259,6 +259,14 @@ async function createWindow() {
   ipcMain.on("enterHomePage", () => {
     Menu.setApplicationMenu(Menu.buildFromTemplate(menuTemplate(pages.HOME)));
   });
+  ipcMain.on("focusWindow", () => {
+    if (!win) return;
+    if (!win.isVisible()) win.show();
+    if (win.isMinimized()) win.restore();
+
+    // Ensure window is visible then focus
+    setTimeout(() => win.focus(), 200);
+  });
 
   Menu.setApplicationMenu(Menu.buildFromTemplate(menuTemplate()));
 
