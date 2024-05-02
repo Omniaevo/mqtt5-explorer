@@ -1,6 +1,6 @@
 {
   "name": "mqtt5-explorer",
-  "version": "1.13.1",
+  "version": "1.14.0",
   "private": false,
   "license": "GPLv3",
   "description": "A simple MQTT client that supports MQTT5 protocol.",
@@ -37,6 +37,7 @@
     "core-js": "^3.27.0",
     "electron-store": "^8.1.0",
     "electron-updater": "^6.1.7",
+    "moment": "^2.30.1",
     "mqtt": "^4.3.7",
     "register-service-worker": "^1.7.2",
     "uuid": "^8.3.2",

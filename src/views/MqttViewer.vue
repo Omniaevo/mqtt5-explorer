@@ -125,10 +125,10 @@
               v-on="on"
               icon
             >
-              <v-icon>mdi-bell-cog-outline</v-icon>
+              <v-icon>mdi-message-badge-outline</v-icon>
             </v-btn>
           </template>
-          <span>Enable notifications</span>
+          <span>Notifications and logging</span>
         </v-tooltip>
       </div>
       <div v-if="selectedId !== -1" center-vertical class="ms-2">
@@ -470,7 +470,7 @@
 
     <v-dialog v-model="notifySettings" max-width="70ch" persistent scrollable>
       <v-card>
-        <v-card-title>Notifications</v-card-title>
+        <v-card-title>Notifications and logging</v-card-title>
         <v-card-text class="d-flex flex-column">
           <div class="d-flex align-center">
             <v-text-field
@@ -540,7 +540,7 @@
           </div>
           <div class="mt-2">
             <div class="d-flex justify-space-between align-center">
-              <span>Notification conditions:</span>
+              <span>Trigger conditions:</span>
               <v-btn-toggle v-model="notifyJoinType">
                 <v-btn
                   v-bind:value="joinModes.OR"
@@ -618,9 +618,31 @@
               </div>
             </v-list>
           </div>
+          <div class="mt-2 d-flex align-center justify-space-between">
+            <v-switch
+              v-model="notifySwitch"
+              label="Enable notifications"
+              inset
+            />
+            <v-switch
+              v-model="fileLoggingSwitch"
+              label="Enable file logging"
+              inset
+            />
+          </div>
+          <v-slide-y-transition>
+            <div v-if="fileLoggingSwitch">
+              <v-text-field
+                v-model="messageLogger.logsFolder"
+                v-bind:outlined="outline"
+                label="Logs folder location"
+                readonly
+              />
+            </div>
+          </v-slide-y-transition>
         </v-card-text>
         <v-card-actions>
-          <v-btn v-on:click="notifyEntries = []" color="error" text>
+          <v-btn v-on:click="resetNotifyAndLogging" color="error" text>
             Reset
           </v-btn>
           <v-spacer />
@@ -769,6 +791,7 @@ import Connection from "../utils/Connection";
 import ConnectionProperties from "../models/ConnectionProperties";
 import SearchEngine from "../utils/SearchEngine";
 import TreeNode from "../models/TreeNode";
+import MessageLogger from "../utils/MessageLogger";
 import { ipcRenderer } from "electron";
 
 export default {
@@ -794,6 +817,8 @@ export default {
     searchModes: SearchEngine.modes,
     searchQuery: SearchEngine.QUERY,
     notifySettings: false,
+    notifySwitch: false,
+    fileLoggingSwitch: false,
     notifyFilterType: undefined,
     notifyEntry: undefined,
     notifyEntries: [],
@@ -802,6 +827,7 @@ export default {
       OR: "or",
       AND: "and",
     },
+    messageLogger: undefined,
   }),
 
   computed: {
@@ -839,6 +865,15 @@ export default {
     },
   },
 
+  watch: {
+    fileLoggingSwitch(newValue, oldValue) {
+      if (oldValue === newValue) return;
+
+      if (newValue) this.messageLogger?.startLogging();
+      else this.messageLogger?.stopLogging();
+    },
+  },
+
   beforeMount() {
     this.connectionProperties.init(
       this.$store.getters.getConnectionByIndex(this.$route.params.index)
@@ -849,6 +884,8 @@ export default {
       this.merge,
       () => this.treeData.length
     );
+
+    this.messageLogger = new MessageLogger(this.connectionProperties.name);
 
     ipcRenderer.send("enterViewerPage");
     ipcRenderer.on("searchPressed", this.toggleSearchField);
@@ -863,6 +900,7 @@ export default {
   },
 
   beforeDestroy() {
+    this.messageLogger?.stopLogging();
     ipcRenderer.removeListener("searchPressed", this.toggleSearchField);
   },
 
@@ -965,7 +1003,7 @@ export default {
       }
 
       if (!toDelete) {
-        this.notify(node);
+        this.notifyAndWrite(node);
       }
 
       return toDelete;
@@ -999,10 +1037,15 @@ export default {
           return "mdi-equal";
       }
     },
+    resetNotifyAndLogging() {
+      this.notifySwitch = false;
+      this.fileLoggingSwitch = false;
+      this.notifyEntries = [];
+    },
     deleteNotifyEntry(entry) {
       this.notifyEntries = this.notifyEntries.filter((item) => item !== entry);
     },
-    notify(node) {
+    notifyAndWrite(node) {
       let foundNodes = this.notifyEntries.flatMap((entry) => {
         return node.deepSearch(entry.notifyEntry, entry.filterType);
       });
@@ -1022,15 +1065,24 @@ export default {
 
       foundNodes.forEach((foundNode) => {
         if (!foundNode?.value) return;
-        this.sendNotification(
-          foundNode.value.topic,
-          foundNode.value.payload,
-          () => {
-            // Open the app if closed/minimized and select the topic
-            this.getProperties(foundNode);
-            ipcRenderer.send("focusWindow");
-          }
-        );
+
+        if (this.fileLoggingSwitch) {
+          // Write entry to file
+          this.messageLogger.enqueue(foundNode.value);
+        }
+
+        if (this.notifySwitch) {
+          // Send a system notification
+          this.sendNotification(
+            foundNode.value.topic,
+            foundNode.value.payload,
+            () => {
+              // Open the app if closed/minimized and select the topic
+              this.getProperties(foundNode);
+              ipcRenderer.send("focusWindow");
+            }
+          );
+        }
       });
     },
     publishItem() {
