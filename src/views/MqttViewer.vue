@@ -116,21 +116,6 @@
         </v-text-field>
       </v-slide-y-transition>
       <v-spacer />
-      <div>
-        <v-tooltip bottom>
-          <template v-slot:activator="{ on, attrs }">
-            <v-btn
-              v-bind="attrs"
-              v-on:click="notifySettings = true"
-              v-on="on"
-              icon
-            >
-              <v-icon>mdi-message-badge-outline</v-icon>
-            </v-btn>
-          </template>
-          <span>Notifications and logging</span>
-        </v-tooltip>
-      </div>
       <div v-if="selectedId !== -1" center-vertical class="ms-2">
         <v-tooltip bottom>
           <template v-slot:activator="{ on, attrs }">
@@ -149,7 +134,7 @@
       </div>
     </v-app-bar>
 
-    <div class="mx-4 my-2 explorer-grid-container">
+    <div class="ma-2 explorer-grid-container">
       <v-card class="treeview-container" flat>
         <v-treeview
           v-bind:filter="filterTree"
@@ -432,9 +417,20 @@
               </v-card>
             </v-expansion-panel-content>
             <v-expansion-panel-content v-else>
-              <v-btn v-on:click="newForPublishing()" block>
-                <v-icon>mdi-plus</v-icon>
-              </v-btn>
+              <v-tooltip bottom>
+                <template v-slot:activator="{ on, attrs }">
+                  <v-btn
+                    v-bind="attrs"
+                    v-on:click="newForPublishing()"
+                    v-on="on"
+                    color="primary"
+                    block
+                  >
+                    <v-icon>mdi-plus</v-icon>
+                  </v-btn>
+                </template>
+                <span>Create a new topic</span>
+              </v-tooltip>
             </v-expansion-panel-content>
           </v-expansion-panel>
         </v-expansion-panels>
@@ -889,6 +885,7 @@ export default {
 
     ipcRenderer.send("enterViewerPage");
     ipcRenderer.on("searchPressed", this.toggleSearchField);
+    ipcRenderer.on("notificationPressed", this.toggleNotificationsDialog);
   },
 
   mounted() {
@@ -902,6 +899,11 @@ export default {
   beforeDestroy() {
     this.messageLogger?.stopLogging();
     ipcRenderer.removeListener("searchPressed", this.toggleSearchField);
+    // eslint-disable-next-line prettier/prettier
+    ipcRenderer.removeListener(
+      "notificationPressed",
+      this.toggleNotificationsDialog
+    );
   },
 
   methods: {
@@ -914,6 +916,9 @@ export default {
         if (!this.searchTreeVisible) this.searchTerm = undefined;
         else this.$refs.searchField.focus();
       });
+    },
+    toggleNotificationsDialog() {
+      this.notifySettings = !this.notifySettings;
     },
     disconnectFromMqtt(msg = undefined) {
       this.$connection.disconnect(() => {
