@@ -1,5 +1,37 @@
 <template>
-  <v-container class="connection-container">
+  <div class="connection-container">
+    <v-app-bar flat>
+      <div v-on:click="scrollTabs('top')" class="title" style="cursor: pointer">
+        MQTT Connections
+      </div>
+      <v-spacer />
+      <v-text-field
+        v-model="searchConnection"
+        label="Search connections"
+        clearable
+        dense
+        hide-details
+        outlined
+      />
+      <v-spacer />
+      <v-tooltip bottom>
+        <template v-slot:activator="{ on, attrs }">
+          <v-btn
+            v-bind="attrs"
+            v-on:click="addTmpConnection"
+            v-on="on"
+            class="me-2"
+            color="primary"
+            fab
+            small
+          >
+            <v-icon>mdi-plus</v-icon>
+          </v-btn>
+        </template>
+        <span>New connection</span>
+      </v-tooltip>
+    </v-app-bar>
+
     <v-navigation-drawer
       v-model="settingsDrawer"
       width="62ch"
@@ -180,93 +212,62 @@
       </template>
     </v-navigation-drawer>
 
-    <div class="caption client-id grey--text pa-2">
-      <span>Client ID:</span>
-      <span class="primary--text font-weight-bold">{{ clientId }}</span>
-    </div>
-
-    <div class="caption version-number grey--text pa-2">
-      <div class="d-flex align-center">
-        <v-img class="me-2" src="../assets/logo.svg" style="max-width: 1.5em" />
-        v{{ version }}
-      </div>
-    </div>
-
-    <v-card class="card-width">
-      <v-toolbar color="primary" dark flat text>
-        <v-toolbar-title>MQTT Connections</v-toolbar-title>
-        <v-spacer />
-        <div class="d-flex align-center">
-          <v-text-field
-            v-model="searchConnection"
-            class="pe-4"
-            label="Search connections"
-            color="white"
-            clearable
-            dense
-            hide-details
-            outlined
-          />
-          <v-tooltip bottom>
-            <template v-slot:activator="{ on, attrs }">
-              <v-btn
-                v-bind="attrs"
-                v-on:click="addTmpConnection"
-                v-on="on"
-                class="me-2"
-                fab
-                light
-                small
-              >
-                <v-icon color="primary">mdi-plus</v-icon>
-              </v-btn>
-            </template>
-            <span>New connection</span>
-          </v-tooltip>
-        </div>
-      </v-toolbar>
-
-      <div v-bind:class="'tab-no-overflow-' + outline" row>
-        <div class="tab-scroll pe-5">
-          <v-tabs v-model="tabId" class="tab-width" vertical>
-            <v-tab
-              v-for="(connection, i) in connectionsAvailable"
-              v-show="filteredConnectionIDs.includes(connection.id)"
-              v-bind:key="'tab-' + i"
-            >
-              <div
-                v-bind:class="{
-                  'tab-truncate': true,
-                  'tab-width': true,
-                  'text-left': true,
-                  'primary--text': tabId === i,
-                  'text--lighten-2': darkTheme,
-                }"
-              >
-                {{ connection.name }}
-              </div>
-            </v-tab>
-          </v-tabs>
-        </div>
-
-        <v-tabs-items v-model="tabId" class="tab-items-container">
-          <v-tab-item
+    <div class="ma-2 connection-area">
+      <v-card id="tabs-list" class="conn-tabs-container" flat>
+        <v-tabs v-model="tabId" vertical>
+          <v-tab
             v-for="(connection, i) in connectionsAvailable"
-            v-bind:key="'connection-' + connection.id"
+            v-show="filteredConnectionIDs.includes(connection.id)"
+            v-bind:key="'tab-' + i"
+            v-bind:class="{
+              'tabs-left': filteredConnectionIDs.includes(connection.id),
+            }"
           >
-            <v-card-text>
-              <!-- Input form -->
-              <ConnectionForm
-                v-bind:properties="connection"
-                v-on:connect="connect($event, i)"
-                v-on:delete="confirmDelete(i)"
-                v-on:updated="dataChanged($event, i)"
-              />
-            </v-card-text>
-          </v-tab-item>
-        </v-tabs-items>
+            <div
+              v-bind:class="{
+                'tab-truncate': true,
+                'primary--text': tabId === i,
+                'text--lighten-2': darkTheme,
+              }"
+            >
+              {{ connection.name }}
+            </div>
+          </v-tab>
+        </v-tabs>
+      </v-card>
+      <v-tabs-items v-model="tabId" class="tab-items-container">
+        <v-tab-item
+          v-for="(connection, i) in connectionsAvailable"
+          v-bind:key="'connection-' + connection.id"
+          class="tab-items-container"
+        >
+          <ConnectionForm
+            v-bind:properties="connection"
+            v-on:connect="connect($event, i)"
+            v-on:delete="confirmDelete(i)"
+            v-on:updated="dataChanged($event, i)"
+          />
+        </v-tab-item>
+      </v-tabs-items>
+    </div>
+
+    <div class="foot-bar">
+      <div class="caption client-id grey--text pa-2">
+        <span>Client ID:</span>
+        <span class="primary--text font-weight-bold">{{ clientId }}</span>
       </div>
-    </v-card>
+
+      <div class="caption grey--text pa-2">
+        <div class="d-flex align-center">
+          <v-img
+            class="me-2"
+            src="../assets/logo.svg"
+            style="max-width: 1.5em"
+          />
+          v{{ version }}
+        </div>
+      </div>
+    </div>
 
     <!-- Connection deletion confirmation -->
     <v-dialog
@@ -307,51 +308,38 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
-  </v-container>
+  </div>
 </template>
 
 <style scoped>
 .connection-container {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  height: 100vh;
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: min-content 1fr min-content;
 }
 
-div[row] {
-  display: flex;
-  flex-direction: row;
-  gap: 1.5em;
+.connection-area {
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  grid-template-rows: 1fr;
+  gap: 1em;
 }
 
-.card-width {
-  width: 94ch;
-}
-
-.tab-width {
-  width: 30ch;
+.conn-tabs-container {
+  overflow: auto;
 }
 
 .tab-items-container {
   width: 100%;
+  height: 100%;
+  background: transparent !important;
 }
 
-.tab-no-overflow-false {
-  min-height: 33ch !important;
-  max-height: 40ch !important;
-  overflow: hidden !important;
-}
-
-.tab-no-overflow-true {
-  min-height: 38ch !important;
-  max-height: 42ch !important;
-  overflow: hidden !important;
-}
-
-.tab-scroll {
-  overflow: auto !important;
-  overflow-x: hidden !important;
+.tabs-left {
+  display: flex;
+  justify-content: left;
 }
 
 .tab-truncate {
@@ -360,16 +348,13 @@ div[row] {
   text-overflow: ellipsis;
 }
 
-.version-number {
-  position: absolute;
-  bottom: 0;
-  right: 0;
+.foot-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .client-id {
-  position: absolute;
-  bottom: 0;
-  left: 0;
   display: flex;
   gap: 0.5em;
   align-items: center;
@@ -510,12 +495,22 @@ export default {
   },
 
   methods: {
+    scrollTabs(to = "bottom") {
+      this.$nextTick(() => {
+        const tabs = document.querySelector("#tabs-list");
+        const direction = to === "bottom" ? tabs.scrollHeight : 0;
+
+        tabs.scroll({ top: direction, behavior: "smooth" });
+      });
+    },
     toggleSettingsDrawer() {
       this.settingsDrawer = !this.settingsDrawer;
     },
     addTmpConnection() {
       this.$store.commit("addNewConnection", new ConnectionProperties());
+      this.searchConnection = undefined;
       this.tabId = this.connectionsAvailable.length - 1;
+      this.scrollTabs("bottom");
     },
     dataChanged(data, index) {
       data.saved = true;
@@ -533,6 +528,7 @@ export default {
         callback: () => {
           this.persistConnections();
           this.tabId = 0;
+          this.scrollTabs("top");
         },
       });
     },

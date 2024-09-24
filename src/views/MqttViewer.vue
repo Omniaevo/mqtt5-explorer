@@ -134,7 +134,7 @@
       </div>
     </v-app-bar>
 
-    <div class="mx-4 my-2 explorer-grid-container">
+    <div class="ma-2 explorer-grid-container">
       <v-card class="treeview-container" flat>
         <v-treeview
           v-bind:filter="filterTree"
@@ -417,9 +417,20 @@
               </v-card>
             </v-expansion-panel-content>
             <v-expansion-panel-content v-else>
-              <v-btn v-on:click="newForPublishing()" block>
-                <v-icon>mdi-plus</v-icon>
-              </v-btn>
+              <v-tooltip bottom>
+                <template v-slot:activator="{ on, attrs }">
+                  <v-btn
+                    v-bind="attrs"
+                    v-on:click="newForPublishing()"
+                    v-on="on"
+                    color="primary"
+                    block
+                  >
+                    <v-icon>mdi-plus</v-icon>
+                  </v-btn>
+                </template>
+                <span>Create a new topic</span>
+              </v-tooltip>
             </v-expansion-panel-content>
           </v-expansion-panel>
         </v-expansion-panels>
