@@ -118,12 +118,12 @@ let menuTemplate = (page = pages.HOME) => [
         role: "copy",
       },
       {
-        label: "Paste",
-        role: "paste",
-      },
-      {
         label: "Cut",
         role: "cut",
+      },
+      {
+        label: "Paste",
+        role: "paste",
       },
       ...(page === pages.HOME && !isMac
         ? [
@@ -141,11 +141,13 @@ let menuTemplate = (page = pages.HOME) => [
             },
           ]
         : []),
-      ...(page === pages.VIEWER
-        ? [
-            {
-              type: "separator",
-            },
+    ],
+  },
+  ...(page === pages.VIEWER
+    ? [
+        {
+          label: "Tools",
+          submenu: [
             {
               label: "Toggle search",
               accelerator: "CommandOrControl+F",
@@ -155,10 +157,19 @@ let menuTemplate = (page = pages.HOME) => [
                 }
               },
             },
-          ]
-        : []),
-    ],
-  },
+            {
+              label: "Toggle logging",
+              accelerator: "CommandOrControl+Shift+N",
+              click: () => {
+                if (win != undefined && win.webContents != undefined) {
+                  win.webContents.send("notificationPressed");
+                }
+              },
+            },
+          ],
+        },
+      ]
+    : []),
   ...(!isMac
     ? [
         {

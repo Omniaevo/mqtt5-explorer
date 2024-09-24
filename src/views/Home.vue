@@ -157,6 +157,12 @@
               {{ isMacOs ? "Cmd" : "Ctrl" }} + F
             </v-list-item-action-text>
           </v-list-item>
+          <v-list-item link>
+            <v-list-item-content>Notifications and logging</v-list-item-content>
+            <v-list-item-action-text>
+              {{ isMacOs ? "Cmd" : "Ctrl" }} + Shift + N
+            </v-list-item-action-text>
+          </v-list-item>
         </v-list>
       </v-list>
 
@@ -188,24 +194,36 @@
 
     <v-card class="card-width">
       <v-toolbar color="primary" dark flat text>
-        <v-toolbar-title>MQTT Connection</v-toolbar-title>
+        <v-toolbar-title>MQTT Connections</v-toolbar-title>
         <v-spacer />
-        <v-tooltip bottom>
-          <template v-slot:activator="{ on, attrs }">
-            <v-btn
-              v-bind="attrs"
-              v-on:click="addTmpConnection"
-              v-on="on"
-              class="me-2"
-              fab
-              light
-              small
-            >
-              <v-icon color="primary">mdi-plus</v-icon>
-            </v-btn>
-          </template>
-          <span>New connection</span>
-        </v-tooltip>
+        <div class="d-flex align-center">
+          <v-text-field
+            v-model="searchConnection"
+            class="pe-4"
+            label="Search connections"
+            color="white"
+            clearable
+            dense
+            hide-details
+            outlined
+          />
+          <v-tooltip bottom>
+            <template v-slot:activator="{ on, attrs }">
+              <v-btn
+                v-bind="attrs"
+                v-on:click="addTmpConnection"
+                v-on="on"
+                class="me-2"
+                fab
+                light
+                small
+              >
+                <v-icon color="primary">mdi-plus</v-icon>
+              </v-btn>
+            </template>
+            <span>New connection</span>
+          </v-tooltip>
+        </div>
       </v-toolbar>
 
       <div v-bind:class="'tab-no-overflow-' + outline" row>
@@ -213,6 +231,7 @@
           <v-tabs v-model="tabId" class="tab-width" vertical>
             <v-tab
               v-for="(connection, i) in connectionsAvailable"
+              v-show="filteredConnectionIDs.includes(connection.id)"
               v-bind:key="'tab-' + i"
             >
               <div
@@ -372,6 +391,7 @@ export default {
     deleteIndex: -1,
     settingsDrawer: false,
     deleteDialog: false,
+    searchConnection: undefined,
     colors: [
       { text: "Punchy Pink", value: { light: "#E91E63", dark: "#EC407A" } },
       { text: "Hipster Purple", value: { light: "#9C27B0", dark: "#AB47BC" } },
@@ -392,6 +412,15 @@ export default {
   computed: {
     version() {
       return process.env.VUE_APP_VERSION;
+    },
+    filteredConnectionIDs() {
+      return this.connectionsAvailable
+        .filter(
+          (c) =>
+            !this.searchConnection ||
+            c.name.toLowerCase().includes(this.searchConnection.toLowerCase())
+        )
+        .map((c) => c.id);
     },
     selectedTheme: {
       get() {
