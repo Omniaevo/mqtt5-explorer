@@ -63,8 +63,6 @@ class Connection {
       clean: true,
     };
 
-    console.log(options);
-
     if (this.#properties.username) {
       options.username = this.#properties.username;
     }

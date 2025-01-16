@@ -1,6 +1,6 @@
 {
   "name": "mqtt5-explorer",
-  "version": "1.16.0",
+  "version": "1.16.1",
   "private": false,
   "license": "GPLv3",
   "description": "A simple MQTT client that supports MQTT5 protocol.",
