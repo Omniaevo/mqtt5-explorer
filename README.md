@@ -64,6 +64,8 @@ npm run electron:build -- --win -p always # With GitHub publish
 # Flatpak
 # ⚠️ The flatpak and flatpak-builder packages need to be installed in order to build Flatpak bundles. ⚠️
 npm run electron:build -- --linux flatpak
+# Install and run the flatpak package
+flatpak install --user mqtt5-explorer-[VERSION]-linux-x86_64.flatpak && flatpak run com.omniaevo.mqtt5_explorer
 ```
 
 ## Customize configuration

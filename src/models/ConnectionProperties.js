@@ -13,6 +13,7 @@ class ConnectionProperties {
   password = undefined;
   tls = false;
   caCert = undefined;
+  clientId = undefined;
   clientCert = undefined;
   clientKey = undefined;
   caCertPath = undefined;
@@ -53,6 +54,7 @@ class ConnectionProperties {
     this.username = properties.username;
     this.password = properties.password;
     this.caCert = properties.caCert;
+    this.clientId = properties.clientId;
     this.clientCert = properties.clientCert;
     this.clientKey = properties.clientKey;
     this.caCertPath = properties.caCertPath;

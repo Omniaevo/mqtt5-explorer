@@ -53,7 +53,7 @@ class Connection {
 
   connect(clientProps, onConnect, onClose) {
     const options = {
-      clientId: clientProps.clientId,
+      clientId: this.#properties.clientId || clientProps.clientId,
       protocolVersion: this.#properties.version,
       rejectUnauthorized: this.#properties.validateCertificate,
       keepalive: clientProps.keepalive,
@@ -62,6 +62,8 @@ class Connection {
       resubscribe: true,
       clean: true,
     };
+
+    console.log(options);
 
     if (this.#properties.username) {
       options.username = this.#properties.username;

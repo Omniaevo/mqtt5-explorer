@@ -126,6 +126,23 @@
               </div>
               <v-divider class="mb-2" />
               <div row>
+                <v-text-field
+                  v-bind:value="clientId"
+                  v-bind:outlined="outline"
+                  label="Current client ID"
+                  style="max-width: 35%"
+                  readonly
+                  disabled
+                />
+                <v-text-field
+                  v-model="connectionData.clientId"
+                  v-bind:outlined="outline"
+                  label="Override client ID"
+                  clearable
+                />
+              </div>
+              <v-divider class="mb-2" />
+              <div row>
                 <v-combobox
                   v-model="connectionData.topics"
                   v-bind:outlined="outline"
