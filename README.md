@@ -46,7 +46,7 @@ npm run lint
 
 ## Compiles and minifies for production
 
-**N.B.**: the build process includes **electron publish**, a *.env* file with the `GITHUB_TOKEN` environment variable set is required.
+**N.B.**: the build process includes **electron publish**, a _.env_ file with the `GITHUB_TOKEN` environment variable set is required.
 
 ```bash
 # Linux
@@ -60,6 +60,10 @@ npm run electron:build -- --mac -p always # With GitHub publish
 # Windows
 npm run electron:build -- --win # Without publish
 npm run electron:build -- --win -p always # With GitHub publish
+
+# Flatpak
+# ⚠️ The flatpak and flatpak-builder packages need to be installed in order to build Flatpak bundles. ⚠️
+npm run electron:build -- --linux flatpak
 ```
 
 ## Customize configuration

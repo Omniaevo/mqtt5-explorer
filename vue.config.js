@@ -61,7 +61,7 @@ module.exports = {
         linux: {
           executableName: builderOpts.appStrings.executableName,
           icon: "build/icon/",
-          target: ["AppImage", "flatpak"],
+          target: ["AppImage"],
         },
         flatpak: {
           runtime: "org.freedesktop.Platform",
