@@ -54,7 +54,7 @@ module.exports = {
       nodeIntegration: true,
       contextIsolation: true,
       builderOptions: {
-        appId: "com.omniaevo.${name}",
+        appId: `com.omniaevo.${builderOpts.appStrings.executableName}`,
         artifactName: "${name}-${version}-${platform}-${arch}.${ext}",
         productName: "MQTT5 Explorer",
         publish: [...builderOpts.appRepos],
@@ -62,6 +62,25 @@ module.exports = {
           executableName: builderOpts.appStrings.executableName,
           icon: "build/icon/",
           target: ["AppImage"],
+        },
+        flatpak: {
+          runtime: "org.freedesktop.Platform",
+          runtimeVersion: "23.08",
+          sdk: "org.freedesktop.Sdk",
+          base: "org.electronjs.Electron2.BaseApp",
+          baseVersion: "23.08",
+          category: builderOpts.appCategories.linux,
+          description: builderOpts.appStrings.description,
+          desktop: {
+            StartupWMClass: builderOpts.appStrings.executableName,
+          },
+          finishArgs: [
+            "--share=ipc",
+            "--socket=x11",
+            "--socket=pulseaudio",
+            "--share=network",
+          ],
+          synopsis: builderOpts.appStrings.synopsis,
         },
         appImage: {
           category: builderOpts.appCategories.linux,
