@@ -1,5 +1,10 @@
 #!/bin/bash
 
+echo '>> Cleaning...'
+set +e
+rm -rf com.omniaevo.mqtt5-explorer.tar.gz
+set -e
+
 echo '>> Installing dependencies...'
 npm install
 
@@ -10,4 +15,4 @@ echo '>> Building app...'
 npm run electron:build -- --linux dir
 
 echo '>> Compressing...'
-tar -czf com.omniaevo.mqtt5-explorer.tar.gz dist_electron/linux-unpacked com.omniaevo.mqtt5-explorer.desktop com.omniaevo.mqtt5-explorer.png
+tar -czf com.omniaevo.mqtt5-explorer.tar.gz dist_electron/linux-unpacked linux-resources
