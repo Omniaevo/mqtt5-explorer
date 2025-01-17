@@ -15,6 +15,25 @@
   </description>
   
   <launchable type="desktop-id">io.github.Omniaevo.mqtt5-explorer.desktop</launchable>
+
+  <categories>
+  <category>Development</category>
+  <category>Network</category>
+</categories>
+
+  <keywords>
+    <keyword>mqtt</keyword>
+    <keyword>mqtt 5</keyword>
+    <keyword>mqtt client</keyword>
+    <keyword>iot</keyword>
+  </keywords>
+
+  <icon type="stock">io.github.omniaevo.mqtt5-explorer</icon>
+
+  <url type="bugtracker">https://github.com/Omniaevo/mqtt5-explorer/issues</url>
+  <url type="homepage">https://github.com/Omniaevo/mqtt5-explorer</url>
+  <url type="vcs-browser">https://github.com/Omniaevo/mqtt5-explorer/tree/master</url>
+
   <screenshots>
     <screenshot type="default">
       <image>https://github.com/Omniaevo/mqtt5-explorer/blob/master/screenshots/mqtt5-explorer-promotional.jpg</image>
@@ -26,4 +45,8 @@
       <image>https://github.com/Omniaevo/mqtt5-explorer/blob/master/screenshots/client-connection.png</image>
     </screenshot>
   </screenshots>
+
+  <releases>
+    <!-- No release yet -->
+  </releases>
 </component>
