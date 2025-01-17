@@ -37,12 +37,15 @@
   <screenshots>
     <screenshot type="default">
       <image>https://omniaevo.github.io/assets/images/mqtt5-explorer-promotional.jpg</image>
+      <caption>Light + Dark theme</caption>
     </screenshot>
     <screenshot>
       <image>https://omniaevo.github.io/assets/images/client-connection-white.png</image>
+      <caption>Light theme</caption>
     </screenshot>
     <screenshot>
       <image>https://omniaevo.github.io/assets/images/client-connection.png</image>
+      <caption>Dark theme</caption>
     </screenshot>
   </screenshots>
 
