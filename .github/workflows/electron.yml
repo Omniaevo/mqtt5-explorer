@@ -27,7 +27,7 @@ jobs:
           GH_TOKEN: ${{ secrets.PUBLISHING_TOKEN }}
       # This step was done by the AppImage build step
       # - run: npm run electron:build -- --linux dir
-      - run: tar -czf com.omniaevo.mqtt5-explorer.tar.gz dist_electron/linux-unpacked
+      - run: tar -czf com.omniaevo.mqtt5-explorer.tar.gz dist_electron/linux-unpacked com.omniaevo.mqtt5-explorer.desktop com.omniaevo.mqtt5-explorer.png
       - name: Get release
         id: get_release
         uses: bruceadams/get-release@v1.3.2
