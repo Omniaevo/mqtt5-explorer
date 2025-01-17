@@ -27,8 +27,8 @@ jobs:
           GH_TOKEN: ${{ secrets.PUBLISHING_TOKEN }}
       # This step was done by the AppImage build step
       # - run: npm run electron:build -- --linux dir
-      - run: tar -czf io.github.Omniaevo.mqtt5_explorer.tar.gz dist_electron/linux-unpacked linux-resources
-      - run: sha256sum io.github.Omniaevo.mqtt5_explorer.tar.gz
+      - run: tar -czf io.github.Omniaevo.mqtt5-explorer.tar.gz dist_electron/linux-unpacked linux-resources
+      - run: sha256sum io.github.Omniaevo.mqtt5-explorer.tar.gz
       - name: Get release
         id: get_release
         uses: bruceadams/get-release@v1.3.2
@@ -40,8 +40,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.PUBLISHING_TOKEN }}
         with:
           upload_url: ${{ steps.get_release.outputs.upload_url }}
-          asset_path: ./io.github.Omniaevo.mqtt5_explorer.tar.gz
-          asset_name: io.github.Omniaevo.mqtt5_explorer.tar.gz
+          asset_path: ./io.github.Omniaevo.mqtt5-explorer.tar.gz
+          asset_name: io.github.Omniaevo.mqtt5-explorer.tar.gz
           asset_content_type: application/x-gzip
 
   build-macos:
