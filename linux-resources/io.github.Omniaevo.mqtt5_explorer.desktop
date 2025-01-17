@@ -2,6 +2,6 @@
 Type=Application
 Name=MQTT5 Explorer
 Comment=A simple MQTT client that supports MQTT5 protocol
-Icon=com.github.Omniaevo.mqtt5-explorer
+Icon=io.github.Omniaevo.mqtt5_explorer
 Exec=mqtt5-explorer.sh
 Categories=Development;Network
