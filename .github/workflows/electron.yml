@@ -25,23 +25,6 @@ jobs:
       - run: npm run electron:build -- --linux -p always
         env:
           GH_TOKEN: ${{ secrets.PUBLISHING_TOKEN }}
-      # This step was done by the AppImage build step
-      # - run: npm run electron:build -- --linux dir
-      - run: tar -czf com.omniaevo.mqtt5-explorer.tar.gz dist_electron/linux-unpacked com.omniaevo.mqtt5-explorer.desktop com.omniaevo.mqtt5-explorer.png
-      - name: Get release
-        id: get_release
-        uses: bruceadams/get-release@v1.3.2
-        env:
-          GITHUB_TOKEN: ${{ secrets.PUBLISHING_TOKEN }}
-      - name: Upload linux unpacked
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.PUBLISHING_TOKEN }}
-        with:
-          upload_url: ${{ steps.get_release.outputs.upload_url }}
-          asset_path: ./com.omniaevo.mqtt5-explorer.tar.gz
-          asset_name: com.omniaevo.mqtt5-explorer.tar.gz
-          asset_content_type: application/x-gzip
 
   build-macos:
     needs: build-linux
