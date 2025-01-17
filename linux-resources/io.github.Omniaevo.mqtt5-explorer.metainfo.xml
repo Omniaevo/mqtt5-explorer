@@ -1,25 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <component type="desktop-application">
-  <id>io.github.omniaevo.mqtt5-explorer</id>
-  
+  <id>io.github.Omniaevo.mqtt5-explorer</id>
+
   <name>MQTT5 Explorer</name>
   <summary>A simple MQTT client that supports MQTT5 protocol.</summary>
-  
+
   <metadata_license>MIT</metadata_license>
   <project_license>GPL-3.0-only</project_license>
-  
+
   <description>
     <p>
       The aim of this application is to bring the users a client app capable of making use of all the features of the version 5 of the MQTT protocol. The lack of any application that can offer the compatibility with the newer version of the protocol forced us to implement one to test the data of MQTT brokers workwise, why not to share this tool with others that may have the same issue?
     </p>
   </description>
-  
+
   <launchable type="desktop-id">io.github.Omniaevo.mqtt5-explorer.desktop</launchable>
 
+  <developer_name>Omniaevo SRL</developer_name>
+
   <categories>
-  <category>Development</category>
-  <category>Network</category>
-</categories>
+    <category>Development</category>
+    <category>Network</category>
+  </categories>
 
   <keywords>
     <keyword>mqtt</keyword>
@@ -27,8 +29,6 @@
     <keyword>mqtt client</keyword>
     <keyword>iot</keyword>
   </keywords>
-
-  <icon type="stock">io.github.omniaevo.mqtt5-explorer</icon>
 
   <url type="bugtracker">https://github.com/Omniaevo/mqtt5-explorer/issues</url>
   <url type="homepage">https://github.com/Omniaevo/mqtt5-explorer</url>
@@ -47,6 +47,20 @@
   </screenshots>
 
   <releases>
-    <!-- No release yet -->
+    <release version="1.16.1" date="2025-01-17" />
+    <release version="1.16.0" date="2025-01-16" />
+    <release version="1.15.0" date="2024-09-24" />
+    <release version="1.14.0" date="2024-05-02" />
+    <release version="1.13.1" date="2024-04-12" />
+    <release version="1.13.0" date="2024-04-11" />
+    <release version="1.12.0" date="2024-02-16" />
+    <release version="1.10.0" date="2023-12-29" />
+    <release version="1.9.1" date="2023-01-17" />
+    <release version="1.8.5" date="2023-01-04" />
+    <release version="1.8.1" date="2022-09-05" />
+    <release version="1.8.0" date="2022-09-01" />
+    <release version="1.7.0" date="2022-05-25" />
   </releases>
+
+  <content_rating type="oars-1.1" />
 </component>
