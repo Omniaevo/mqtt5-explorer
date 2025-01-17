@@ -6,7 +6,7 @@
   <summary>A simple MQTT client that supports MQTT5 protocol.</summary>
   
   <metadata_license>MIT</metadata_license>
-  <project_license>GPL-3.0</project_license>
+  <project_license>GPL-3.0-only</project_license>
   
   <description>
     <p>
