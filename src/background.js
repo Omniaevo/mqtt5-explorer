@@ -18,6 +18,7 @@ import {
 import { createProtocol } from "vue-cli-plugin-electron-builder/lib";
 import path from "path";
 import Store from "electron-store";
+import fs from "fs";
 
 const isDevelopment = process.env.NODE_ENV !== "production";
 const isSingleInstance = app.requestSingleInstanceLock();
@@ -143,6 +144,51 @@ let menuTemplate = (page = pages.HOME) => [
         : []),
     ],
   },
+  ...(page === pages.HOME
+    ? [
+        {
+          label: "Connections",
+          submenu: [
+            {
+              label: "Export all",
+              click: () => {
+                if (win != undefined && win.webContents != undefined) {
+                  win.webContents.send("exportDataPressed");
+                }
+              },
+            },
+            {
+              label: "Import from file",
+              click: () => {
+                if (win == undefined || win.webContents == undefined) return;
+
+                dialog
+                  .showOpenDialog({
+                    properties: ["openFile"],
+                    filters: [
+                      { name: "Json (*.json)", extensions: ["json"] },
+                      { name: "All Files", extensions: ["*"] },
+                    ],
+                  })
+                  .then((result) => {
+                    if (result.canceled) return;
+
+                    const fileContent = fs.readFileSync(
+                      result.filePaths[0],
+                      "utf8"
+                    );
+
+                    win.webContents.send("importDataPressed", fileContent);
+                  })
+                  .catch((err) => {
+                    win.webContents.send("importDataPressed", `Error: ${err}`);
+                  });
+              },
+            },
+          ],
+        },
+      ]
+    : []),
   ...(page === pages.VIEWER
     ? [
         {
