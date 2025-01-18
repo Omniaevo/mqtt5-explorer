@@ -521,7 +521,9 @@ export default {
     },
     importConnectionData(_, fileContent) {
       try {
-        const connections = JSON.parse(fileContent) || [];
+        const connections = (JSON.parse(fileContent) || []).filter((props) =>
+          ConnectionProperties.validate(props)
+        );
 
         // Generate new UUIDs if not present (for retro-compatibility)
         connections.forEach((connection) => {
