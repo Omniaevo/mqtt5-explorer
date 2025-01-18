@@ -365,6 +365,8 @@
 import ConnectionForm from "../components/ConnectionForm.vue";
 import ConnectionProperties from "../models/ConnectionProperties";
 import { shell, ipcRenderer } from "electron";
+import { v4 as uuidv4 } from "uuid";
+import moment from "moment";
 
 export default {
   name: "Home",
@@ -487,14 +489,52 @@ export default {
 
     ipcRenderer.send("enterHomePage");
     ipcRenderer.on("settingsPressed", this.toggleSettingsDrawer);
+    ipcRenderer.on("exportDataPressed", this.exportConnectionData);
+    ipcRenderer.on("importDataPressed", this.importConnectionData);
   },
 
   beforeDestroy() {
     this.$store.commit("setSelectedConnectionId", this.tabId);
+
     ipcRenderer.removeListener("settingsPressed", this.toggleSettingsDrawer);
+    ipcRenderer.removeListener("exportDataPressed", this.exportConnectionData);
+    ipcRenderer.removeListener("importDataPressed", this.importConnectionData);
   },
 
   methods: {
+    exportConnectionData() {
+      const savedConnections = JSON.parse(
+        this.$estore.get(this.connectionsStore) || "[]"
+      );
+      const blob = new Blob([JSON.stringify(savedConnections, null, 2)], {
+        type: "application/json",
+      });
+      const fileDownload = document.createElement("a");
+
+      fileDownload.href = URL.createObjectURL(blob);
+      fileDownload.download = `connections-${moment().valueOf()}.json`;
+      fileDownload.style.display = "none";
+
+      document.body.appendChild(fileDownload);
+      fileDownload.click();
+      document.body.removeChild(fileDownload);
+    },
+    importConnectionData(_, fileContent) {
+      try {
+        const connections = JSON.parse(fileContent) || [];
+
+        // Generate new UUIDs if not present (for retro-compatibility)
+        connections.forEach((connection) => {
+          connection.id = connection.id || uuidv4();
+        });
+
+        this.$store.commit("loadPersistentConnections", connections);
+        this.persistConnections();
+      } catch {
+        // File is not valid
+        // Do nothing
+      }
+    },
     scrollTabs(to = "bottom") {
       this.$nextTick(() => {
         const tabs = document.querySelector("#tabs-list");

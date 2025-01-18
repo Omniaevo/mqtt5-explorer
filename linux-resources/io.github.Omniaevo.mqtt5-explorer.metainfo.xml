@@ -3,7 +3,7 @@
   <id>io.github.Omniaevo.mqtt5-explorer</id>
 
   <name>MQTT5 Explorer</name>
-  <summary>A simple MQTT client that supports MQTT5 protocol.</summary>
+  <summary>A simple but powerful MQTT5 client</summary>
 
   <metadata_license>MIT</metadata_license>
   <project_license>GPL-3.0-only</project_license>
@@ -13,6 +13,11 @@
       The aim of this application is to bring the users a client app capable of making use of all the features of the version 5 of the MQTT protocol. The lack of any application that can offer the compatibility with the newer version of the protocol forced us to implement one to test the data of MQTT brokers workwise, why not to share this tool with others that may have the same issue?
     </p>
   </description>
+
+  <branding>
+    <color type="primary" scheme_preference="light">#cba2c9</color>
+    <color type="primary" scheme_preference="dark">#7094c9</color>
+  </branding>
 
   <launchable type="desktop-id">io.github.Omniaevo.mqtt5-explorer.desktop</launchable>
 
