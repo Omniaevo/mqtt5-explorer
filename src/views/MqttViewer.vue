@@ -116,6 +116,22 @@
         </v-text-field>
       </v-slide-y-transition>
       <v-spacer />
+      <div v-if="fileLoggingSwitch" center-vertical class="ms-2">
+        <v-tooltip bottom>
+          <template v-slot:activator="{ on, attrs }">
+            <v-btn
+              v-bind="attrs"
+              v-on:click="toggleNotificationsDialog()"
+              v-on="on"
+              color="error"
+              icon
+            >
+              <v-icon id="rec-icon">mdi-record-rec</v-icon>
+            </v-btn>
+          </template>
+          <span>Logging is active</span>
+        </v-tooltip>
+      </div>
       <div v-if="selectedId !== -1" center-vertical class="ms-2">
         <v-tooltip bottom>
           <template v-slot:activator="{ on, attrs }">
@@ -631,6 +647,8 @@
               <v-text-field
                 v-model="messageLogger.logsFolder"
                 v-bind:outlined="outline"
+                v-on:click:append-outer="openLogsFolder"
+                append-outer-icon="mdi-folder-open-outline"
                 label="Logs folder location"
                 readonly
               />
@@ -766,6 +784,14 @@ div[center-vertical] {
   animation-timing-function: ease-in-out;
 }
 
+#rec-icon {
+  animation-duration: 1s;
+  animation-name: recording;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+  animation-timing-function: ease-in-out;
+}
+
 @keyframes changeGrayscale {
   from {
     -webkit-filter: grayscale(0%);
@@ -777,6 +803,15 @@ div[center-vertical] {
     -webkit-filter: grayscale(100%);
     -moz-filter: grayscale(100%);
     filter: grayscale(100%);
+  }
+}
+
+@keyframes recording {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
   }
 }
 </style>
@@ -907,6 +942,9 @@ export default {
   },
 
   methods: {
+    openLogsFolder() {
+      ipcRenderer.send("openFolder", this.messageLogger.logsFolder);
+    },
     toggleSearchField() {
       if (this.searchTreeVisible) this.$refs.searchField.blur();
 
