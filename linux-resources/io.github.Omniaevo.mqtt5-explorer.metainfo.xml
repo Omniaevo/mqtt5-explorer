@@ -3,7 +3,7 @@
   <id>io.github.Omniaevo.mqtt5-explorer</id>
 
   <name>MQTT5 Explorer</name>
-  <summary>A simple but powerful MQTT5 client</summary>
+  <summary>Simple yet powerful MQTT5 client</summary>
 
   <metadata_license>MIT</metadata_license>
   <project_license>GPL-3.0-only</project_license>
@@ -41,20 +41,34 @@
 
   <screenshots>
     <screenshot type="default">
-      <image>https://omniaevo.github.io/assets/images/mqtt5-explorer-promotional.jpg</image>
-      <caption>Light + Dark theme</caption>
+      <image>https://omniaevo.github.io/assets/images/connections-page.png</image>
+      <caption>Saved connections page</caption>
     </screenshot>
     <screenshot>
-      <image>https://omniaevo.github.io/assets/images/client-connection-white.png</image>
-      <caption>Light theme</caption>
+      <image>https://omniaevo.github.io/assets/images/messages-page.png</image>
+      <caption>Messages page</caption>
     </screenshot>
     <screenshot>
-      <image>https://omniaevo.github.io/assets/images/client-connection.png</image>
-      <caption>Dark theme</caption>
+      <image>https://omniaevo.github.io/assets/images/advanced-search.png</image>
+      <caption>Advanced search</caption>
+    </screenshot>
+    <screenshot>
+      <image>https://omniaevo.github.io/assets/images/logging-notifications.png</image>
+      <caption>Logging and notifications</caption>
     </screenshot>
   </screenshots>
 
   <releases>
+    <release version="1.17.1" date="2025-01-20">
+      <url type="details">https://github.com/Omniaevo/mqtt5-explorer/releases/tag/v1.17.1</url>
+      <description>
+        <p>In this release:</p>
+        <ul>
+          <li>Open logging folder;</li>
+          <li>Bug fixes.</li>
+        </ul>
+      </description>
+    </release>
     <release version="1.17.0" date="2025-01-18">
       <url type="details">https://github.com/Omniaevo/mqtt5-explorer/releases/tag/v1.17.0</url>
       <description>

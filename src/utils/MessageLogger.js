@@ -13,7 +13,7 @@ class MessageLogger {
 
   constructor(connectionName = moment().valueOf().toString()) {
     this.#subPath = this.#pathSafe(connectionName);
-    this.#basePath = os.homedir() + "/mqtt5-explorer-logs";
+    this.#basePath = os.homedir() + this.#separator + "mqtt5-explorer-logs";
   }
 
   get logsFolder() {

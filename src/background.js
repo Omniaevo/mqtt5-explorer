@@ -16,6 +16,7 @@ import {
   Tray,
 } from "electron";
 import { createProtocol } from "vue-cli-plugin-electron-builder/lib";
+import os from "os";
 import path from "path";
 import Store from "electron-store";
 import fs from "fs";
@@ -189,11 +190,11 @@ let menuTemplate = (page = pages.HOME) => [
         },
       ]
     : []),
-  ...(page === pages.VIEWER
-    ? [
-        {
-          label: "Tools",
-          submenu: [
+  {
+    label: "Tools",
+    submenu: [
+      ...(page === pages.VIEWER
+        ? [
             {
               label: "Toggle search",
               accelerator: "CommandOrControl+F",
@@ -212,10 +213,22 @@ let menuTemplate = (page = pages.HOME) => [
                 }
               },
             },
-          ],
+          ]
+        : []),
+      {
+        label: "Open logs folder",
+        click: () => {
+          const logsFolder = os.homedir() + path.sep + "mqtt5-explorer-logs";
+
+          if (!fs.existsSync(logsFolder)) {
+            fs.mkdirSync(logsFolder);
+          }
+
+          shell.openPath(logsFolder);
         },
-      ]
-    : []),
+      },
+    ],
+  },
   ...(!isMac
     ? [
         {
@@ -315,6 +328,9 @@ async function createWindow() {
   });
   ipcMain.on("enterHomePage", () => {
     Menu.setApplicationMenu(Menu.buildFromTemplate(menuTemplate(pages.HOME)));
+  });
+  ipcMain.on("openFolder", (_, folderPath) => {
+    shell.openPath(folderPath);
   });
   ipcMain.on("focusWindow", () => {
     if (!win) return;
