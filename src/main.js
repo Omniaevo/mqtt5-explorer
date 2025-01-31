@@ -8,6 +8,9 @@ import Connection from "./utils/Connection";
 import Store from "electron-store";
 import { v4 as uuidv4 } from "uuid";
 
+// Scrollbar CSS
+import "./assets/css/scrollbar.css";
+
 document.documentElement.style.overflow = "hidden";
 Vue.config.productionTip = false;
 
@@ -95,24 +98,27 @@ Vue.mixin({
     loadColors(color) {
       this.$vuetify.theme.themes.light.primary = color.value.light;
       this.$vuetify.theme.themes.dark.primary = color.value.dark;
+
+      this.loadCustomCssTheme(this.darkTheme);
     },
     loadCustomCssTheme(isDark) {
-      const path = isDark
-        ? "/styles/dark-scrollbar.css"
-        : "/styles/light-scrollbar.css";
+      // Setup theme and colors
+      const mode = isDark ? "dark" : "light";
+      const primaryColor = isDark
+        ? this.primaryColor.value?.dark
+        : this.primaryColor.value?.light;
 
-      const scrollTheme = document.createElement("link");
-      const oldScroll = document.getElementById("scroll-bar");
+      // Select the root style
+      const rootStyle = document.querySelector(":root").style;
 
-      scrollTheme.setAttribute("id", "scroll-bar");
-      scrollTheme.setAttribute("rel", "stylesheet");
-      scrollTheme.setAttribute("href", path);
-
-      if (oldScroll != undefined) {
-        oldScroll.parentElement.removeChild(oldScroll);
-      }
-
-      document.head.appendChild(scrollTheme);
+      rootStyle.setProperty(
+        "--scrollbar-thumb-color",
+        primaryColor || `var(--scrollbar-thumb-${mode})`
+      );
+      rootStyle.setProperty(
+        "--scrollbar-bg-color",
+        `var(--scrollbar-bg-${mode})`
+      );
     },
     sendNotification(title, body, onClick = () => {}) {
       new window.Notification(title, { body }).onclick = onClick;

@@ -1,0 +1,31 @@
+:root {
+  --scrollbar-bg-dark: #121212;
+  --scrollbar-bg-light: #eceff1;
+  --scrollbar-thumb-dark: #eceff1;
+  --scrollbar-thumb-light: #777777;
+
+  --scrollbar-thumb-color: var(--scrollbar-thumb-light);
+  --scrollbar-bg-color: var(--scrollbar-bg-light);
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+  background: var(--scrollbar-bg-color) !important;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb-color);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:window-inactive {
+  background: var(--scrollbar-thumb-color);
+  border-radius: 4px;
+}
+
+::selection {
+  background: var(--scrollbar-thumb-color);
+  color: var(--scrollbar-bg-color) !important;
+}

@@ -59,6 +59,16 @@
   </screenshots>
 
   <releases>
+    <release version="1.18.0" date="2025-01-31">
+      <url type="details">https://github.com/Omniaevo/mqtt5-explorer/releases/tag/v1.18.0</url>
+      <description>
+        <p>In this release:</p>
+        <ul>
+          <li>Accent color in the scrollbar;</li>
+          <li>Few new menu items.</li>
+        </ul>
+      </description>
+    </release>
     <release version="1.17.1" date="2025-01-20">
       <url type="details">https://github.com/Omniaevo/mqtt5-explorer/releases/tag/v1.17.1</url>
       <description>
