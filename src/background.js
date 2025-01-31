@@ -43,7 +43,42 @@ const pages = {
 };
 const aboutMenu = [
   {
-    label: "About",
+    label: "Report a bug",
+    click: () => {
+      shell.openExternal(process.env.VUE_APP_GITHUB_BUGS);
+    },
+  },
+  {
+    label: "Keyboard shortcuts",
+    accelerator: "CommandOrControl+K",
+    click: () => {
+      const meta = isMac ? "Cmd" : "Ctrl";
+
+      dialog
+        .showMessageBox(win, {
+          type: "info",
+          title: "Keyboard shortcuts",
+          message:
+            `Edit settings\t\t\t\t\t${meta} + COMMA\n` +
+            `Toggle search\t\t\t\t\t${meta} + F\n` +
+            `Notifications and logging\t\t${meta} + Shift + N\n` +
+            `Reload the page\t\t\t\t${meta} + R\n` +
+            `Force reload the page\t\t\t${meta} + Shift + R\n` +
+            `Quit the app\t\t\t\t\t${meta} + Q\n` +
+            `Show shortcuts\t\t\t\t${meta} + K\n` +
+            `About the app\t\t\t\t\t${meta} + I`,
+          buttons: ["Ok"],
+        })
+        .then(() => {
+          // Do nothing, just close the dialog
+        })
+        .catch((err) => {
+          if (isDevelopment) console.error(err);
+        });
+    },
+  },
+  {
+    label: `About ${appName}`,
     accelerator: "CommandOrControl+I",
     click: () => {
       dialog
@@ -346,7 +381,7 @@ async function createWindow() {
   if (process.env.WEBPACK_DEV_SERVER_URL) {
     // Load the url of the dev server if in development mode
     await win.loadURL(process.env.WEBPACK_DEV_SERVER_URL);
-    if (!process.env.IS_TEST) win.webContents.openDevTools();
+    if (!process.env.IS_TEST) win.webContents.openDevTools({ mode: "detach" });
   } else {
     createProtocol("app");
     // Load the index.html when not in development

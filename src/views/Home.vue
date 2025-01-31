@@ -174,15 +174,17 @@
         <v-list dense>
           <v-list-item>
             <v-list-item-action-text>
-              Available shortcuts
+              Keyboard shortcuts
             </v-list-item-action-text>
           </v-list-item>
+          <!-- Settings  -->
           <v-list-item link>
             <v-list-item-content>Edit settings</v-list-item-content>
             <v-list-item-action-text>
               {{ isMacOs ? "Cmd" : "Ctrl" }} + COMMA
             </v-list-item-action-text>
           </v-list-item>
+          <!-- Filtering -->
           <v-list-item link>
             <v-list-item-content>Toggle search</v-list-item-content>
             <v-list-item-action-text>
@@ -193,6 +195,38 @@
             <v-list-item-content>Notifications and logging</v-list-item-content>
             <v-list-item-action-text>
               {{ isMacOs ? "Cmd" : "Ctrl" }} + Shift + N
+            </v-list-item-action-text>
+          </v-list-item>
+          <!-- Window management -->
+          <v-list-item link>
+            <v-list-item-content>Reload the page</v-list-item-content>
+            <v-list-item-action-text>
+              {{ isMacOs ? "Cmd" : "Ctrl" }} + R
+            </v-list-item-action-text>
+          </v-list-item>
+          <v-list-item link>
+            <v-list-item-content>Force reload the page</v-list-item-content>
+            <v-list-item-action-text>
+              {{ isMacOs ? "Cmd" : "Ctrl" }} + Shift + R
+            </v-list-item-action-text>
+          </v-list-item>
+          <v-list-item link>
+            <v-list-item-content>Quit the app</v-list-item-content>
+            <v-list-item-action-text>
+              {{ isMacOs ? "Cmd" : "Ctrl" }} + Q
+            </v-list-item-action-text>
+          </v-list-item>
+          <!-- Info -->
+          <v-list-item link>
+            <v-list-item-content>Show shortcuts dialog</v-list-item-content>
+            <v-list-item-action-text>
+              {{ isMacOs ? "Cmd" : "Ctrl" }} + K
+            </v-list-item-action-text>
+          </v-list-item>
+          <v-list-item link>
+            <v-list-item-content>About the app</v-list-item-content>
+            <v-list-item-action-text>
+              {{ isMacOs ? "Cmd" : "Ctrl" }} + I
             </v-list-item-action-text>
           </v-list-item>
         </v-list>
