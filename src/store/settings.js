@@ -30,6 +30,7 @@ const settingsVuexModule = {
     setMaxReconnects: (state, reconnects) => (state.maxReconnects = reconnects),
     setAllSettings: (state, data) => {
       state.theme = data.theme || "light";
+      state.denseTree = data.denseTree;
       state.outline = data.outline;
       state.closeTray = data.closeTray ?? true;
       // eslint-disable-next-line prettier/prettier

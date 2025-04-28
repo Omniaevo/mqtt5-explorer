@@ -62,6 +62,7 @@ export default {
     },
     denseTree(newValue) {
       this.loadCustomCssTreeview(newValue);
+      this.persistSettings();
     },
     outline() {
       this.persistSettings();
