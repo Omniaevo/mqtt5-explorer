@@ -41,6 +41,7 @@ export default {
 
   beforeMount() {
     this.loadCustomCssTheme(this.darkTheme);
+    this.loadCustomCssTreeview(this.denseTree);
     this.loadColors(this.primaryColor);
     this.$bus.$on("error", this.displayMsg);
     this.loadSettings();
@@ -58,6 +59,9 @@ export default {
       this.loadCustomCssTheme(isDark);
       this.persistSettings();
       this.$vuetify.theme.dark = isDark;
+    },
+    denseTree(newValue) {
+      this.loadCustomCssTreeview(newValue);
     },
     outline() {
       this.persistSettings();

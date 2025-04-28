@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from "uuid";
 const settingsVuexModule = {
   state: {
     theme: "light",
+    denseTree: false,
     outline: false,
     closeTray: true,
     primaryColor: {
@@ -18,6 +19,7 @@ const settingsVuexModule = {
 
   mutations: {
     setTheme: (state, theme) => (state.theme = theme),
+    setDenseTree: (state, dense) => (state.denseTree = dense),
     setOutline: (state, outline) => (state.outline = outline),
     setCloseToTray: (state, tray) => (state.closeTray = tray),
     setPrimaryColor: (state, primary) => (state.primaryColor = primary),
@@ -46,6 +48,7 @@ const settingsVuexModule = {
   getters: {
     getAllSettings: (state) => state,
     getTheme: (state) => state.theme,
+    getDenseTree: (state) => state.denseTree,
     getOutline: (state) => state.outline,
     getCloseToTray: (state) => state.closeTray,
     getPrimaryColor: (state) => state.primaryColor,
