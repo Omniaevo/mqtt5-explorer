@@ -59,6 +59,15 @@
   </screenshots>
 
   <releases>
+    <release version="1.19.0" date="2025-04-28">
+      <url type="details">https://github.com/Omniaevo/mqtt5-explorer/releases/tag/v1.19.0</url>
+      <description>
+        <p>In this release:</p>
+        <ul>
+          <li>Dense mode for the topics tree;</li>
+        </ul>
+      </description>
+    </release>
     <release version="1.18.0" date="2025-01-31">
       <url type="details">https://github.com/Omniaevo/mqtt5-explorer/releases/tag/v1.18.0</url>
       <description>

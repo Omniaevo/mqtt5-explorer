@@ -1,0 +1,11 @@
+:root {
+  --margin-default: 8px;
+  --margin-dense: 0;
+
+  --margin: var(--margin-default);
+}
+
+.v-treeview-node__root {
+  margin-top: var(--margin) !important;
+  margin-bottom: var(--margin) !important;
+}

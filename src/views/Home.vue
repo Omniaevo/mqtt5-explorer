@@ -91,13 +91,26 @@
         </v-list-item>
 
         <v-list-item>
-          <v-list-item-content class="px-3">
-            <div class="d-flex justify-space-between" style="gap: 1em">
+          <v-list-item-content class="px-3 d-flex flex-column align-start">
+            <div
+              class="d-flex justify-space-between"
+              style="gap: 1em; width: 100%"
+            >
               <v-switch
                 v-model="selectedOutline"
                 label="Outlined fields"
                 inset
               />
+              <v-switch
+                v-model="selectedDenseTree"
+                label="Dense topics tree"
+                inset
+              />
+            </div>
+            <div
+              class="d-flex justify-space-between flex-grow-1"
+              style="gap: 1em; width: 100%"
+            >
               <v-switch
                 v-model="selectedCloseToTray"
                 label="Close to system tray"
@@ -449,6 +462,14 @@ export default {
       },
       set(newValue) {
         this.$store.commit("setTheme", newValue);
+      },
+    },
+    selectedDenseTree: {
+      get() {
+        return this.$store.getters.getDenseTree;
+      },
+      set(newValue) {
+        this.$store.commit("setDenseTree", newValue);
       },
     },
     selectedOutline: {

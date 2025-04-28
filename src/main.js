@@ -8,8 +8,9 @@ import Connection from "./utils/Connection";
 import Store from "electron-store";
 import { v4 as uuidv4 } from "uuid";
 
-// Scrollbar CSS
+// Custom CSS
 import "./assets/css/scrollbar.css";
+import "./assets/css/treeview.css";
 
 document.documentElement.style.overflow = "hidden";
 Vue.config.productionTip = false;
@@ -42,6 +43,9 @@ Vue.mixin({
     },
     darkTheme() {
       return (this.theme || "light") === "dark";
+    },
+    denseTree() {
+      return this.$store.getters.getDenseTree;
     },
     primaryColor() {
       return this.$store.getters.getPrimaryColor;
@@ -119,6 +123,14 @@ Vue.mixin({
         "--scrollbar-bg-color",
         `var(--scrollbar-bg-${mode})`
       );
+    },
+    loadCustomCssTreeview(isDense) {
+      const mode = isDense ? "dense" : "default";
+
+      // Select the root style
+      const rootStyle = document.querySelector(":root").style;
+
+      rootStyle.setProperty("--margin", `var(--margin-${mode})`);
     },
     sendNotification(title, body, onClick = () => {}) {
       new window.Notification(title, { body }).onclick = onClick;
