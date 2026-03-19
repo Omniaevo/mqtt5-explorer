@@ -8,6 +8,8 @@
 
 The aim of this project is to bring the users a client app capable of making use of all the features of the version 5 of the MQTT protocol. The lack of any application that can offer the compatibility with the newer version of the protocol forced us to implement one to test the data of MQTT brokers workwise, why not to share this tool with others that may have the same issue?
 
+> **NEWS!** You can find a complete rewrite and redesign of MQTT5 Expolorer [here](https://github.com/Omniaevo/mqtt5-explorer-go). The new project is based on **GoLang** (using **Wails**) instead of Electron, the UI has been updated to **Vue 3**. The *Go version* has the starting version set to *2.0.0* but, since the new project is not complete yet and it is primarily *vibe-coded* ([OpenCode + MiniMax M2.5](https://opencode.ai/)), it is not intended to replace this version of the app present in this repository. We'll be glad if you want to try it and give feedbacks on the new *Go version* of [MQTT5 Explorer](https://github.com/Omniaevo/mqtt5-explorer-go)!
+
 ## Screenshots
 
 ### Dark theme
