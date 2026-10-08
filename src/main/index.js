@@ -1,36 +1,31 @@
-/* global __static */
-
 "use strict";
 
 import { autoUpdater } from "electron-updater";
 // eslint-disable-next-line prettier/prettier
 import {
   app,
-  protocol,
   dialog,
   Menu,
   BrowserWindow,
   shell,
-  session,
   Tray,
 } from "electron";
-import { createProtocol } from "vue-cli-plugin-electron-builder/lib";
 import path from "path";
 import Store from "electron-store";
 import fs from "fs";
-import { registerIpcHandlers } from "./main/ipcHandlers";
-import { MenuEvent, Page } from "./shared/ipcChannels";
+import appIcon from "../../resources/icon.png?asset";
+import aboutIcon from "../../resources/about.png?asset";
+import trayIconWindows from "../../resources/img/tray/tray.ico?asset";
+import trayIconMac from "../../resources/img/tray/trayTemplate.png?asset";
+import trayIconLinux from "../../resources/img/tray/tray.png?asset";
+import { registerIpcHandlers } from "./ipcHandlers";
+import { MenuEvent, Page } from "../shared/ipcChannels";
 
 const isDevelopment = process.env.NODE_ENV !== "production";
 const isSingleInstance = app.requestSingleInstanceLock();
 const isMac = process.platform === "darwin";
 const isWindows = process.platform === "win32";
 const appName = "MQTT5 Explorer";
-
-// Scheme must be registered before the app is ready
-protocol.registerSchemesAsPrivileged([
-  { scheme: "app", privileges: { secure: true, standard: true } },
-]);
 
 const store = new Store();
 
@@ -62,7 +57,7 @@ const aboutMenu = [
   {
     label: "Report a bug",
     click: () => {
-      shell.openExternal(process.env.VUE_APP_GITHUB_BUGS);
+      shell.openExternal(import.meta.env.MAIN_VITE_GITHUB_BUGS);
     },
   },
   {
@@ -104,13 +99,13 @@ const aboutMenu = [
           title: `About ${appName}`,
           message: appName,
           detail: `Version: ${app.getVersion()}-${process.platform}`,
-          icon: path.join(__static, "img/icons/android-chrome-192x192.png"),
+          icon: aboutIcon,
           buttons: ["GitHub page", "Close"],
         })
         .then((box) => {
           if (box.response === 0) {
             // Open GitHub page
-            shell.openExternal(process.env.VUE_APP_GITHUB_PAGE);
+            shell.openExternal(import.meta.env.MAIN_VITE_GITHUB_PAGE);
           }
         })
         .catch((err) => {
@@ -319,18 +314,14 @@ let trayTemplate = [
 ];
 
 async function createWindow() {
-  // Clear session
-  session.defaultSession.flushStorageData();
-  session.defaultSession.clearStorageData({ storages: ["serviceworkers"] });
-
   // Create the browser window.
   win = new BrowserWindow({
     width: store.get("app_width") || 1366,
     height: store.get("app_height") || 768,
     title: appName,
-    icon: path.join(__static, "icon.png"),
+    icon: appIcon,
     webPreferences: {
-      preload: path.join(__dirname, "preload.js"),
+      preload: path.join(__dirname, "../preload/index.js"),
       contextIsolation: true,
       nodeIntegration: false,
       sandbox: true,
@@ -339,14 +330,7 @@ async function createWindow() {
 
   // Create the tray icon
   tray = new Tray(
-    path.join(
-      __static,
-      isWindows
-        ? "img/tray/tray.ico"
-        : isMac
-        ? "img/tray/trayTemplate.png"
-        : "img/tray/tray.png"
-    )
+    isWindows ? trayIconWindows : isMac ? trayIconMac : trayIconLinux
   );
 
   tray.setToolTip(appName);
@@ -378,14 +362,13 @@ async function createWindow() {
 
   Menu.setApplicationMenu(Menu.buildFromTemplate(menuTemplate()));
 
-  if (process.env.WEBPACK_DEV_SERVER_URL) {
+  if (process.env.ELECTRON_RENDERER_URL) {
     // Load the url of the dev server if in development mode
-    await win.loadURL(process.env.WEBPACK_DEV_SERVER_URL);
+    await win.loadURL(process.env.ELECTRON_RENDERER_URL);
     if (!process.env.IS_TEST) win.webContents.openDevTools({ mode: "detach" });
   } else {
-    createProtocol("app");
-    // Load the index.html when not in development
-    win.loadURL("app://./index.html");
+    // Load the built index.html when not in development
+    await win.loadFile(path.join(__dirname, "../renderer/index.html"));
 
     // Verify if the app can be updated.
     autoUpdater.checkForUpdatesAndNotify();

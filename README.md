@@ -49,7 +49,7 @@ npm install
 ### Compiles and hot-reloads for development
 
 ```bash
-npm run electron:serve
+npm run dev
 ```
 
 ### Generate app icons
@@ -70,20 +70,20 @@ npm run lint
 
 ```bash
 # Linux
-npm run electron:build -- --linux # Without publish
-npm run electron:build -- --linux -p always # With GitHub publish
+npm run build:linux # Without publish
+npm run build:linux -- -p always # With GitHub publish
 
 # MacOS
-npm run electron:build -- --mac # Without publish
-npm run electron:build -- --mac -p always # With GitHub publish
+npm run build:mac # Without publish
+npm run build:mac -- -p always # With GitHub publish
 
 # Windows
-npm run electron:build -- --win # Without publish
-npm run electron:build -- --win -p always # With GitHub publish
+npm run build:win # Without publish
+npm run build:win -- -p always # With GitHub publish
 
 # Flatpak
 # ⚠️ The flatpak and flatpak-builder packages need to be installed in order to build Flatpak bundles. ⚠️
-npm run electron:build -- --linux flatpak
+npm run build:linux -- flatpak
 # Install and run the flatpak package
 flatpak install --user mqtt5-explorer-[VERSION]-linux-x86_64.flatpak && flatpak run com.omniaevo.mqtt5_explorer
 ```

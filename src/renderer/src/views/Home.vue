@@ -444,7 +444,7 @@ export default {
 
   computed: {
     version() {
-      return process.env.VUE_APP_VERSION;
+      return import.meta.env.VITE_APP_VERSION;
     },
     filteredConnectionIDs() {
       return this.connectionsAvailable
@@ -633,7 +633,7 @@ export default {
       this.$router.push({ path: `viewer/${index}` });
     },
     openBugsUrl() {
-      window.api.app.openExternal(process.env.VUE_APP_GITHUB_BUGS);
+      window.api.app.openExternal(import.meta.env.VITE_GITHUB_BUGS);
     },
   },
 };

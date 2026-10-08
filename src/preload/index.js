@@ -1,5 +1,5 @@
 import { contextBridge, ipcRenderer } from "electron";
-import { Channel, MenuEvent } from "./shared/ipcChannels";
+import { Channel, MenuEvent } from "../shared/ipcChannels";
 
 const menuEvents = Object.values(MenuEvent);
 

@@ -12,7 +12,7 @@ echo '>> Building resources...'
 npm run electron:icons
 
 echo '>> Building app...'
-npm run electron:build -- --linux dir
+npm run build:linux -- dir
 
 echo '>> Compressing...'
 tar -czf io.github.Omniaevo.mqtt5-explorer.tar.gz dist_electron/linux-unpacked linux-resources

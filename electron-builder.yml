@@ -1,0 +1,56 @@
+appId: com.omniaevo.mqtt5-explorer
+productName: MQTT5 Explorer
+artifactName: ${name}-${version}-${platform}-${arch}.${ext}
+directories:
+  output: dist_electron
+files:
+  - out/**
+  - resources/**
+  - package.json
+publish:
+  - provider: github
+    owner: Omniaevo
+    private: false
+    publishAutoUpdate: true
+    releaseType: release
+linux:
+  executableName: mqtt5-explorer
+  icon: build/icon/
+  target:
+    - AppImage
+flatpak:
+  runtime: org.freedesktop.Platform
+  runtimeVersion: "23.08"
+  sdk: org.freedesktop.Sdk
+  base: org.electronjs.Electron2.BaseApp
+  baseVersion: "23.08"
+  category: Development
+  description: &description >-
+    MQTT5 Explorer is a simple yet feature-rich client to visualize data of any
+    MQTT broker. Differently from many other clients, it supports version 5 of
+    the MQTT protocol.
+  desktop:
+    StartupWMClass: mqtt5-explorer
+  finishArgs:
+    - --share=ipc
+    - --socket=x11
+    - --socket=pulseaudio
+    - --share=network
+  synopsis: &synopsis A simple MQTT client that supports MQTT5 protocol.
+appImage:
+  category: Development
+  description: *description
+  desktop:
+    StartupWMClass: mqtt5-explorer
+  synopsis: *synopsis
+mac:
+  category: public.app-category.developer-tools
+  target:
+    target: dmg
+    arch:
+      - x64
+      - arm64
+win:
+  target:
+    - portable:x64
+  icon: build/icons/icon.ico
