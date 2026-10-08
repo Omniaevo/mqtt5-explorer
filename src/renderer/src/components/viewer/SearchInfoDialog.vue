@@ -39,7 +39,7 @@
 </template>
 
 <script setup>
-import SearchEngine from "../../utils/SearchEngine";
+import SearchEngine from "../../../../shared/SearchEngine";
 import { SEARCH_MODE_OPTIONS } from "../../utils/searchModes";
 
 const MODE_TEXTS = {

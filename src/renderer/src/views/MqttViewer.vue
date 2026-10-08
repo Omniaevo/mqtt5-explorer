@@ -216,15 +216,18 @@ import PublishPanel from "../components/viewer/PublishPanel.vue";
 import SearchBar from "../components/viewer/SearchBar.vue";
 import SearchInfoDialog from "../components/viewer/SearchInfoDialog.vue";
 import TopicTreeView from "../components/viewer/TopicTreeView.vue";
+import { useDebouncedRef } from "../composables/useDebouncedRef";
 import { useNotifyAndLogging } from "../composables/useNotifyAndLogging";
 import { useTreeRefresh } from "../composables/useTreeRefresh";
 import Connection from "../utils/Connection";
 import TopicTree from "../models/TopicTree";
 import ConnectionProperties from "../models/ConnectionProperties";
-import SearchEngine from "../utils/SearchEngine";
+import SearchEngine from "../../../shared/SearchEngine";
 import { useConnectionsStore } from "../stores/connections";
 import { useNotifyStore } from "../stores/notify";
 import { useSettingsStore } from "../stores/settings";
+
+const SEARCH_DEBOUNCE_MS = 250;
 
 const STATES = Connection.connectionStates;
 const STATE_VIEWS = {
@@ -288,6 +291,7 @@ const searchInfoDialog = ref(false);
 const searchVisible = ref(false);
 const searchTerm = ref(undefined);
 const searchMode = ref(undefined);
+const debouncedSearchTerm = useDebouncedRef(searchTerm, SEARCH_DEBOUNCE_MS);
 
 /** Plain copy of the selected node that follows tree updates. */
 const selectedView = computed(() => {
@@ -321,20 +325,18 @@ const {
   }
 );
 
-/** Search function of the tree; an invalid regular expression matches nothing. */
+/** Node filter of the tree; compiled once per (term, mode). */
 const nodeMatcher = computed(() => {
-  const term = searchTerm.value;
-  const mode = searchMode.value || SearchEngine.modes.ALL;
+  const term = debouncedSearchTerm.value;
 
   if (!term) return undefined;
 
-  return (node) => {
-    try {
-      return node.search(term, mode);
-    } catch {
-      return false;
-    }
-  };
+  const matches = SearchEngine.matcher(
+    term,
+    searchMode.value || SearchEngine.modes.ALL
+  );
+
+  return (node) => node.matchedBy(matches);
 });
 
 /** Applies the whole batch to the tree, then refreshes the view once. */

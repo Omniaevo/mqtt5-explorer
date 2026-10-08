@@ -138,7 +138,7 @@
 
 <script setup>
 import { ref } from "vue";
-import SearchEngine from "../../utils/SearchEngine";
+import SearchEngine from "../../../../shared/SearchEngine";
 import { searchModeIcon } from "../../utils/searchModes";
 import { JOIN_MODES } from "../../composables/useNotifyAndLogging";
 import SearchModeToggle from "./SearchModeToggle.vue";

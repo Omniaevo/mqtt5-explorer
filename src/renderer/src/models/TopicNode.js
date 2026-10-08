@@ -1,5 +1,5 @@
 import { markRaw } from "vue";
-import SearchEngine from "../utils/SearchEngine";
+import SearchEngine from "../../../shared/SearchEngine";
 
 /** One level of the topic tree. Children keep their insertion order. */
 class TopicNode {
@@ -68,14 +68,16 @@ class TopicNode {
     this.lastUpdate = timestamp;
   }
 
-  search(searchTerm, mode) {
-    const matches = SearchEngine.methods[mode];
+  /**
+   * @param {(target: *) => boolean} matches Built by `SearchEngine.matcher`.
+   * @returns {boolean} True when the topic, the name or the value matches.
+   */
+  matchedBy(matches) {
+    return matches(this.topic) || matches(this.name) || matches(this.value);
+  }
 
-    return (
-      matches(searchTerm, this.topic) ||
-      matches(searchTerm, this.name) ||
-      matches(searchTerm, this.value)
-    );
+  search(searchTerm, mode) {
+    return this.matchedBy(SearchEngine.matcher(searchTerm, mode));
   }
 }
 

@@ -1,7 +1,13 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import SearchEngine from "./SearchEngine";
 
-const { modes, methods } = SearchEngine;
+const { modes } = SearchEngine;
+const methods = Object.fromEntries(
+  Object.values(modes).map((mode) => [
+    mode,
+    (term, target) => SearchEngine.matcher(term, mode)(target),
+  ])
+);
 
 describe("SearchEngine", () => {
   describe("modes", () => {
@@ -49,30 +55,49 @@ describe("SearchEngine", () => {
       expect(methods[modes.REG_EXP]("query::a.b=^H.*o$", payload)).toBe(true);
     });
 
-    it("falls back to a plain search when '=' is missing", () => {
-      expect(SearchEngine.getSearchAndValue("query::a.b", "x")).toEqual({
-        search: "query::a.b",
-        value: "x",
-      });
-    });
-
-    it("ignores a non-string target in plain mode", () => {
-      expect(SearchEngine.getSearchAndValue("abc", payload)).toEqual({
-        search: "abc",
-        value: "",
-      });
+    it("ignores an object target in plain mode", () => {
+      expect(methods[modes.ALL]("abc", payload)).toBe(false);
+      expect(methods[modes.ALL]("", payload)).toBe(true);
     });
 
     it("compares only the text before a second '='", () => {
-      expect(
-        SearchEngine.getSearchAndValue("query::a.b=x=y", payload).search
-      ).toBe("x");
+      expect(methods[modes.ALL]("query::a.b=hell=o", payload)).toBe(true);
+      expect(methods[modes.ALL]("query::a.b=x=hello", payload)).toBe(false);
+    });
+
+    it("searches in a numeric field", () => {
+      expect(methods[modes.WORDS]("query::n=5", payload)).toBe(true);
     });
   });
 
-  describe("invalid regular expression (current behaviour)", () => {
-    it("throws a SyntaxError instead of returning false", () => {
-      expect(() => methods[modes.REG_EXP]("(", "abc")).toThrow(SyntaxError);
+  describe("matcher", () => {
+    it("defaults to the ALL mode", () => {
+      expect(SearchEngine.matcher("TEMP")("room/temp")).toBe(true);
+    });
+
+    it("can be reused for many targets", () => {
+      const matches = SearchEngine.matcher("^a", modes.REG_EXP);
+
+      expect(["ab", "ba", "ac"].filter(matches)).toEqual(["ab", "ac"]);
+    });
+
+    it("matches nothing for an invalid regular expression", () => {
+      const matches = SearchEngine.matcher("(", modes.REG_EXP);
+
+      expect(matches("abc")).toBe(false);
+      expect(matches("(")).toBe(false);
+    });
+
+    it("compiles the regular expression once", () => {
+      const spy = vi.spyOn(globalThis, "RegExp");
+
+      const matches = SearchEngine.matcher("a", modes.REG_EXP);
+      matches("a");
+      matches("b");
+      matches("c");
+
+      expect(spy).toHaveBeenCalledTimes(1);
+      spy.mockRestore();
     });
   });
 });

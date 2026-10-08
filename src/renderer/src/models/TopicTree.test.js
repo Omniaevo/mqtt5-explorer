@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import SearchEngine from "../utils/SearchEngine";
+import SearchEngine from "../../../shared/SearchEngine";
 import TopicTree from "./TopicTree";
 
 const message = (topic, payload = "x") => ({ topic, payload });

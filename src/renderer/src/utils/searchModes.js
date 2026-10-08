@@ -1,4 +1,4 @@
-import SearchEngine from "./SearchEngine";
+import SearchEngine from "../../../shared/SearchEngine";
 
 /** Selectable search modes (the default mode `ALL` has no button). */
 export const SEARCH_MODE_OPTIONS = Object.freeze([
