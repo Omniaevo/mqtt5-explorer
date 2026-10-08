@@ -77,7 +77,7 @@
     </v-app-bar>
 
     <div class="ma-2 explorer-grid-container">
-      <v-card class="treeview-container" flat>
+      <v-card class="treeview-container pa-2" flat>
         <TopicTreeView
           :tree="tree"
           :version="treeVersion"

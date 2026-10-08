@@ -2,7 +2,7 @@
   <v-virtual-scroll
     ref="scroller"
     :items="rows"
-    :item-height="rowHeight"
+    :item-height="itemHeight"
     item-key="id"
     class="h-100"
   >
@@ -15,6 +15,7 @@
         }"
         :style="{
           height: `${rowHeight}px`,
+          marginBlock: `${ROW_GAP_PX}px`,
           paddingLeft: `${row.depth * INDENT_PX}px`,
         }"
         class="tree-row d-flex align-center px-2 rounded"
@@ -23,6 +24,7 @@
         <v-icon
           :icon="row.expanded ? 'mdi-chevron-down' : 'mdi-chevron-right'"
           :class="{ invisible: !row.hasChildren }"
+          class="me-2"
           size="small"
         />
         <span class="text-truncate">
@@ -48,7 +50,8 @@ import { computed, nextTick, ref, shallowRef, watch } from "vue";
 import { anchorShift, flattenVisible } from "../../utils/flattenTree";
 
 const INDENT_PX = 16;
-const ROW_HEIGHT = { default: 32, dense: 24 };
+const ROW_HEIGHT = { default: 38, dense: 26 };
+const ROW_GAP_PX = 4; // Vertical margin above and below each row
 
 const props = defineProps({
   tree: { type: Object, required: true },
@@ -76,6 +79,9 @@ const rows = computed(() => {
   return flattenVisible(props.tree.roots, expandedIds.value, props.matches);
 });
 
+// Slot height the virtual scroll reserves per row: row plus its margins
+const itemHeight = computed(() => rowHeight.value + 2 * ROW_GAP_PX);
+
 // A new key re-creates the row, which restarts the CSS animation
 const blinkKey = (node) => (props.isBlinking(node) ? node.lastUpdate : 0);
 
@@ -99,11 +105,11 @@ watch(rows, (newRows, oldRows) => {
 
   if (!element || element.scrollTop === 0) return;
 
-  const firstVisible = Math.floor(element.scrollTop / rowHeight.value);
+  const firstVisible = Math.floor(element.scrollTop / itemHeight.value);
   const shift = anchorShift(oldRows, newRows, firstVisible);
 
   if (shift !== 0) {
-    nextTick(() => (element.scrollTop += shift * rowHeight.value));
+    nextTick(() => (element.scrollTop += shift * itemHeight.value));
   }
 });
 </script>
@@ -115,7 +121,7 @@ watch(rows, (newRows, oldRows) => {
 }
 
 .tree-row:hover:not(.bg-primary) {
-  background: rgba(var(--v-theme-on-surface), 0.08);
+  background-color: rgba(var(--v-theme-on-surface), 0.08);
 }
 
 .invisible {
@@ -129,7 +135,7 @@ watch(rows, (newRows, oldRows) => {
 @keyframes blink {
   from,
   to {
-    background: rgb(var(--v-theme-primary));
+    background-color: rgb(var(--v-theme-primary));
     color: #fff;
   }
 }
