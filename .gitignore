@@ -25,6 +25,7 @@ pnpm-debug.log*
 
 # Electron-builder output
 /dist_electron
+/out
 io.github.Omniaevo.mqtt5-explorer.tar.gz
 
 # Electron-icon-builder output
@@ -37,3 +38,5 @@ io.github.Omniaevo.mqtt5-explorer.tar.gz
 #./*-lock.json
 #./package-lock.*
 #./package-lock.json
+
+sketchbook/

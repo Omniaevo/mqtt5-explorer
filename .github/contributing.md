@@ -24,19 +24,32 @@ Scan through our [existing issues](https://github.com/Omniaevo/mqtt5-explorer/is
 
 ### Make Changes
 
-1. [Install Node.js](https://nodejs.org/it/) (we are currently using **Node.js v14**).
+1. [Install Node.js](https://nodejs.org/) (**Node.js 20 or newer**, the version used by our CI).
 
-2. [Install Vue CLI](https://cli.vuejs.org/guide/installation.html).
+2. [Fork the repository](https://docs.github.com/en/get-started/quickstart/fork-a-repo).
 
-3. [Fork the repository](https://docs.github.com/en/get-started/quickstart/fork-a-repo).
+3. Follow the **Project setup** instruction in the [README](../README.md).
 
-4. Follow the **Project setup** instruction in the [README](../README.md).
+4. Create a working branch and start with your changes!
 
-5. Create a working branch and start with your changes!
+The renderer (`src/renderer`) must not use Node.js or Electron APIs directly. Use the `window.api` bridge exposed by the preload script (`src/preload`) instead.
+
+### Check your changes
+
+Before you commit, run the linter, the formatter and the unit tests. Our CI runs lint and tests on every PR.
+
+```bash
+npm run lint
+npm run format
+npm test
+```
+
+Add or update [Vitest](https://vitest.dev/) tests (`*.test.js`, next to the code) when you change logic.
 
 ### Commit your update
 
 Commit the changes once you are happy with them.
+Write the commit message in the [Conventional Commits](https://www.conventionalcommits.org/) format, for example `feat(tree): keep per-topic history` or `fix(logger): avoid nested folders`. Common types are `feat`, `fix`, `refactor`, `perf`, `chore` and `docs`.
 Once your changes are ready, don't forget to self-review to speed up the review process.
 
 ### Pull Request

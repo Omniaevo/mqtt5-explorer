@@ -42,14 +42,23 @@ The aim of this project is to bring the users a client app capable of making use
 
 ## Project setup
 
+The app uses [Electron](https://www.electronjs.org/), [Vue 3](https://vuejs.org/), [Vuetify 4](https://vuetifyjs.com/), [Pinia](https://pinia.vuejs.org/) and [electron-vite](https://electron-vite.org/). You need [Node.js](https://nodejs.org/) 20 or newer.
+
 ```bash
 npm install
 ```
 
+Source layout:
+
+- `src/main`: main process (window, MQTT client, settings, logger, notifications).
+- `src/preload`: preload script. It exposes `window.api` to the renderer.
+- `src/renderer`: Vue 3 interface. It has no access to Node.js.
+- `src/shared`: code used by both main and renderer.
+
 ### Compiles and hot-reloads for development
 
 ```bash
-npm run electron:serve
+npm run dev
 ```
 
 ### Generate app icons
@@ -58,43 +67,70 @@ npm run electron:serve
 npm run electron:icons
 ```
 
-### Lints and fixes files
+### Lint and format
 
 ```bash
-npm run lint
+npm run lint             # ESLint (flat config) + Prettier rules
+npm run lint -- --fix    # Fix what can be fixed automatically
+npm run format           # Prettier write
+```
+
+### Unit tests
+
+[Vitest](https://vitest.dev/) tests live next to the code as `*.test.js`.
+
+```bash
+npm test             # Run once
+npm run test:watch   # Watch mode
 ```
 
 ## Compiles and minifies for production
 
-**N.B.**: the build process includes **electron publish**, a _.env_ file with the `GITHUB_TOKEN` environment variable set is required.
+`electron-vite` builds the app into `out/`. `electron-builder` packages it into `dist_electron/`.
+
+```bash
+# Build only (no package)
+npm run build
+# Preview the built app
+npm run preview
+```
+
+**N.B.**: the package scripts use **electron publish** when you pass `-p always`. In this case, a _.env_ file with the `GITHUB_TOKEN` environment variable set is required.
 
 ```bash
 # Linux
-npm run electron:build -- --linux # Without publish
-npm run electron:build -- --linux -p always # With GitHub publish
+npm run build:linux # Without publish
+npm run build:linux -- -p always # With GitHub publish
 
 # MacOS
-npm run electron:build -- --mac # Without publish
-npm run electron:build -- --mac -p always # With GitHub publish
+npm run build:mac # Without publish
+npm run build:mac -- -p always # With GitHub publish
 
 # Windows
-npm run electron:build -- --win # Without publish
-npm run electron:build -- --win -p always # With GitHub publish
+npm run build:win # Without publish
+npm run build:win -- -p always # With GitHub publish
 
 # Flatpak
 # ⚠️ The flatpak and flatpak-builder packages need to be installed in order to build Flatpak bundles. ⚠️
-npm run electron:build -- --linux flatpak
+npm run build:linux -- flatpak
 # Install and run the flatpak package
 flatpak install --user mqtt5-explorer-[VERSION]-linux-x86_64.flatpak && flatpak run com.omniaevo.mqtt5_explorer
 ```
 
 ## Customize configuration
 
+Configuration files:
+
+- `electron.vite.config.mjs`: build of the main, preload and renderer bundles.
+- `electron-builder.yml`: packaging (AppImage, Flatpak, dmg, portable exe), output dir and publish target.
+- `vitest.config.mjs`, `eslint.config.mjs`, `.prettierrc`: tests, lint and format.
+
 See:
 
-- [Vue Configuration Reference](https://cli.vuejs.org/config/).
+- [electron-vite Configuration Reference](https://electron-vite.org/config/).
+- [Vite Configuration Reference](https://vite.dev/config/).
 - [Vuetify Configuration Reference](https://vuetifyjs.com/en/introduction/why-vuetify/#feature-guides).
-- [Electron Build Configuration Reference](https://www.electron.build/configuration/configuration).
+- [Electron Build Configuration Reference](https://www.electron.build/docs/configuration).
 
 ## Get involved
 
