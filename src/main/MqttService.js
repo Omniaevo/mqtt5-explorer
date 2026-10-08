@@ -136,6 +136,7 @@ class MqttService {
     on("message", (_topic, _payload, packet) => {
       this.#onMessage({
         topic: packet.topic,
+        receivedAt: Date.now(),
         payload: packet.payload.toString("utf-8"),
         qos: packet.qos,
         retain: packet.retain,

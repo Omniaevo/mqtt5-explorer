@@ -10,6 +10,18 @@ class TopicTree {
   #nextId = 1;
   // Virtual node: its children are the root topics
   #top = new TopicNode(0, "", "");
+  #historySize;
+
+  /** @param {number} [historySize] Values kept per topic; 0 disables history. */
+  constructor(historySize = 0) {
+    this.#historySize = historySize;
+  }
+
+  /** Applies a new history size to every node; 0 drops all histories. */
+  setHistorySize(historySize) {
+    this.#historySize = historySize;
+    this.#top.resizeHistory(historySize);
+  }
 
   /** Array copy of the root nodes, in insertion order. */
   get roots() {
@@ -18,7 +30,8 @@ class TopicTree {
 
   /**
    * Applies a message to the tree.
-   * @param {{topic: string, payload: string|Uint8Array}} message
+   * @param {{topic: string, payload: string|Uint8Array, receivedAt?: number}} message
+   * `receivedAt` is the arrival time (ms), set by the main process.
    * @param {number} batchTimestamp Time of the batch; stamped on the node and
    * its ancestors to drive the blink effect.
    * @returns {TopicNode|undefined} The updated node, or undefined when the
@@ -68,6 +81,10 @@ class TopicTree {
     });
 
     node.setValue(message);
+    node.recordHistory(
+      { t: message.receivedAt, payload: message.payload },
+      this.#historySize
+    );
 
     return node;
   }

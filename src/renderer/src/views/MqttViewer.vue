@@ -208,6 +208,7 @@ import {
   onMounted,
   ref,
   shallowRef,
+  watch,
 } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import NotificationsDialog from "../components/viewer/NotificationsDialog.vue";
@@ -271,7 +272,7 @@ const fieldVariant = computed(() =>
 
 // The topic tree is not reactive (can be large): it is plain data plus a
 // version counter that is bumped, throttled, after every change.
-const tree = markRaw(new TopicTree());
+const tree = markRaw(new TopicTree(settings.historySize));
 const {
   version: treeVersion,
   request: requestTreeRefresh,
@@ -331,6 +332,11 @@ const nodeMatcher = computed(() => {
 
   return (node) => node.matchedBy(matches);
 });
+
+watch(
+  () => settings.historySize,
+  (size) => tree.setHistorySize(size)
+);
 
 /** Applies the whole batch to the tree, then refreshes the view once. */
 function onBatch(packets) {

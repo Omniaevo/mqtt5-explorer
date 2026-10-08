@@ -330,4 +330,78 @@ describe("TopicTree", () => {
       expect(tree.path("a/x")).toEqual([]);
     });
   });
+
+  describe("history", () => {
+    const at = (topic, payload, receivedAt) => ({
+      topic,
+      payload,
+      receivedAt,
+    });
+    const payloads = (tree, topic) =>
+      tree.find(topic).history.map((entry) => entry.payload);
+
+    it("records nothing when history is disabled", () => {
+      const tree = new TopicTree(0);
+
+      tree.apply(at("a", "1", 10));
+
+      expect(tree.find("a").history).toEqual([]);
+    });
+
+    it("records every message with its receive time", () => {
+      const tree = new TopicTree(3);
+
+      tree.apply(at("a", "1", 10));
+      tree.apply(at("a", "2", 20));
+
+      expect(tree.find("a").history).toEqual([
+        { t: 10, payload: "1" },
+        { t: 20, payload: "2" },
+      ]);
+    });
+
+    it("keeps only the newest values up to the size", () => {
+      const tree = new TopicTree(2);
+
+      ["1", "2", "3"].forEach((p) => tree.apply(at("a", p, 1)));
+
+      expect(payloads(tree, "a")).toEqual(["2", "3"]);
+    });
+
+    it("gives history only to nodes with values", () => {
+      const tree = new TopicTree(2);
+
+      tree.apply(at("a/b", "1", 1));
+
+      expect(tree.find("a").history).toEqual([]);
+    });
+
+    it("trims existing buffers when the size is lowered", () => {
+      const tree = new TopicTree(5);
+
+      ["1", "2", "3"].forEach((p) => tree.apply(at("a/b", p, 1)));
+      tree.setHistorySize(1);
+
+      expect(payloads(tree, "a/b")).toEqual(["3"]);
+    });
+
+    it("drops all buffers when the size is set to 0", () => {
+      const tree = new TopicTree(5);
+
+      tree.apply(at("a/b", "1", 1));
+      tree.setHistorySize(0);
+      tree.apply(at("a/b", "2", 2));
+
+      expect(tree.find("a/b").history).toEqual([]);
+    });
+
+    it("starts recording when the size is raised from 0", () => {
+      const tree = new TopicTree(0);
+
+      tree.setHistorySize(2);
+      tree.apply(at("a", "1", 1));
+
+      expect(payloads(tree, "a")).toEqual(["1"]);
+    });
+  });
 });

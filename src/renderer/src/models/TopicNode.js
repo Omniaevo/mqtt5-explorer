@@ -1,9 +1,12 @@
 import { markRaw } from "vue";
 import SearchEngine from "../../../shared/SearchEngine";
+import RingBuffer from "../utils/RingBuffer";
 
 /** One level of the topic tree. Children keep their insertion order. */
 class TopicNode {
   #children = new Map();
+  /** Created on the first recorded entry, so nodes without history cost nothing. */
+  #history = undefined;
 
   value = undefined;
   old = undefined;
@@ -61,6 +64,34 @@ class TopicNode {
   clearValue() {
     this.old = this.value;
     this.value = undefined;
+  }
+
+  /** @returns {{t: number, payload: string}[]} Received values, oldest first. */
+  get history() {
+    return this.#history?.toArray() ?? [];
+  }
+
+  /**
+   * Adds a received value to the history.
+   * @param {{t: number, payload: string}} entry
+   * @param {number} capacity Maximum entries kept; 0 or less records nothing.
+   */
+  recordHistory(entry, capacity) {
+    if (capacity < 1) return;
+
+    this.#history ??= new RingBuffer(capacity);
+    this.#history.push(entry);
+  }
+
+  /** Resizes the history of this node and its descendants; 0 drops it. */
+  resizeHistory(capacity) {
+    if (capacity < 1) {
+      this.#history = undefined;
+    } else {
+      this.#history?.resize(capacity);
+    }
+
+    this.#children.forEach((child) => child.resizeHistory(capacity));
   }
 
   /** @param {number} timestamp Time of the batch that touched this node. */
