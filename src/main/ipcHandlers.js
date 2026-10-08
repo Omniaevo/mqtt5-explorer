@@ -53,9 +53,13 @@ export function registerIpcHandlers({
     (status) => sendToRenderer(Channel.MQTT_STATUS, status)
   );
 
+  // Resolves when every log stream is flushed and closed
   const stopLogger = () => {
-    logger?.stopLogging();
+    const stopped = logger?.stopLogging();
+
     logger = undefined;
+
+    return stopped;
   };
 
   // A new connection or a page reload starts from a clean state
@@ -92,6 +96,7 @@ export function registerIpcHandlers({
   ipcMain.handle(Channel.MQTT_DISCONNECT, () => {
     batcher.stop();
     resetNotifications();
+    stopLogger();
 
     return mqttService.disconnect();
   });
@@ -138,5 +143,5 @@ export function registerIpcHandlers({
     if (/^https?:\/\//.test(url)) shell.openExternal(url);
   });
 
-  return { resetSession, logsFolder: LOGS_FOLDER };
+  return { resetSession, shutdown: stopLogger, logsFolder: LOGS_FOLDER };
 }

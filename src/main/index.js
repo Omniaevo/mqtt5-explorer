@@ -399,8 +399,11 @@ app.on("activate", () => {
 // Some APIs can only be used after this event occurs.
 app.on("ready", async () => createWindow());
 
-app.on("before-quit", (event) => {
+app.on("before-quit", async (event) => {
   event.preventDefault();
+
+  // Flush log files before the process exits
+  await ipc.shutdown();
 
   if (win) win.destroy();
   if (tray) tray.destroy();
