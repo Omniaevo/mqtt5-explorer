@@ -42,7 +42,8 @@
   "dependencies": {
     "electron-store": "^11.0.2",
     "electron-updater": "^6.8.9",
-    "mqtt": "^5.16.0"
+    "mqtt": "^5.16.0",
+    "uplot": "^1.6.32"
   },
   "main": "./out/main/index.js",
   "devDependencies": {
