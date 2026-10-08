@@ -5,7 +5,7 @@ export const Channel = Object.freeze({
   MQTT_CONNECT: "mqtt:connect",
   MQTT_DISCONNECT: "mqtt:disconnect",
   MQTT_PUBLISH: "mqtt:publish",
-  MQTT_MESSAGE: "mqtt:message",
+  MQTT_BATCH: "mqtt:batch",
   MQTT_STATUS: "mqtt:status",
   LOGGER_START: "logger:start",
   LOGGER_STOP: "logger:stop",

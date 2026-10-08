@@ -3,6 +3,7 @@ import os from "os";
 import path from "path";
 import MqttService from "./MqttService";
 import MessageLogger from "./MessageLogger";
+import MessageBatcher from "./MessageBatcher";
 import { Channel, RendererStoreKeys } from "../shared/ipcChannels";
 
 const LOGS_FOLDER = path.join(os.homedir(), "mqtt5-explorer-logs");
@@ -27,8 +28,11 @@ export function registerIpcHandlers({
 
     if (win && !win.isDestroyed()) win.webContents.send(channel, payload);
   };
+  const batcher = new MessageBatcher((messages) =>
+    sendToRenderer(Channel.MQTT_BATCH, messages)
+  );
   const mqttService = new MqttService(
-    (packet) => sendToRenderer(Channel.MQTT_MESSAGE, packet),
+    (packet) => batcher.add(packet),
     (status) => sendToRenderer(Channel.MQTT_STATUS, status)
   );
   let logger;
@@ -40,6 +44,7 @@ export function registerIpcHandlers({
 
   // A new connection or a page reload starts from a clean state
   const resetSession = () => {
+    batcher.stop();
     mqttService.dispose();
     stopLogger();
   };
@@ -59,9 +64,14 @@ export function registerIpcHandlers({
   // MQTT
   ipcMain.on(Channel.MQTT_CONNECT, (_, properties, clientSettings) => {
     stopLogger();
+    batcher.start();
     mqttService.connect(properties, clientSettings);
   });
-  ipcMain.handle(Channel.MQTT_DISCONNECT, () => mqttService.disconnect());
+  ipcMain.handle(Channel.MQTT_DISCONNECT, () => {
+    batcher.stop();
+
+    return mqttService.disconnect();
+  });
   ipcMain.on(Channel.MQTT_PUBLISH, (_, packet) => mqttService.publish(packet));
 
   // Logger

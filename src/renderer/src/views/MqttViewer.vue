@@ -356,10 +356,13 @@ const filterNode = computed(() => (_value, query, internalItem) => {
 
 const getChildren = (node) => (node.size > 0 ? node.children : undefined);
 
-function onMessage(packet) {
-  const updatedNode = tree.apply(packet);
+/** Applies the whole batch to the tree, then refreshes the view once. */
+function onBatch(packets) {
+  packets.forEach((packet) => {
+    const updatedNode = tree.apply(packet);
 
-  if (updatedNode) processNotifications(updatedNode);
+    if (updatedNode) processNotifications(updatedNode);
+  });
 
   requestTreeRefresh();
 }
@@ -438,7 +441,7 @@ function confirmDelete() {
 let unsubscribeMenuEvents = [];
 
 onBeforeMount(() => {
-  connection.init(connectionProperties, onMessage);
+  connection.init(connectionProperties, onBatch);
 
   window.api.app.sendPage("viewer");
   unsubscribeMenuEvents = [

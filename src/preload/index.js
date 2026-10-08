@@ -36,10 +36,11 @@ const api = {
     /** @param {{topic: string, payload: string, qos: number, retain: boolean, properties?: object}} packet */
     publish: (packet) => ipcRenderer.send(Channel.MQTT_PUBLISH, packet),
     /**
-     * @param {(packet: {topic: string, payload: string, qos: number, retain: boolean, properties?: object}) => void} callback
+     * Receives the packets collected by the main process, in arrival order.
+     * @param {(packets: {topic: string, payload: string, qos: number, retain: boolean, properties?: object}[]) => void} callback
      * @returns {() => void} Unsubscribe function.
      */
-    onMessage: (callback) => subscribe(Channel.MQTT_MESSAGE, callback),
+    onBatch: (callback) => subscribe(Channel.MQTT_BATCH, callback),
     /**
      * @param {(status: {status: "connected" | "closed", error?: string}) => void} callback
      * @returns {() => void} Unsubscribe function.

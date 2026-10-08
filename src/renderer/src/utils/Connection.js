@@ -15,7 +15,7 @@ class Connection {
 
   #url = undefined;
   #properties = new ConnectionProperties();
-  #messageCallback = () => {};
+  #batchCallback = () => {};
   #unsubscribers = [];
 
   get url() {
@@ -26,12 +26,12 @@ class Connection {
     return this.#properties.version;
   }
 
-  init(properties, messageCallback) {
+  init(properties, batchCallback) {
     this.#properties = properties;
     this.#url = `${this.#properties.protocol}://${this.#properties.host}:${
       this.#properties.port
     }`;
-    this.#messageCallback = messageCallback;
+    this.#batchCallback = batchCallback;
 
     this.#unsubscribe();
   }
@@ -43,7 +43,7 @@ class Connection {
         if (status === "connected") onConnect();
         else onClose(error);
       }),
-      window.api.mqtt.onMessage((packet) => this.#messageCallback(packet)),
+      window.api.mqtt.onBatch((packets) => this.#batchCallback(packets)),
     ];
 
     window.api.mqtt.connect(toPlain(this.#properties), toPlain(clientProps));
