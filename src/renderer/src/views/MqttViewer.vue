@@ -29,20 +29,6 @@
         <div class="text-caption text-grey">{{ connection.url }}</div>
       </div>
 
-      <v-spacer />
-      <v-slide-y-transition>
-        <SearchBar
-          v-if="searchVisible"
-          v-model:term="searchTerm"
-          v-model:mode="searchMode"
-          :variant="fieldVariant"
-          class="search-bar me-2"
-          @close="toggleSearchField"
-          @show-info="searchInfoDialog = true"
-        />
-      </v-slide-y-transition>
-      <v-spacer />
-
       <v-tooltip
         v-if="fileLoggingSwitch"
         text="Logging is active"
@@ -62,18 +48,17 @@
         </template>
       </v-tooltip>
 
-      <v-tooltip v-if="selectedNode" text="Clear selection" location="bottom">
-        <template #activator="{ props: tooltipProps }">
-          <v-btn
-            v-bind="tooltipProps"
-            class="ms-2"
-            color="error"
-            icon="mdi-close"
-            variant="text"
-            @click="resetSelection"
-          />
-        </template>
-      </v-tooltip>
+      <v-spacer />
+      <v-slide-y-transition>
+        <SearchBar
+          v-if="searchVisible"
+          v-model:term="searchTerm"
+          v-model:mode="searchMode"
+          class="search-bar me-4"
+          @close="toggleSearchField"
+          @show-info="searchInfoDialog = true"
+        />
+      </v-slide-y-transition>
     </v-app-bar>
 
     <div class="ma-2 explorer-grid-container">
@@ -94,22 +79,35 @@
         <v-expansion-panels v-model="openPanels" multiple>
           <v-expansion-panel value="topic" title="Topic">
             <v-expansion-panel-text v-if="selectedView" class="wrap-text">
-              <v-tooltip
-                :text="`Delete &quot;${selectedView.topic}&quot; topic`"
-                location="bottom"
-              >
-                <template #activator="{ props: tooltipProps }">
-                  <v-btn
-                    v-bind="tooltipProps"
-                    class="me-4"
-                    color="error"
-                    icon="mdi-delete"
-                    variant="text"
-                    @click="deleteDialog = true"
-                  />
-                </template>
-              </v-tooltip>
-              {{ selectedView.topic }}
+              <div class="d-flex align-center">
+                <span class="flex-grow-1">{{ selectedView.topic }}</span>
+                <v-tooltip text="Clear selection" location="bottom">
+                  <template #activator="{ props: tooltipProps }">
+                    <v-btn
+                      v-bind="tooltipProps"
+                      :color="settings.isDark ? 'white' : undefined"
+                      class="ms-2"
+                      icon="mdi-close"
+                      variant="text"
+                      @click="resetSelection"
+                    />
+                  </template>
+                </v-tooltip>
+                <v-tooltip
+                  :text="`Delete &quot;${selectedView.topic}&quot; topic`"
+                  location="bottom"
+                >
+                  <template #activator="{ props: tooltipProps }">
+                    <v-btn
+                      v-bind="tooltipProps"
+                      color="error"
+                      icon="mdi-delete"
+                      variant="text"
+                      @click="deleteDialog = true"
+                    />
+                  </template>
+                </v-tooltip>
+              </div>
             </v-expansion-panel-text>
           </v-expansion-panel>
 

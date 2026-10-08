@@ -1,7 +1,7 @@
 <template>
   <v-text-field
     v-model="term"
-    :variant="variant"
+    variant="outlined"
     label="Search"
     density="compact"
     append-icon="mdi-information-outline"
@@ -24,10 +24,6 @@
 
 <script setup>
 import SearchModeToggle from "./SearchModeToggle.vue";
-
-defineProps({
-  variant: { type: String, default: "outlined" },
-});
 
 const emit = defineEmits(["close", "showInfo"]);
 

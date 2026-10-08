@@ -3,13 +3,15 @@
     <v-card>
       <v-card-title>Notifications and logging</v-card-title>
       <v-card-text class="d-flex flex-column">
-        <div class="d-flex align-center">
+        <div class="d-flex align-center mb-4">
           <v-text-field
             v-model="newEntry"
             :variant="variant"
             label="Add condition"
             clear-icon="mdi-close"
             clearable
+            density="compact"
+            hide-details
             @keyup.enter="addEntry"
           >
             <template #append>
@@ -17,8 +19,9 @@
                 <SearchModeToggle v-model="newEntryMode" />
                 <v-btn
                   :disabled="!newEntry"
-                  class="ms-1"
+                  class="ms-2"
                   icon="mdi-plus"
+                  size="x-small"
                   variant="text"
                   @click="addEntry"
                 />
@@ -105,17 +108,23 @@
           </v-list>
         </div>
 
-        <div class="mt-2 d-flex align-center justify-space-between">
-          <v-switch v-model="notifySwitch" label="Enable notifications" inset />
+        <div class="mt-4 d-flex align-center justify-space-between">
+          <v-switch
+            v-model="notifySwitch"
+            label="Enable notifications"
+            hide-details
+            inset
+          />
           <v-switch
             v-model="fileLoggingSwitch"
             label="Enable file logging"
+            hide-details
             inset
           />
         </div>
 
         <v-slide-y-transition>
-          <div v-if="fileLoggingSwitch">
+          <div v-if="fileLoggingSwitch" class="mt-2">
             <v-text-field
               :model-value="logsFolder"
               :variant="variant"
