@@ -19,15 +19,17 @@ class TopicTree {
   /**
    * Applies a message to the tree.
    * @param {{topic: string, payload: string|Uint8Array}} message
+   * @param {number} batchTimestamp Time of the batch; stamped on the node and
+   * its ancestors to drive the blink effect.
    * @returns {TopicNode|undefined} The updated node, or undefined when the
    * message removed a value.
    */
-  apply(message) {
+  apply(message, batchTimestamp = Date.now()) {
     const segments = message.topic.split(TOPIC_SEPARATOR);
 
     return TopicTree.#hasPayload(message)
-      ? this.#store(segments, message)
-      : this.#remove(segments);
+      ? this.#store(segments, message, batchTimestamp)
+      : this.#remove(segments, batchTimestamp);
   }
 
   /** @returns {TopicNode|undefined} The node of the topic, if it exists. */
@@ -46,18 +48,15 @@ class TopicTree {
     return message.payload?.length > 0;
   }
 
-  #store(segments, message) {
+  #store(segments, message, batchTimestamp) {
     let node = this.#top;
 
     segments.forEach((name, depth) => {
       const existing = node.child(name);
 
-      if (existing) {
-        existing.flash();
-        node = existing;
-      } else {
-        node = this.#createChild(node, name, segments.slice(0, depth + 1));
-      }
+      node =
+        existing ?? this.#createChild(node, name, segments.slice(0, depth + 1));
+      node.markUpdated(batchTimestamp);
     });
 
     node.setValue(message);
@@ -77,7 +76,7 @@ class TopicTree {
     return node;
   }
 
-  #remove(segments) {
+  #remove(segments, batchTimestamp) {
     const path = [this.#top];
 
     for (const name of segments) {
@@ -87,7 +86,7 @@ class TopicTree {
       path.push(node);
     }
 
-    path.slice(1).forEach((node) => node.flash());
+    path.slice(1).forEach((node) => node.markUpdated(batchTimestamp));
     path.at(-1).clearValue();
     TopicTree.#pruneEmptyBranch(path);
 

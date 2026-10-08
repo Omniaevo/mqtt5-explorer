@@ -1,8 +1,6 @@
 import { markRaw } from "vue";
 import SearchEngine from "../utils/SearchEngine";
 
-const BLINK_DURATION_MS = 120;
-
 /** One level of the topic tree. Children keep their insertion order. */
 class TopicNode {
   #children = new Map();
@@ -10,7 +8,8 @@ class TopicNode {
   value = undefined;
   old = undefined;
   counter = 0;
-  blink = false;
+  /** Time of the last batch that touched this node or a descendant. */
+  lastUpdate = 0;
 
   /**
    * @param {number} id Unique id inside the tree.
@@ -64,9 +63,9 @@ class TopicNode {
     this.value = undefined;
   }
 
-  flash() {
-    this.blink = true;
-    setTimeout(() => (this.blink = false), BLINK_DURATION_MS);
+  /** @param {number} timestamp Time of the batch that touched this node. */
+  markUpdated(timestamp) {
+    this.lastUpdate = timestamp;
   }
 
   search(searchTerm, mode) {

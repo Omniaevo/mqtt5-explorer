@@ -90,9 +90,10 @@
         >
           <template #title="{ item }">
             <div
+              :key="blinkKey(item)"
               :class="{
-                'bg-primary': item.blink || selectedNode?.id === item.id,
-                'text-white': item.blink || selectedNode?.id === item.id,
+                'bg-primary text-white': selectedNode?.id === item.id,
+                blink: isBlinking(item),
               }"
               class="px-2 ma-0 rounded"
               @click="selectNode(item)"
@@ -290,7 +291,14 @@ const fieldVariant = computed(() =>
 // The topic tree is not reactive (can be large): it is plain data plus a
 // version counter that is bumped, throttled, after every change.
 const tree = markRaw(new TopicTree());
-const { version: treeVersion, request: requestTreeRefresh } = useTreeRefresh();
+const {
+  version: treeVersion,
+  request: requestTreeRefresh,
+  wasUpdatedInLastBatch: isBlinking,
+} = useTreeRefresh();
+
+// A new key re-creates the row, which restarts the CSS animation
+const blinkKey = (node) => (isBlinking(node) ? node.lastUpdate : 0);
 const treeItems = computed(() => {
   treeVersion.value; // Dependency only
 
@@ -358,13 +366,15 @@ const getChildren = (node) => (node.size > 0 ? node.children : undefined);
 
 /** Applies the whole batch to the tree, then refreshes the view once. */
 function onBatch(packets) {
+  const batchTimestamp = Date.now();
+
   packets.forEach((packet) => {
-    const updatedNode = tree.apply(packet);
+    const updatedNode = tree.apply(packet, batchTimestamp);
 
     if (updatedNode) processNotifications(updatedNode);
   });
 
-  requestTreeRefresh();
+  requestTreeRefresh(batchTimestamp);
 }
 
 function selectNode(node) {
@@ -507,6 +517,10 @@ onBeforeUnmount(() =>
   filter: grayscale(100%);
 }
 
+.blink {
+  animation: blink 120ms ease-out;
+}
+
 .pending {
   animation: changeGrayscale 1s ease-in-out infinite alternate;
 }
@@ -522,6 +536,14 @@ onBeforeUnmount(() =>
 
   to {
     filter: grayscale(100%);
+  }
+}
+
+@keyframes blink {
+  from,
+  to {
+    background: rgb(var(--v-theme-primary));
+    color: #fff;
   }
 }
 

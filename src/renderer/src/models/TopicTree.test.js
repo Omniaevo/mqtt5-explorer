@@ -97,15 +97,24 @@ describe("TopicTree", () => {
       expect(tree.find("a/b").value.payload).toBe("child");
     });
 
-    it("blinks the existing nodes and stops after a short delay", async () => {
+    it("stamps the batch time on the node and its ancestors", () => {
       const tree = new TopicTree();
-      tree.apply(message("a/b"));
+      tree.apply(message("a/b/c"), 100);
+      tree.apply(message("a/x"), 200);
 
-      tree.apply(message("a/b", "two"));
-      expect(tree.find("a").blink).toBe(true);
+      expect(
+        ["a", "a/b", "a/b/c", "a/x"].map((t) => tree.find(t).lastUpdate)
+      ).toEqual([200, 100, 100, 200]);
+    });
 
-      await new Promise((resolve) => setTimeout(resolve, 200));
-      expect(tree.find("a").blink).toBe(false);
+    it("stamps the batch time on the path of a removed value", () => {
+      const tree = new TopicTree();
+      tree.apply(message("a/b"), 100);
+      tree.apply(message("a/c"), 100);
+
+      tree.apply(message("a/b", ""), 300);
+
+      expect(tree.find("a").lastUpdate).toBe(300);
     });
   });
 
