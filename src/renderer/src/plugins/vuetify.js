@@ -1,12 +1,14 @@
 import "@mdi/font/css/materialdesignicons.css";
-import Vue from "vue";
-import Vuetify from "vuetify";
-import "vuetify/dist/vuetify.min.css";
+import "vuetify/styles";
+import { createVuetify } from "vuetify";
 
-Vue.use(Vuetify);
-
-export default new Vuetify({
-  icons: {
-    iconfont: "mdi",
+// Primary colors are applied at runtime from the settings (see useThemeSync)
+export default createVuetify({
+  theme: {
+    defaultTheme: "light",
+    themes: {
+      light: { dark: false },
+      dark: { dark: true },
+    },
   },
 });
