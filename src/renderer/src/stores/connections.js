@@ -11,6 +11,7 @@ export const useConnectionsStore = defineStore("connections", {
 
   getters: {
     getByIndex: (state) => (index) => state.brokerConnections[index],
+    savedConnections: (state) => state.brokerConnections.filter((c) => c.saved),
   },
 
   actions: {
@@ -31,6 +32,10 @@ export const useConnectionsStore = defineStore("connections", {
       if (callback) callback();
     },
 
+    replaceAll(connections) {
+      this.brokerConnections = connections;
+    },
+
     load() {
       const saved = JSON.parse(window.api.store.get(CONNECTIONS_KEY) || "[]");
 
@@ -45,7 +50,7 @@ export const useConnectionsStore = defineStore("connections", {
     persist() {
       window.api.store.set(
         CONNECTIONS_KEY,
-        JSON.stringify(this.brokerConnections.filter((c) => c.saved))
+        JSON.stringify(this.savedConnections)
       );
     },
   },

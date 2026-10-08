@@ -5,40 +5,40 @@
         <div row>
           <v-text-field
             v-model="connectionData.name"
-            v-bind:outlined="outline"
-            v-bind:rules="staticConnectionProperties.rules.name"
+            :variant="fieldVariant"
+            :rules="ConnectionProperties.rules.name"
             label="Name"
             required
           />
           <v-select
             v-model="connectionData.version"
-            v-bind:items="versions"
-            v-bind:outlined="outline"
+            :items="VERSIONS"
+            :variant="fieldVariant"
             label="Version"
-            style="max-width: 12ch"
+            style="max-width: 14ch"
           />
         </div>
         <div row>
           <v-select
             v-model="connectionData.protocol"
-            v-bind:items="protocols"
-            v-bind:outlined="outline"
-            v-bind:rules="staticConnectionProperties.rules.protocol"
+            :items="PROTOCOLS"
+            :variant="fieldVariant"
+            :rules="ConnectionProperties.rules.protocol"
             label="Protocol"
-            style="max-width: 15ch"
+            style="max-width: 17ch"
             required
           />
           <v-text-field
             v-model="connectionData.host"
-            v-bind:outlined="outline"
-            v-bind:rules="staticConnectionProperties.rules.host"
+            :variant="fieldVariant"
+            :rules="ConnectionProperties.rules.host"
             label="Host"
             required
           />
           <v-text-field
             v-model="connectionData.port"
-            v-bind:outlined="outline"
-            v-bind:rules="staticConnectionProperties.rules.port"
+            :variant="fieldVariant"
+            :rules="ConnectionProperties.rules.port"
             label="Port"
             style="max-width: 12ch"
             required
@@ -47,39 +47,38 @@
         <div row>
           <v-text-field
             v-model="connectionData.username"
-            v-bind:outlined="outline"
+            :variant="fieldVariant"
             label="Username"
           />
           <v-text-field
             v-model="connectionData.password"
-            v-bind:append-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
-            v-bind:outlined="outline"
-            v-bind:type="showPassword ? 'text' : 'password'"
-            v-on:click:append="showPassword = !showPassword"
+            :append-inner-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
+            :variant="fieldVariant"
+            :type="showPassword ? 'text' : 'password'"
             label="Password"
+            @click:append-inner="showPassword = !showPassword"
           />
         </div>
 
-        <v-expansion-panels style="border: 1px solid grey" class="mt-6" flat>
-          <v-expansion-panel>
-            <v-expansion-panel-header>
-              <div>
-                <v-icon small>mdi-tune-variant</v-icon>
-                <span class="ms-4">Advanced connection settings</span>
-              </div>
-            </v-expansion-panel-header>
-            <v-expansion-panel-content>
+        <v-expansion-panels class="mt-6" style="border: 1px solid grey">
+          <v-expansion-panel elevation="0">
+            <v-expansion-panel-title>
+              <v-icon size="small">mdi-tune-variant</v-icon>
+              <span class="ms-4">Advanced connection settings</span>
+            </v-expansion-panel-title>
+            <v-expansion-panel-text>
               <div row>
                 <v-switch
                   v-model="connectionData.validateCertificate"
                   label="Validate Certificate"
+                  color="primary"
                   inset
                 />
                 <v-spacer />
                 <div
-                  v-on:click="selectFile('caCert')"
-                  v-bind:title="connectionData.caCert"
+                  :title="connectionData.caCert"
                   class="d-flex align-center cert-selector"
+                  @click="selectFile('caCert')"
                 >
                   <v-text-field
                     v-model="connectionData.caCert"
@@ -87,16 +86,18 @@
                     class="cert-selector"
                     readonly
                   />
-                  <v-btn v-on:click.stop="deselectFile('caCert')" icon>
-                    <v-icon>mdi-close</v-icon>
-                  </v-btn>
+                  <v-btn
+                    icon="mdi-close"
+                    variant="text"
+                    @click.stop="deselectFile('caCert')"
+                  />
                 </div>
               </div>
               <div row>
                 <div
-                  v-on:click="selectFile('clientCert')"
-                  v-bind:title="connectionData.clientCert"
+                  :title="connectionData.clientCert"
                   class="d-flex align-center cert-selector"
+                  @click="selectFile('clientCert')"
                 >
                   <v-text-field
                     v-model="connectionData.clientCert"
@@ -104,14 +105,16 @@
                     class="cert-selector"
                     readonly
                   />
-                  <v-btn v-on:click.stop="deselectFile('clientCert')" icon>
-                    <v-icon>mdi-close</v-icon>
-                  </v-btn>
+                  <v-btn
+                    icon="mdi-close"
+                    variant="text"
+                    @click.stop="deselectFile('clientCert')"
+                  />
                 </div>
                 <div
-                  v-on:click="selectFile('clientKey')"
-                  v-bind:title="connectionData.clientKey"
+                  :title="connectionData.clientKey"
                   class="d-flex align-center cert-selector"
+                  @click="selectFile('clientKey')"
                 >
                   <v-text-field
                     v-model="connectionData.clientKey"
@@ -119,16 +122,18 @@
                     class="cert-selector"
                     readonly
                   />
-                  <v-btn v-on:click.stop="deselectFile('clientKey')" icon>
-                    <v-icon>mdi-close</v-icon>
-                  </v-btn>
+                  <v-btn
+                    icon="mdi-close"
+                    variant="text"
+                    @click.stop="deselectFile('clientKey')"
+                  />
                 </div>
               </div>
               <v-divider class="mb-2" />
               <div row>
                 <v-text-field
-                  v-bind:value="clientId"
-                  v-bind:outlined="outline"
+                  :model-value="settings.clientId"
+                  :variant="fieldVariant"
                   label="Current client ID"
                   style="max-width: 35%"
                   readonly
@@ -136,7 +141,7 @@
                 />
                 <v-text-field
                   v-model="connectionData.clientId"
-                  v-bind:outlined="outline"
+                  :variant="fieldVariant"
                   label="Override client ID"
                   clearable
                 />
@@ -145,49 +150,96 @@
               <div row>
                 <v-combobox
                   v-model="connectionData.topics"
-                  v-bind:outlined="outline"
-                  append-icon=""
+                  :variant="fieldVariant"
+                  menu-icon=""
                   label="Subscriptions"
+                  chips
+                  closable-chips
+                  hide-no-data
                   multiple
-                >
-                  <template v-slot:selection="{ item, index }">
-                    <v-chip
-                      v-on:click:close="connectionData.topics.splice(index, 1)"
-                      class="my-3"
-                      close
-                    >
-                      <span class="me-2 font-weight-bold">{{ item }}</span>
-                    </v-chip>
-                  </template>
-                </v-combobox>
+                />
               </div>
-            </v-expansion-panel-content>
+            </v-expansion-panel-text>
           </v-expansion-panel>
         </v-expansion-panels>
       </div>
     </v-card-text>
 
     <v-card-actions>
-      <v-btn v-on:click="deleteConnection" color="error" text>Delete</v-btn>
+      <v-btn color="error" variant="text" @click="emit('delete')">Delete</v-btn>
       <v-btn
-        v-bind:disabled="!validConnectionData"
-        v-on:click="saveChanges"
-        text
+        :disabled="!isValid"
+        variant="text"
+        @click="emitConnectionData('updated')"
       >
         Save
       </v-btn>
       <v-spacer />
       <v-btn
-        v-bind:disabled="!validConnectionData"
-        v-on:click="connectToMqtt"
+        :disabled="!isValid"
         class="ms-2"
         color="primary"
+        @click="emitConnectionData('connect')"
       >
         Connect
       </v-btn>
     </v-card-actions>
   </v-card>
 </template>
+
+<script setup>
+import { computed, reactive, ref } from "vue";
+import ConnectionProperties from "../models/ConnectionProperties";
+import { useSettingsStore } from "../stores/settings";
+
+const PROTOCOLS = ["mqtt", "mqtts", "ws", "wss"];
+const VERSIONS = [
+  { title: "3.1", value: 3 },
+  { title: "3.1.1", value: 4 },
+  { title: "5.0", value: 5 },
+];
+
+const props = defineProps({
+  properties: { type: Object, required: true },
+});
+
+const emit = defineEmits(["connect", "delete", "updated"]);
+
+const settings = useSettingsStore();
+const showPassword = ref(false);
+
+const connectionData = reactive(new ConnectionProperties());
+connectionData.init(props.properties);
+
+const fieldVariant = computed(() =>
+  settings.outline ? "outlined" : "underlined"
+);
+const isValid = computed(() => ConnectionProperties.validate(connectionData));
+
+/** Emits a detached copy, so the parent never shares the form's reactive state. */
+function emitConnectionData(event) {
+  const copy = new ConnectionProperties();
+
+  if (!connectionData.name.trim()) connectionData.name = copy.name;
+
+  copy.init(connectionData);
+  emit(event, copy);
+}
+
+async function selectFile(destination) {
+  const filePath = await window.api.dialog.openFile();
+
+  if (!filePath) return;
+
+  connectionData[destination] = filePath.split(/[\\/]/).pop();
+  connectionData[`${destination}Path`] = filePath;
+}
+
+function deselectFile(destination) {
+  connectionData[destination] = undefined;
+  connectionData[`${destination}Path`] = undefined;
+}
+</script>
 
 <style scoped>
 .conn-form-card {
@@ -211,70 +263,3 @@ div[row] > * {
   cursor: pointer;
 }
 </style>
-
-<script>
-import ConnectionProperties from "../models/ConnectionProperties";
-
-export default {
-  name: "ConnectionForm",
-
-  props: {
-    properties: { type: Object, required: true },
-  },
-
-  data: () => ({
-    connectionData: new ConnectionProperties(),
-    protocols: ["mqtt", "mqtts", "ws", "wss"],
-    versions: [
-      { text: "3.1", value: 3 },
-      { text: "3.1.1", value: 4 },
-      { text: "5.0", value: 5 },
-    ],
-    showPassword: false,
-    staticConnectionProperties: ConnectionProperties,
-  }),
-
-  beforeMount() {
-    this.connectionData.init(this.properties);
-  },
-
-  computed: {
-    validConnectionData() {
-      return ConnectionProperties.validate(this.connectionData);
-    },
-  },
-
-  methods: {
-    deleteConnection() {
-      this.$emit("delete");
-    },
-    saveChanges() {
-      this.emitConnectionData("updated");
-    },
-    connectToMqtt() {
-      this.emitConnectionData("connect");
-    },
-    emitConnectionData(event) {
-      const clone = new ConnectionProperties();
-      this.connectionData.name = !this.connectionData.name.trim()
-        ? clone.name
-        : this.connectionData.name;
-
-      clone.init(this.connectionData);
-      this.$emit(event, clone);
-    },
-    async selectFile(destination) {
-      const filePath = await window.api.dialog.openFile();
-
-      if (!filePath) return;
-
-      this.connectionData[destination] = filePath.split(/[\\/]/).pop();
-      this.connectionData[`${destination}Path`] = filePath;
-    },
-    deselectFile(destination) {
-      this.connectionData[destination] = undefined;
-      this.connectionData[`${destination}Path`] = undefined;
-    },
-  },
-};
-</script>

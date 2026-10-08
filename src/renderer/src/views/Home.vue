@@ -1,32 +1,33 @@
 <template>
   <div class="connection-container">
     <v-app-bar flat>
-      <div v-on:click="scrollTabs('top')" class="title" style="cursor: pointer">
+      <div
+        class="title ms-4"
+        style="cursor: pointer"
+        @click="scrollTabs('top')"
+      >
         MQTT Connections
       </div>
       <v-spacer />
       <v-text-field
         v-model="searchConnection"
         label="Search connections"
+        variant="outlined"
+        density="compact"
         clearable
-        dense
         hide-details
-        outlined
       />
       <v-spacer />
-      <v-tooltip bottom>
-        <template v-slot:activator="{ on, attrs }">
+      <v-tooltip location="bottom">
+        <template #activator="{ props: tooltipProps }">
           <v-btn
-            v-bind="attrs"
-            v-on:click="addTmpConnection"
-            v-on="on"
+            v-bind="tooltipProps"
             class="me-2"
             color="primary"
-            fab
-            small
-          >
-            <v-icon>mdi-plus</v-icon>
-          </v-btn>
+            icon="mdi-plus"
+            size="small"
+            @click="addTmpConnection"
+          />
         </template>
         <span>New connection</span>
       </v-tooltip>
@@ -34,322 +35,230 @@
 
     <v-navigation-drawer
       v-model="settingsDrawer"
-      width="62ch"
-      app
+      width="560"
+      location="right"
       floating
-      right
       temporary
     >
       <v-list>
         <v-list-item>
-          <v-list-item-content>
-            <v-select
-              v-model="selectedTheme"
-              v-bind:items="['light', 'dark']"
-              v-bind:outlined="outline"
-              label="Theme"
-              hide-details
-            >
-              <template v-slot:item="{ item }">
-                <div class="text-capitalize">{{ item }}</div>
-              </template>
-
-              <template v-slot:selection="{ item }">
-                <div class="text-capitalize">{{ item }}</div>
-              </template>
-            </v-select>
-          </v-list-item-content>
+          <v-select
+            v-model="settings.theme"
+            :items="THEMES"
+            :variant="fieldVariant"
+            label="Theme"
+            hide-details
+          >
+            <template #item="{ props: itemProps }">
+              <v-list-item v-bind="itemProps" class="text-capitalize" />
+            </template>
+            <template #selection="{ item }">
+              <div class="text-capitalize">{{ item.title }}</div>
+            </template>
+          </v-select>
         </v-list-item>
 
         <v-list-item>
-          <v-list-item-content>
-            <v-select
-              v-model="selectedColor"
-              v-bind:items="colors"
-              v-bind:outlined="outline"
-              item-text="text"
-              item-value="value"
-              label="Primary color"
-              hide-details
-              return-object
-            >
-              <template v-slot:item="{ item, on, attrs }">
-                <v-list-item v-bind="attrs" v-on="on" selectable>
-                  <v-list-item-content>{{ item.text }}</v-list-item-content>
-                  <v-list-item-action>
-                    <v-icon v-if="!darkTheme" v-bind:color="item.value.light">
-                      mdi-white-balance-sunny
-                    </v-icon>
-                    <v-icon v-else v-bind:color="item.value.dark">
-                      mdi-moon-waning-crescent
-                    </v-icon>
-                  </v-list-item-action>
-                </v-list-item>
-              </template>
-            </v-select>
-          </v-list-item-content>
+          <v-select
+            v-model="settings.primaryColor"
+            :items="COLORS"
+            :variant="fieldVariant"
+            item-title="text"
+            item-value="value"
+            label="Primary color"
+            hide-details
+            return-object
+          >
+            <template #item="{ props: itemProps, item }">
+              <v-list-item v-bind="itemProps">
+                <template #append>
+                  <v-icon :color="item.raw.value[themeMode]">
+                    {{
+                      settings.isDark
+                        ? "mdi-moon-waning-crescent"
+                        : "mdi-white-balance-sunny"
+                    }}
+                  </v-icon>
+                </template>
+              </v-list-item>
+            </template>
+          </v-select>
         </v-list-item>
 
         <v-list-item>
-          <v-list-item-content class="px-3 d-flex flex-column align-start">
-            <div
-              class="d-flex justify-space-between"
-              style="gap: 1em; width: 100%"
-            >
-              <v-switch
-                v-model="selectedOutline"
-                label="Outlined fields"
-                inset
-              />
-              <v-switch
-                v-model="selectedDenseTree"
-                label="Dense topics tree"
-                inset
-              />
-            </div>
-            <div
-              class="d-flex justify-space-between flex-grow-1"
-              style="gap: 1em; width: 100%"
-            >
-              <v-switch
-                v-model="selectedCloseToTray"
-                label="Close to system tray"
-                inset
-              />
-            </div>
-          </v-list-item-content>
+          <div class="settings-switches">
+            <v-switch
+              v-model="settings.outline"
+              label="Outlined fields"
+              color="primary"
+              hide-details
+              inset
+            />
+            <v-switch
+              v-model="settings.denseTree"
+              label="Dense topics tree"
+              color="primary"
+              hide-details
+              inset
+            />
+            <v-switch
+              v-model="settings.closeTray"
+              label="Close to system tray"
+              color="primary"
+              hide-details
+              inset
+            />
+          </div>
         </v-list-item>
 
         <v-divider class="mx-3" />
 
-        <v-list>
-          <v-list-item>
-            <v-list-item-content>
-              <v-text-field
-                v-model="selectClientId"
-                v-bind:outlined="outline"
-                label="MQTT Client ID"
-                clearable
-                hide-details
-              />
-            </v-list-item-content>
-          </v-list-item>
+        <v-list-item>
+          <v-text-field
+            v-model="settings.clientId"
+            :variant="fieldVariant"
+            label="MQTT Client ID"
+            clearable
+            hide-details
+          />
+        </v-list-item>
 
-          <v-list-item>
-            <v-list-item-content>
-              <v-select
-                v-model.number="selectedKeepalive"
-                v-bind:items="[60, 120, 180, 240, 300]"
-                v-bind:outlined="outline"
-                label="MQTT Keepalive (in seconds)"
-                hide-details
-              />
-            </v-list-item-content>
-          </v-list-item>
+        <v-list-item>
+          <v-select
+            v-model="settings.keepalive"
+            :items="KEEPALIVE_OPTIONS"
+            :variant="fieldVariant"
+            label="MQTT Keepalive (in seconds)"
+            hide-details
+          />
+        </v-list-item>
 
-          <v-list-item>
-            <v-list-item-content>
-              <div class="d-flex" style="gap: 1em">
-                <v-select
-                  v-model.number="selectedReconnectPeriod"
-                  v-bind:items="[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]"
-                  v-bind:outlined="outline"
-                  label="MQTT Reconnect period (in seconds)"
-                  hide-details
-                />
+        <v-list-item>
+          <div class="d-flex" style="gap: 1em">
+            <v-select
+              v-model="settings.reconnectPeriod"
+              :items="RECONNECT_PERIOD_OPTIONS"
+              :variant="fieldVariant"
+              label="MQTT Reconnect period (in seconds)"
+              hide-details
+            />
+            <v-select
+              v-model="settings.maxReconnects"
+              :items="MAX_RECONNECTS_OPTIONS"
+              :variant="fieldVariant"
+              label="Max number of reconnects (0 for disabling)"
+              hide-details
+            />
+          </div>
+        </v-list-item>
 
-                <v-select
-                  v-model.number="selectedMaxReconnects"
-                  v-bind:items="[0, 5, 10, 15, 20]"
-                  v-bind:outlined="outline"
-                  label="Max number of reconnects (0 for disabling)"
-                  hide-details
-                />
-              </div>
-            </v-list-item-content>
-          </v-list-item>
-
-          <v-list-item>
-            <v-list-item-content>
-              <v-select
-                v-model.number="selectedConnectTimeout"
-                v-bind:items="[10, 20, 30, 40, 50, 60, 120, 180, 240, 300]"
-                v-bind:outlined="outline"
-                label="MQTT Connection timeout (in seconds)"
-                hide-details
-              />
-            </v-list-item-content>
-          </v-list-item>
-        </v-list>
+        <v-list-item>
+          <v-select
+            v-model="settings.connectTimeout"
+            :items="CONNECT_TIMEOUT_OPTIONS"
+            :variant="fieldVariant"
+            label="MQTT Connection timeout (in seconds)"
+            hide-details
+          />
+        </v-list-item>
 
         <v-divider class="mx-3" />
 
-        <v-list dense>
-          <v-list-item>
-            <v-list-item-action-text>
-              Keyboard shortcuts
-            </v-list-item-action-text>
-          </v-list-item>
-          <!-- Settings  -->
-          <v-list-item link>
-            <v-list-item-content>Edit settings</v-list-item-content>
-            <v-list-item-action-text>
-              {{ isMacOs ? "Cmd" : "Ctrl" }} + COMMA
-            </v-list-item-action-text>
-          </v-list-item>
-          <!-- Filtering -->
-          <v-list-item link>
-            <v-list-item-content>Toggle search</v-list-item-content>
-            <v-list-item-action-text>
-              {{ isMacOs ? "Cmd" : "Ctrl" }} + F
-            </v-list-item-action-text>
-          </v-list-item>
-          <v-list-item link>
-            <v-list-item-content>Notifications and logging</v-list-item-content>
-            <v-list-item-action-text>
-              {{ isMacOs ? "Cmd" : "Ctrl" }} + Shift + N
-            </v-list-item-action-text>
-          </v-list-item>
-          <!-- Window management -->
-          <v-list-item link>
-            <v-list-item-content>Reload the page</v-list-item-content>
-            <v-list-item-action-text>
-              {{ isMacOs ? "Cmd" : "Ctrl" }} + R
-            </v-list-item-action-text>
-          </v-list-item>
-          <v-list-item link>
-            <v-list-item-content>Force reload the page</v-list-item-content>
-            <v-list-item-action-text>
-              {{ isMacOs ? "Cmd" : "Ctrl" }} + Shift + R
-            </v-list-item-action-text>
-          </v-list-item>
-          <v-list-item link>
-            <v-list-item-content>Quit the app</v-list-item-content>
-            <v-list-item-action-text>
-              {{ isMacOs ? "Cmd" : "Ctrl" }} + Q
-            </v-list-item-action-text>
-          </v-list-item>
-          <!-- Info -->
-          <v-list-item link>
-            <v-list-item-content>Show shortcuts dialog</v-list-item-content>
-            <v-list-item-action-text>
-              {{ isMacOs ? "Cmd" : "Ctrl" }} + K
-            </v-list-item-action-text>
-          </v-list-item>
-          <v-list-item link>
-            <v-list-item-content>About the app</v-list-item-content>
-            <v-list-item-action-text>
-              {{ isMacOs ? "Cmd" : "Ctrl" }} + I
-            </v-list-item-action-text>
+        <v-list density="compact">
+          <v-list-subheader>Keyboard shortcuts</v-list-subheader>
+          <v-list-item
+            v-for="shortcut in SHORTCUTS"
+            :key="shortcut.label"
+            :title="shortcut.label"
+          >
+            <template #append>
+              <span class="text-caption"
+                >{{ modifierKey }} + {{ shortcut.keys }}</span
+              >
+            </template>
           </v-list-item>
         </v-list>
       </v-list>
 
-      <template v-slot:append>
-        <v-list-item dense>
-          <v-list-item-content>
-            <div class="d-flex flex-row justify-center caption">
-              <v-btn v-on:click="openBugsUrl" color="primary" text x-small>
-                <v-icon class="me-2" small>mdi-bug</v-icon>
-                Report a bug
-              </v-btn>
-            </div>
-          </v-list-item-content>
-        </v-list-item>
+      <template #append>
+        <div class="d-flex justify-center pa-2">
+          <v-btn
+            color="primary"
+            prepend-icon="mdi-bug"
+            size="x-small"
+            variant="text"
+            @click="openBugsUrl"
+          >
+            Report a bug
+          </v-btn>
+        </div>
       </template>
     </v-navigation-drawer>
 
     <div class="ma-2 connection-area">
-      <v-card id="tabs-list" class="conn-tabs-container" flat>
-        <v-tabs v-model="tabId" vertical>
+      <v-card ref="tabsList" class="conn-tabs-container" flat>
+        <v-tabs v-model="tabId" direction="vertical">
           <v-tab
-            v-for="(connection, i) in connectionsAvailable"
-            v-show="filteredConnectionIDs.includes(connection.id)"
-            v-bind:key="'tab-' + i"
-            v-bind:class="{
-              'tabs-left': filteredConnectionIDs.includes(connection.id),
-            }"
+            v-for="(connection, i) in connections.brokerConnections"
+            v-show="filteredConnectionIds.has(connection.id)"
+            :key="'tab-' + connection.id"
+            :value="i"
+            class="tabs-left"
           >
-            <div
-              v-bind:class="{
-                'tab-truncate': true,
-                'primary--text': tabId === i,
-                'text--lighten-2': darkTheme,
-              }"
-            >
+            <div class="tab-truncate" :class="{ 'text-primary': tabId === i }">
               {{ connection.name }}
             </div>
           </v-tab>
         </v-tabs>
       </v-card>
-      <v-tabs-items v-model="tabId" class="tab-items-container">
-        <v-tab-item
-          v-for="(connection, i) in connectionsAvailable"
-          v-bind:key="'connection-' + connection.id"
+
+      <v-tabs-window v-model="tabId" class="tab-items-container">
+        <v-tabs-window-item
+          v-for="(connection, i) in connections.brokerConnections"
+          :key="'connection-' + connection.id"
+          :value="i"
           class="tab-items-container"
         >
           <ConnectionForm
-            v-bind:properties="connection"
-            v-on:connect="connect($event, i)"
-            v-on:delete="confirmDelete(i)"
-            v-on:updated="dataChanged($event, i)"
+            :properties="connection"
+            @connect="connect($event, i)"
+            @delete="confirmDelete(i)"
+            @updated="dataChanged($event, i)"
           />
-        </v-tab-item>
-      </v-tabs-items>
+        </v-tabs-window-item>
+      </v-tabs-window>
     </div>
 
     <div class="foot-bar">
-      <div class="caption client-id grey--text pa-2">
+      <div class="text-caption text-grey client-id pa-2">
         <span>Client ID:</span>
-        <span class="primary--text font-weight-bold">{{ clientId }}</span>
+        <span class="text-primary font-weight-bold">{{
+          settings.clientId
+        }}</span>
       </div>
 
-      <div class="caption grey--text pa-2">
+      <div class="app-version text-grey pa-2">
         <div class="d-flex align-center">
-          <v-img
-            class="me-2"
-            src="../assets/logo.svg"
-            style="max-width: 1.5em"
-          />
+          <v-img :src="logo" class="me-1" width="1.4em" />
           v{{ version }}
         </div>
       </div>
     </div>
 
     <!-- Connection deletion confirmation -->
-    <v-dialog
-      v-if="deleteIndex >= 0 && deleteIndex < connectionsAvailable.length"
-      v-model="deleteDialog"
-      max-width="50ch"
-      persistent
-    >
-      <v-card>
+    <v-dialog v-model="deleteDialog" max-width="50ch" persistent>
+      <v-card v-if="connectionToDelete">
         <v-card-title>Confirm delete</v-card-title>
         <v-card-text>
           Are you sure you want to delete
-          <span class="font-weight-black">
-            "{{ connectionsAvailable[deleteIndex].name }}"?
-          </span>
+          <span class="font-weight-black"
+            >"{{ connectionToDelete.name }}"?</span
+          >
         </v-card-text>
         <v-card-actions>
           <v-spacer />
-          <v-btn
-            v-on:click="
-              deleteDialog = false;
-              deleteIndex = -1;
-            "
-            text
-          >
-            Cancel
-          </v-btn>
-          <v-btn
-            v-on:click="
-              deleteConnection(deleteIndex);
-              deleteDialog = false;
-            "
-            color="error"
-            text
-          >
+          <v-btn variant="text" @click="cancelDelete">Cancel</v-btn>
+          <v-btn color="error" variant="text" @click="deleteConnection">
             Delete
           </v-btn>
         </v-card-actions>
@@ -358,12 +267,197 @@
   </div>
 </template>
 
+<script setup>
+import { computed, nextTick, onBeforeMount, onBeforeUnmount, ref } from "vue";
+import { useRouter } from "vue-router";
+import ConnectionForm from "../components/ConnectionForm.vue";
+import ConnectionProperties from "../models/ConnectionProperties";
+import { useConnectionsStore } from "../stores/connections";
+import { useNotifyStore } from "../stores/notify";
+import { useSettingsStore } from "../stores/settings";
+import { isMacOs } from "../utils/platform";
+import logo from "../assets/logo.svg";
+
+const THEMES = ["light", "dark"];
+const KEEPALIVE_OPTIONS = [60, 120, 180, 240, 300];
+const RECONNECT_PERIOD_OPTIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+const MAX_RECONNECTS_OPTIONS = [0, 5, 10, 15, 20];
+const CONNECT_TIMEOUT_OPTIONS = [10, 20, 30, 40, 50, 60, 120, 180, 240, 300];
+
+const COLORS = [
+  { text: "Punchy Pink", value: { light: "#E91E63", dark: "#EC407A" } },
+  { text: "Hipster Purple", value: { light: "#9C27B0", dark: "#AB47BC" } },
+  { text: "Sober Purple", value: { light: "#673AB7", dark: "#7E57C2" } },
+  { text: "Indie Indigo", value: { light: "#3F51B5", dark: "#5C6BC0" } },
+  { text: "Usual Blue", value: { light: "#2196F3", dark: "#42A5F5" } },
+  { text: "Delicate Cyan", value: { light: "#00BCD4", dark: "#00BCD4" } },
+  { text: "Tasty Teal", value: { light: "#009688", dark: "#26A69A" } },
+  { text: "Envy Green", value: { light: "#4CAF50", dark: "#66BB6A" } },
+  { text: "Juicy Lime", value: { light: "#C0CA33", dark: "#C0CA33" } },
+  { text: "Precious Amber", value: { light: "#FFB300", dark: "#FFB300" } },
+  { text: "Original Orange", value: { light: "#FF5722", dark: "#FF7043" } },
+  { text: "Boring Brown", value: { light: "#795548", dark: "#8D6E63" } },
+  { text: "Metallic Grey", value: { light: "#607D8B", dark: "#78909C" } },
+];
+
+const SHORTCUTS = [
+  { label: "Edit settings", keys: "COMMA" },
+  { label: "Toggle search", keys: "F" },
+  { label: "Notifications and logging", keys: "Shift + N" },
+  { label: "Reload the page", keys: "R" },
+  { label: "Force reload the page", keys: "Shift + R" },
+  { label: "Quit the app", keys: "Q" },
+  { label: "Show shortcuts dialog", keys: "K" },
+  { label: "About the app", keys: "I" },
+];
+
+const router = useRouter();
+const settings = useSettingsStore();
+const connections = useConnectionsStore();
+const notify = useNotifyStore();
+
+const version = import.meta.env.VITE_APP_VERSION;
+const modifierKey = isMacOs ? "Cmd" : "Ctrl";
+
+const tabId = ref(0);
+const settingsDrawer = ref(false);
+const searchConnection = ref("");
+const deleteDialog = ref(false);
+const deleteIndex = ref(-1);
+const tabsList = ref(null);
+
+const fieldVariant = computed(() =>
+  settings.outline ? "outlined" : "underlined"
+);
+const themeMode = computed(() => (settings.isDark ? "dark" : "light"));
+
+const connectionToDelete = computed(
+  () => connections.brokerConnections[deleteIndex.value]
+);
+
+const filteredConnectionIds = computed(() => {
+  const search = (searchConnection.value || "").toLowerCase();
+
+  return new Set(
+    connections.brokerConnections
+      .filter((c) => c.name.toLowerCase().includes(search))
+      .map((c) => c.id)
+  );
+});
+
+function scrollTabs(to = "bottom") {
+  nextTick(() => {
+    const tabs = tabsList.value?.$el;
+
+    tabs?.scroll({
+      top: to === "bottom" ? tabs.scrollHeight : 0,
+      behavior: "smooth",
+    });
+  });
+}
+
+function toggleSettingsDrawer() {
+  settingsDrawer.value = !settingsDrawer.value;
+}
+
+function addTmpConnection() {
+  connections.add(new ConnectionProperties());
+  searchConnection.value = "";
+  tabId.value = connections.brokerConnections.length - 1;
+  scrollTabs("bottom");
+}
+
+function dataChanged(data, index) {
+  data.saved = true;
+  connections.update(index, data);
+  connections.persist();
+}
+
+function connect(data, index) {
+  dataChanged(data, index);
+  router.push({ name: "Viewer", params: { index } });
+}
+
+function confirmDelete(index) {
+  deleteIndex.value = index;
+  deleteDialog.value = true;
+}
+
+function cancelDelete() {
+  deleteDialog.value = false;
+  deleteIndex.value = -1;
+}
+
+function deleteConnection() {
+  connections.remove(deleteIndex.value, () => {
+    connections.persist();
+    tabId.value = 0;
+    scrollTabs("top");
+  });
+  deleteDialog.value = false;
+}
+
+function exportConnectionData() {
+  const json = JSON.stringify(connections.savedConnections, null, 2);
+  const download = document.createElement("a");
+
+  download.href = URL.createObjectURL(
+    new Blob([json], { type: "application/json" })
+  );
+  download.download = `connections-${Date.now()}.json`;
+  download.click();
+  URL.revokeObjectURL(download.href);
+}
+
+function importConnectionData(fileContent) {
+  try {
+    const imported = (JSON.parse(fileContent) || []).filter(
+      ConnectionProperties.validate
+    );
+
+    // Generate IDs if missing (retro-compatibility)
+    imported.forEach((connection) => {
+      connection.id = connection.id || crypto.randomUUID();
+    });
+
+    connections.replaceAll(imported);
+    connections.persist();
+    tabId.value = 0;
+  } catch {
+    notify.error("The selected file is not a valid connections file");
+  }
+}
+
+function openBugsUrl() {
+  window.api.app.openExternal(import.meta.env.VITE_GITHUB_BUGS);
+}
+
+let unsubscribeMenuEvents = [];
+
+onBeforeMount(() => {
+  if (connections.brokerConnections.length === 0) addTmpConnection();
+  else tabId.value = connections.selectedConnectionId;
+
+  window.api.app.sendPage("home");
+  unsubscribeMenuEvents = [
+    window.api.app.on("settingsPressed", toggleSettingsDrawer),
+    window.api.app.on("exportDataPressed", exportConnectionData),
+    window.api.app.on("importDataPressed", importConnectionData),
+  ];
+});
+
+onBeforeUnmount(() => {
+  connections.setSelectedConnectionId(tabId.value);
+  unsubscribeMenuEvents.forEach((unsubscribe) => unsubscribe());
+});
+</script>
+
 <style scoped>
 .connection-container {
-  height: 100vh;
+  height: calc(100vh - var(--v-layout-top, 0px));
   display: grid;
   grid-template-columns: 1fr;
-  grid-template-rows: min-content 1fr min-content;
+  grid-template-rows: 1fr min-content;
 }
 
 .connection-area {
@@ -395,10 +489,20 @@
   text-overflow: ellipsis;
 }
 
+.settings-switches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 1em;
+}
+
 .foot-bar {
   display: flex;
   align-items: center;
   justify-content: space-between;
+}
+
+.app-version {
+  font-size: 0.8rem;
 }
 
 .client-id {
@@ -407,234 +511,3 @@
   align-items: center;
 }
 </style>
-
-<script>
-import ConnectionForm from "../components/ConnectionForm.vue";
-import ConnectionProperties from "../models/ConnectionProperties";
-import { v4 as uuidv4 } from "uuid";
-import moment from "moment";
-
-export default {
-  name: "Home",
-
-  components: { ConnectionForm },
-
-  data: () => ({
-    tabId: 0,
-    deleteIndex: -1,
-    settingsDrawer: false,
-    deleteDialog: false,
-    searchConnection: undefined,
-    colors: [
-      { text: "Punchy Pink", value: { light: "#E91E63", dark: "#EC407A" } },
-      { text: "Hipster Purple", value: { light: "#9C27B0", dark: "#AB47BC" } },
-      { text: "Sober Purple", value: { light: "#673AB7", dark: "#7E57C2" } },
-      { text: "Indie Indigo", value: { light: "#3F51B5", dark: "#5C6BC0" } },
-      { text: "Usual Blue", value: { light: "#2196F3", dark: "#42A5F5" } },
-      { text: "Delicate Cyan", value: { light: "#00BCD4", dark: "#00BCD4" } },
-      { text: "Tasty Teal", value: { light: "#009688", dark: "#26A69A" } },
-      { text: "Envy Green", value: { light: "#4CAF50", dark: "#66BB6A" } },
-      { text: "Juicy Lime", value: { light: "#C0CA33", dark: "#C0CA33" } },
-      { text: "Precious Amber", value: { light: "#FFB300", dark: "#FFB300" } },
-      { text: "Original Orange", value: { light: "#FF5722", dark: "#FF7043" } },
-      { text: "Boring Brown", value: { light: "#795548", dark: "#8D6E63" } },
-      { text: "Metallic Grey", value: { light: "#607D8B", dark: "#78909C" } },
-    ],
-  }),
-
-  computed: {
-    version() {
-      return import.meta.env.VITE_APP_VERSION;
-    },
-    filteredConnectionIDs() {
-      return this.connectionsAvailable
-        .filter(
-          (c) =>
-            !this.searchConnection ||
-            c.name.toLowerCase().includes(this.searchConnection.toLowerCase())
-        )
-        .map((c) => c.id);
-    },
-    selectedTheme: {
-      get() {
-        return this.$store.getters.getTheme;
-      },
-      set(newValue) {
-        this.$store.commit("setTheme", newValue);
-      },
-    },
-    selectedDenseTree: {
-      get() {
-        return this.$store.getters.getDenseTree;
-      },
-      set(newValue) {
-        this.$store.commit("setDenseTree", newValue);
-      },
-    },
-    selectedOutline: {
-      get() {
-        return this.$store.getters.getOutline;
-      },
-      set(newValue) {
-        this.$store.commit("setOutline", newValue);
-      },
-    },
-    selectedCloseToTray: {
-      get() {
-        return this.$store.getters.getCloseToTray;
-      },
-      set(newValue) {
-        this.$store.commit("setCloseToTray", newValue);
-      },
-    },
-    selectedColor: {
-      get() {
-        return this.$store.getters.getPrimaryColor;
-      },
-      set(newValue) {
-        this.$store.commit("setPrimaryColor", newValue);
-      },
-    },
-    selectClientId: {
-      get() {
-        return this.$store.getters.getClientId;
-      },
-      set(newValue) {
-        this.$store.commit("setClientId", newValue);
-      },
-    },
-    selectedKeepalive: {
-      get() {
-        return this.$store.getters.getKeepalive;
-      },
-      set(newValue) {
-        this.$store.commit("setKeepalive", newValue);
-      },
-    },
-    selectedReconnectPeriod: {
-      get() {
-        return this.$store.getters.getReconnect;
-      },
-      set(newValue) {
-        this.$store.commit("setReconnect", newValue);
-      },
-    },
-    selectedConnectTimeout: {
-      get() {
-        return this.$store.getters.getConnectTimeout;
-      },
-      set(newValue) {
-        this.$store.commit("setConnectTimeout", newValue);
-      },
-    },
-    selectedMaxReconnects: {
-      get() {
-        return this.$store.getters.getMaxReconnects;
-      },
-      set(newValue) {
-        this.$store.commit("setMaxReconnects", newValue);
-      },
-    },
-  },
-
-  beforeMount() {
-    if (this.connectionsAvailable.length == 0) this.addTmpConnection();
-    else this.tabId = this.$store.getters.selectedConnectionId;
-
-    window.api.app.sendPage("home");
-    this.unsubscribeMenuEvents = [
-      window.api.app.on("settingsPressed", this.toggleSettingsDrawer),
-      window.api.app.on("exportDataPressed", this.exportConnectionData),
-      window.api.app.on("importDataPressed", this.importConnectionData),
-    ];
-  },
-
-  beforeDestroy() {
-    this.$store.commit("setSelectedConnectionId", this.tabId);
-
-    this.unsubscribeMenuEvents.forEach((unsubscribe) => unsubscribe());
-  },
-
-  methods: {
-    exportConnectionData() {
-      const savedConnections = JSON.parse(
-        this.$estore.get(this.connectionsStore) || "[]"
-      );
-      const blob = new Blob([JSON.stringify(savedConnections, null, 2)], {
-        type: "application/json",
-      });
-      const fileDownload = document.createElement("a");
-
-      fileDownload.href = URL.createObjectURL(blob);
-      fileDownload.download = `connections-${moment().valueOf()}.json`;
-      fileDownload.style.display = "none";
-
-      document.body.appendChild(fileDownload);
-      fileDownload.click();
-      document.body.removeChild(fileDownload);
-    },
-    importConnectionData(fileContent) {
-      try {
-        const connections = (JSON.parse(fileContent) || []).filter((props) =>
-          ConnectionProperties.validate(props)
-        );
-
-        // Generate new UUIDs if not present (for retro-compatibility)
-        connections.forEach((connection) => {
-          connection.id = connection.id || uuidv4();
-        });
-
-        this.$store.commit("loadPersistentConnections", connections);
-        this.persistConnections();
-      } catch {
-        // File is not valid
-        // Do nothing
-      }
-    },
-    scrollTabs(to = "bottom") {
-      this.$nextTick(() => {
-        const tabs = document.querySelector("#tabs-list");
-        const direction = to === "bottom" ? tabs.scrollHeight : 0;
-
-        tabs.scroll({ top: direction, behavior: "smooth" });
-      });
-    },
-    toggleSettingsDrawer() {
-      this.settingsDrawer = !this.settingsDrawer;
-    },
-    addTmpConnection() {
-      this.$store.commit("addNewConnection", new ConnectionProperties());
-      this.searchConnection = undefined;
-      this.tabId = this.connectionsAvailable.length - 1;
-      this.scrollTabs("bottom");
-    },
-    dataChanged(data, index) {
-      data.saved = true;
-
-      this.$store.commit("updateConnection", { data, index });
-      this.persistConnections();
-    },
-    confirmDelete(index) {
-      this.deleteIndex = index;
-      this.deleteDialog = true;
-    },
-    deleteConnection(index) {
-      this.$store.commit("removeConnection", {
-        index,
-        callback: () => {
-          this.persistConnections();
-          this.tabId = 0;
-          this.scrollTabs("top");
-        },
-      });
-    },
-    connect(data, index) {
-      this.dataChanged(data, index);
-      this.$router.push({ path: `viewer/${index}` });
-    },
-    openBugsUrl() {
-      window.api.app.openExternal(import.meta.env.VITE_GITHUB_BUGS);
-    },
-  },
-};
-</script>
