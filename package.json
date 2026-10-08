@@ -34,6 +34,7 @@
     "lint": "eslint .",
     "postinstall": "electron-builder install-app-deps",
     "postuninstall": "electron-builder install-app-deps",
+    "load-test": "node scripts/load-test.mjs",
     "test": "vitest run",
     "test:watch": "vitest",
     "format": "prettier --write ."

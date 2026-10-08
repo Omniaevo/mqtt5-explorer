@@ -8,7 +8,7 @@ export default [
   js.configs.recommended,
   ...pluginVue.configs["flat/recommended"],
   {
-    files: ["src/main/**/*.js", "src/preload/**/*.js", "*.config.{js,mjs}"],
+    files: ["src/main/**/*.js", "src/preload/**/*.js", "*.config.{js,mjs}", "scripts/**/*.{js,mjs}"],
     languageOptions: { globals: globals.node },
   },
   {
