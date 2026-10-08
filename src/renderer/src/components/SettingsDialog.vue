@@ -1,7 +1,7 @@
 <template>
   <v-dialog
     v-model="open"
-    max-width="720"
+    max-width="900"
     :fullscreen="xs"
     scrollable
   >
@@ -19,143 +19,199 @@
       </v-card-title>
       <v-divider />
 
-      <v-card-text class="pa-0">
-        <v-list>
-          <v-list-item>
-            <v-select
-              v-model="settings.theme"
-              :items="THEMES"
-              :variant="fieldVariant"
-              label="Theme"
-              hide-details
-            />
-          </v-list-item>
-
-          <v-list-item>
-            <v-select
-              v-model="settings.primaryColor"
-              :items="COLORS"
-              :variant="fieldVariant"
-              item-title="text"
-              item-value="value"
-              label="Primary color"
-              hide-details
-              return-object
+      <v-card-text class="px-4 py-2">
+        <div class="settings-section text-medium-emphasis">Appearance</div>
+        <SettingsRow
+          title="Theme"
+          description="Colors of the whole app."
+        >
+          <v-btn-toggle
+            v-model="settings.theme"
+            color="primary"
+            density="comfortable"
+            variant="outlined"
+            mandatory
+            divided
+          >
+            <v-btn
+              v-for="theme in THEMES"
+              :key="theme.value"
+              :value="theme.value"
             >
-              <template #item="{ props: itemProps, item }">
-                <v-list-item v-bind="itemProps">
+              {{ theme.title }}
+            </v-btn>
+          </v-btn-toggle>
+        </SettingsRow>
+        <SettingsRow
+          title="Primary color"
+          description="Accent color of buttons and highlights."
+        >
+          <v-select
+            v-model="settings.primaryColor"
+            class="settings-control"
+            :items="COLORS"
+            :variant="fieldVariant"
+            item-title="text"
+            item-value="value"
+            hide-details
+            return-object
+          >
+            <template #item="{ props: itemProps, item }">
+              <v-list-item v-bind="itemProps">
+                <template #append>
+                  <v-icon :color="item.value[themeMode]">
+                    {{
+                      settings.isDark
+                        ? "mdi-moon-waning-crescent"
+                        : "mdi-white-balance-sunny"
+                    }}
+                  </v-icon>
+                </template>
+              </v-list-item>
+            </template>
+          </v-select>
+        </SettingsRow>
+        <SettingsRow
+          title="Outlined fields"
+          description="Use boxed inputs instead of underlined inputs."
+        >
+          <v-switch
+            v-model="settings.outline"
+            color="primary"
+            hide-details
+            inset
+          />
+        </SettingsRow>
+
+        <div class="settings-section text-medium-emphasis mt-4">Topic tree</div>
+        <SettingsRow
+          title="Dense tree"
+          description="Smaller rows. More topics fit on the screen."
+        >
+          <v-switch
+            v-model="settings.denseTree"
+            color="primary"
+            hide-details
+            inset
+          />
+        </SettingsRow>
+
+        <div class="settings-section text-medium-emphasis mt-4">Application</div>
+        <SettingsRow
+          title="Close to system tray"
+          description="Keep the app running when the window closes."
+        >
+          <v-switch
+            v-model="settings.closeTray"
+            color="primary"
+            hide-details
+            inset
+          />
+        </SettingsRow>
+
+        <v-expansion-panels class="mt-4" variant="accordion">
+          <v-expansion-panel title="MQTT client (advanced)">
+            <v-expansion-panel-text>
+              <SettingsRow
+                title="Client ID"
+                description="Name of this client on the broker."
+              >
+                <v-text-field
+                  v-model="settings.clientId"
+                  class="settings-control settings-control-id"
+                  :variant="fieldVariant"
+                  clearable
+                  hide-details
+                />
+                <v-btn
+                  class="ms-2"
+                  icon
+                  variant="text"
+                  size="small"
+                  aria-label="Generate a new client ID"
+                  @click="settings.regenerateClientId()"
+                >
+                  <v-icon>mdi-refresh</v-icon>
+                  <v-tooltip activator="parent" location="top">
+                    Generate a new client ID
+                  </v-tooltip>
+                </v-btn>
+              </SettingsRow>
+              <SettingsRow
+                title="Keepalive"
+                description="Time between pings to the broker, in seconds."
+              >
+                <v-select
+                  v-model="settings.keepalive"
+                  class="settings-control settings-control-wide"
+                  :items="KEEPALIVE_OPTIONS"
+                  :variant="fieldVariant"
+                  hide-details
+                />
+              </SettingsRow>
+              <SettingsRow
+                title="Connection timeout"
+                description="Time to wait for the broker, in seconds."
+              >
+                <v-select
+                  v-model="settings.connectTimeout"
+                  class="settings-control settings-control-wide"
+                  :items="CONNECT_TIMEOUT_OPTIONS"
+                  :variant="fieldVariant"
+                  hide-details
+                />
+              </SettingsRow>
+              <SettingsRow
+                title="Reconnect period"
+                description="Time between reconnect attempts, in seconds."
+              >
+                <v-select
+                  v-model="settings.reconnectPeriod"
+                  class="settings-control settings-control-wide"
+                  :items="RECONNECT_PERIOD_OPTIONS"
+                  :variant="fieldVariant"
+                  hide-details
+                />
+              </SettingsRow>
+              <SettingsRow
+                title="Max reconnects"
+                description="Number of reconnect attempts. 0 turns it off."
+              >
+                <v-select
+                  v-model="settings.maxReconnects"
+                  class="settings-control settings-control-wide"
+                  :items="MAX_RECONNECTS_OPTIONS"
+                  :variant="fieldVariant"
+                  hide-details
+                />
+              </SettingsRow>
+            </v-expansion-panel-text>
+          </v-expansion-panel>
+
+          <v-expansion-panel title="Keyboard shortcuts">
+            <v-expansion-panel-text>
+              <v-list density="compact">
+                <v-list-item
+                  v-for="shortcut in SHORTCUTS"
+                  :key="shortcut.label"
+                  :title="shortcut.label"
+                >
                   <template #append>
-                    <v-icon :color="item.raw.value[themeMode]">
-                      {{
-                        settings.isDark
-                          ? "mdi-moon-waning-crescent"
-                          : "mdi-white-balance-sunny"
-                      }}
-                    </v-icon>
+                    <span class="text-caption"
+                      >{{ modifierKey }} + {{ shortcut.keys }}</span
+                    >
                   </template>
                 </v-list-item>
-              </template>
-            </v-select>
-          </v-list-item>
-
-          <v-list-item>
-            <div class="settings-switches">
-              <v-switch
-                v-model="settings.outline"
-                label="Outlined fields"
-                color="primary"
-                hide-details
-                inset
-              />
-              <v-switch
-                v-model="settings.denseTree"
-                label="Dense topics tree"
-                color="primary"
-                hide-details
-                inset
-              />
-              <v-switch
-                v-model="settings.closeTray"
-                label="Close to system tray"
-                color="primary"
-                hide-details
-                inset
-              />
-            </div>
-          </v-list-item>
-
-          <v-divider class="mx-3" />
-
-          <v-list-item>
-            <v-text-field
-              v-model="settings.clientId"
-              :variant="fieldVariant"
-              label="MQTT Client ID"
-              clearable
-              hide-details
-            />
-          </v-list-item>
-
-          <v-list-item>
-            <v-select
-              v-model="settings.keepalive"
-              :items="KEEPALIVE_OPTIONS"
-              :variant="fieldVariant"
-              label="MQTT Keepalive (in seconds)"
-              hide-details
-            />
-          </v-list-item>
-
-          <v-list-item>
-            <div class="d-flex" style="gap: 1em">
-              <v-select
-                v-model="settings.reconnectPeriod"
-                :items="RECONNECT_PERIOD_OPTIONS"
-                :variant="fieldVariant"
-                label="MQTT Reconnect period (in seconds)"
-                hide-details
-              />
-              <v-select
-                v-model="settings.maxReconnects"
-                :items="MAX_RECONNECTS_OPTIONS"
-                :variant="fieldVariant"
-                label="Max number of reconnects (0 for disabling)"
-                hide-details
-              />
-            </div>
-          </v-list-item>
-
-          <v-list-item>
-            <v-select
-              v-model="settings.connectTimeout"
-              :items="CONNECT_TIMEOUT_OPTIONS"
-              :variant="fieldVariant"
-              label="MQTT Connection timeout (in seconds)"
-              hide-details
-            />
-          </v-list-item>
-
-          <v-divider class="mx-3" />
-
-          <v-list density="compact">
-            <v-list-subheader>Keyboard shortcuts</v-list-subheader>
-            <v-list-item
-              v-for="shortcut in SHORTCUTS"
-              :key="shortcut.label"
-              :title="shortcut.label"
-            >
-              <template #append>
-                <span class="text-caption"
-                  >{{ modifierKey }} + {{ shortcut.keys }}</span
-                >
-              </template>
-            </v-list-item>
-          </v-list>
-        </v-list>
+              </v-list>
+            </v-expansion-panel-text>
+          </v-expansion-panel>
+        </v-expansion-panels>
       </v-card-text>
 
       <v-divider />
-      <v-card-actions class="justify-center">
+      <v-card-actions class="px-4">
+        <span class="text-caption text-medium-emphasis">v{{ version }}</span>
+        <v-spacer />
         <v-btn
           color="primary"
           prepend-icon="mdi-bug"
@@ -175,6 +231,7 @@ import { computed } from "vue";
 import { useDisplay } from "vuetify";
 import { useSettingsStore } from "../stores/settings";
 import { isMacOs } from "../utils/platform";
+import SettingsRow from "./SettingsRow.vue";
 
 const THEMES = [
   { title: "Light", value: "light" },
@@ -217,6 +274,7 @@ const open = defineModel({ type: Boolean, default: false });
 const settings = useSettingsStore();
 const { xs } = useDisplay();
 
+const version = import.meta.env.VITE_APP_VERSION;
 const modifierKey = isMacOs ? "Cmd" : "Ctrl";
 
 const fieldVariant = computed(() =>
@@ -230,9 +288,33 @@ function openBugsUrl() {
 </script>
 
 <style scoped>
-.settings-switches {
+.settings-control {
+  width: 220px;
+  max-width: 100%;
+}
+
+.settings-control-wide {
+  width: 360px;
+}
+
+/* Fits "m5e-" plus a GUID (40 characters), the clear icon and the padding */
+.settings-control-id {
+  width: calc(40ch + 80px);
+}
+
+.settings-section {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0 1em;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.settings-section::before,
+.settings-section::after {
+  content: "";
+  flex: 1;
+  border-top: thin solid rgba(var(--v-border-color), var(--v-border-opacity));
 }
 </style>

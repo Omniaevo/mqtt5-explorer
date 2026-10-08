@@ -96,3 +96,20 @@ describe("settings store load()", () => {
     });
   });
 });
+
+describe("settings store regenerateClientId()", () => {
+  beforeEach(() => setActivePinia(createPinia()));
+
+  it("sets a new m5e- client ID each time", () => {
+    const s = loadSettings(undefined);
+    const before = s.clientId;
+
+    s.regenerateClientId();
+    const first = s.clientId;
+    s.regenerateClientId();
+
+    expect(first).toMatch(/^m5e-[0-9a-f-]{36}$/);
+    expect(first).not.toBe(before);
+    expect(s.clientId).not.toBe(first);
+  });
+});

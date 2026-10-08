@@ -59,6 +59,11 @@ export const useSettingsStore = defineStore("settings", {
       this.maxReconnects = Number(data.maxReconnects || 0);
     },
 
+    /** Replaces the MQTT client ID with a new random one. */
+    regenerateClientId() {
+      this.clientId = `m5e-${crypto.randomUUID()}`;
+    },
+
     load() {
       this.setAll(JSON.parse(window.api.store.get(SETTINGS_KEY) || "{}"));
     },
