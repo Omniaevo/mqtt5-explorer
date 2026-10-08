@@ -1,7 +1,6 @@
-import { v4 as uuidv4 } from "uuid";
-
+/** Settings of one saved connection, with the form validation rules. */
 class ConnectionProperties {
-  id = uuidv4();
+  id = crypto.randomUUID();
   name = "new-connection";
   protocol = "mqtt";
   version = 5;
@@ -29,6 +28,7 @@ class ConnectionProperties {
     topics: [(val) => !!val || "Topics is required"],
   };
 
+  /** True when every required field is filled. */
   static validate(properties) {
     return (
       !!properties.name &&
@@ -40,6 +40,7 @@ class ConnectionProperties {
     );
   }
 
+  /** Copies the stored fields; `tls` is derived from the protocol. */
   init(properties = undefined) {
     if (properties === undefined) return;
 

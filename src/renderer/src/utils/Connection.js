@@ -26,6 +26,7 @@ class Connection {
     return this.#properties.version;
   }
 
+  /** Stores the properties and drops listeners of any previous session. */
   init(properties, batchCallback) {
     this.#properties = properties;
     this.#url = `${this.#properties.protocol}://${this.#properties.host}:${
@@ -36,6 +37,7 @@ class Connection {
     this.#unsubscribe();
   }
 
+  /** Listens to main-process events, then opens the client. */
   connect(clientProps, onConnect, onClose) {
     this.#unsubscribe();
     this.#unsubscribers = [
@@ -53,6 +55,7 @@ class Connection {
     window.api.mqtt.publish(toPlain(packet));
   }
 
+  /** Stops listening, then closes the client; `callback` runs when closed. */
   disconnect(callback) {
     this.#unsubscribe();
     window.api.mqtt.disconnect().then(callback);
