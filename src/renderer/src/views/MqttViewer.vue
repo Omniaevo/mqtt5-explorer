@@ -79,6 +79,7 @@
     <div class="ma-2 explorer-grid-container">
       <v-card class="treeview-container pa-2" flat>
         <TopicTreeView
+          ref="treeView"
           :tree="tree"
           :version="treeVersion"
           :selected="selectedNode"
@@ -284,6 +285,7 @@ const stateView = computed(() => STATE_VIEWS[connectionState.value]);
 
 const selectedNode = shallowRef(undefined);
 const publishPanel = ref(null);
+const treeView = ref(null);
 const openPanels = ref(["publish"]);
 const deleteDialog = ref(false);
 const notifyDialog = ref(false);
@@ -314,16 +316,9 @@ const {
   entries: notifyEntries,
   joinType: notifyJoinType,
   logsFolder,
-  process: processNotifications,
+  pushConfig: pushNotifyConfig,
   reset: resetNotifyAndLogging,
-} = useNotifyAndLogging(
-  () => connectionProperties.name,
-  (topic) => {
-    const node = tree.find(topic);
-
-    if (node) selectNode(node);
-  }
-);
+} = useNotifyAndLogging(() => connectionProperties.name);
 
 /** Node filter of the tree; compiled once per (term, mode). */
 const nodeMatcher = computed(() => {
@@ -343,11 +338,7 @@ const nodeMatcher = computed(() => {
 function onBatch(packets) {
   const batchTimestamp = Date.now();
 
-  packets.forEach((packet) => {
-    const updatedNode = tree.apply(packet, batchTimestamp);
-
-    if (updatedNode) processNotifications(updatedNode);
-  });
+  packets.forEach((packet) => tree.apply(packet, batchTimestamp));
 
   requestTreeRefresh(batchTimestamp);
 }
@@ -356,6 +347,16 @@ function selectNode(node) {
   selectedNode.value = node;
   publishPanel.value?.load(node);
   openPanels.value = ["topic", "payload", ...(isV5 ? ["properties"] : [])];
+}
+
+/** Selects the topic of a clicked notification and shows it in the tree. */
+function selectTopic(topic) {
+  const path = tree.path(topic);
+
+  if (path.length === 0) return;
+
+  selectNode(path.at(-1));
+  treeView.value?.reveal(path);
 }
 
 function resetSelection() {
@@ -432,13 +433,17 @@ onBeforeMount(() => {
   unsubscribeMenuEvents = [
     window.api.app.on("searchPressed", toggleSearchField),
     window.api.app.on("notificationPressed", toggleNotificationsDialog),
+    window.api.notify.onSelectTopic(selectTopic),
   ];
 });
 
 onMounted(() => {
   connection.connect(
     settings.mqttClientSettings,
-    () => (connectionState.value = STATES.CONNECTED),
+    () => {
+      connectionState.value = STATES.CONNECTED;
+      pushNotifyConfig();
+    },
     (err) => disconnectFromMqtt(err)
   );
 });

@@ -34,14 +34,22 @@ class TopicTree {
 
   /** @returns {TopicNode|undefined} The node of the topic, if it exists. */
   find(topic) {
+    return this.path(topic).at(-1);
+  }
+
+  /** @returns {TopicNode[]} Nodes from the root level down to the topic; empty if it does not exist. */
+  path(topic) {
+    const nodes = [];
     let node = this.#top;
 
     for (const name of topic.split(TOPIC_SEPARATOR)) {
       node = node.child(name);
-      if (!node) return undefined;
+      if (!node) return [];
+
+      nodes.push(node);
     }
 
-    return node;
+    return nodes;
   }
 
   static #hasPayload(message) {

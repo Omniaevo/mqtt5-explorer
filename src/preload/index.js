@@ -53,10 +53,23 @@ const api = {
     start: (connectionName) =>
       ipcRenderer.send(Channel.LOGGER_START, connectionName),
     stop: () => ipcRenderer.send(Channel.LOGGER_STOP),
-    /** @param {{topic: string, payload: string, properties?: object}} message */
-    enqueue: (message) => ipcRenderer.send(Channel.LOGGER_ENQUEUE, message),
     /** @returns {string} */
     logsFolder: () => ipcRenderer.sendSync(Channel.LOGGER_FOLDER),
+  },
+
+  notify: {
+    /**
+     * Sets what main notifies and logs. Call it on every change.
+     * @param {{notifyEnabled: boolean, loggingEnabled: boolean, joinType: "or" | "and", entries: {term: string, mode: string}[]}} config
+     */
+    setConfig: (config) => ipcRenderer.send(Channel.NOTIFY_SET_CONFIG, config),
+    /**
+     * Called with the topic of a notification the user clicked.
+     * @param {(topic: string) => void} callback
+     * @returns {() => void} Unsubscribe function.
+     */
+    onSelectTopic: (callback) =>
+      subscribe(Channel.NOTIFY_SELECT_TOPIC, callback),
   },
 
   dialog: {
@@ -74,7 +87,6 @@ const api = {
     platform: process.platform,
     /** @param {"home" | "viewer"} name */
     sendPage: (name) => ipcRenderer.send(Channel.APP_SEND_PAGE, name),
-    focusWindow: () => ipcRenderer.send(Channel.APP_FOCUS_WINDOW),
     /** @param {string} path Folder inside the logs folder. */
     openFolder: (path) => ipcRenderer.send(Channel.APP_OPEN_FOLDER, path),
     /** @param {string} url An http(s) URL. */

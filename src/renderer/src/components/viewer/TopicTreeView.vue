@@ -99,6 +99,25 @@ function toggle(id) {
   expandedIds.value = next;
 }
 
+/**
+ * Expands the ancestors of the last node of `path` and scrolls to it.
+ * @param {object[]} path Nodes from the root level down to the target.
+ */
+async function reveal(path) {
+  const next = new Set(expandedIds.value);
+
+  path.slice(0, -1).forEach((node) => next.add(node.id));
+  expandedIds.value = next;
+
+  await nextTick();
+
+  const index = rows.value.findIndex((row) => row.id === path.at(-1).id);
+
+  if (index >= 0) scroller.value?.scrollToIndex(index);
+}
+
+defineExpose({ reveal });
+
 // Keeps the first visible row in place when rows appear above it
 watch(rows, (newRows, oldRows) => {
   const element = scroller.value?.$el;

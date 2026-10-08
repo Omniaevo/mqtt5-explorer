@@ -1,15 +1,13 @@
 import { onBeforeUnmount, ref, watch } from "vue";
-import sendNotification from "../utils/sendNotification";
-import toPlain from "../utils/toPlain";
 
 export const JOIN_MODES = Object.freeze({ OR: "or", AND: "and" });
 
 /**
- * State and matching of the "Notifications and logging" feature.
+ * State of the "Notifications and logging" feature. Every change is pushed
+ * to the main process, which matches, notifies and logs.
  * @param {() => string} getConnectionName Used to name the log folder.
- * @param {(topic: string) => void} onSelectTopic Called when a notification is clicked.
  */
-export function useNotifyAndLogging(getConnectionName, onSelectTopic) {
+export function useNotifyAndLogging(getConnectionName) {
   const notifySwitch = ref(false);
   const fileLoggingSwitch = ref(false);
   const entries = ref([]);
@@ -27,33 +25,20 @@ export function useNotifyAndLogging(getConnectionName, onSelectTopic) {
 
   onBeforeUnmount(() => window.api.logger.stop());
 
-  function matchesConditions(node) {
-    if (entries.value.length === 0) return false;
-
-    const matchesEntry = (entry) =>
-      node.search(entry.notifyEntry, entry.filterType);
-
-    return joinType.value === JOIN_MODES.AND
-      ? entries.value.every(matchesEntry)
-      : entries.value.some(matchesEntry);
+  /** Pushes the whole configuration; main does the matching (D18). */
+  function pushConfig() {
+    window.api.notify.setConfig({
+      notifyEnabled: notifySwitch.value,
+      loggingEnabled: fileLoggingSwitch.value,
+      joinType: joinType.value,
+      entries: entries.value.map((entry) => ({
+        term: entry.notifyEntry,
+        mode: entry.filterType,
+      })),
+    });
   }
 
-  /** Logs and/or notifies `node` when its message matches the conditions. */
-  function process(node) {
-    if (!notifySwitch.value && !fileLoggingSwitch.value) return;
-    if (!node.value || !matchesConditions(node)) return;
-
-    if (fileLoggingSwitch.value) {
-      window.api.logger.enqueue(toPlain(node.value));
-    }
-
-    if (notifySwitch.value) {
-      sendNotification(node.value.topic, node.value.payload, () => {
-        onSelectTopic(node.value.topic);
-        window.api.app.focusWindow();
-      });
-    }
-  }
+  watch([notifySwitch, fileLoggingSwitch, joinType, entries], pushConfig);
 
   function reset() {
     notifySwitch.value = false;
@@ -67,7 +52,7 @@ export function useNotifyAndLogging(getConnectionName, onSelectTopic) {
     entries,
     joinType,
     logsFolder,
-    process,
+    pushConfig,
     reset,
   };
 }

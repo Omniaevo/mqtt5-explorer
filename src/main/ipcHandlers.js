@@ -1,9 +1,11 @@
-import { BrowserWindow, dialog, ipcMain, shell } from "electron";
+import { BrowserWindow, dialog, ipcMain, Notification, shell } from "electron";
 import os from "os";
 import path from "path";
 import MqttService from "./MqttService";
 import MessageLogger from "./MessageLogger";
 import MessageBatcher from "./MessageBatcher";
+import MessageFilter from "./MessageFilter";
+import Notifier from "./Notifier";
 import { Channel, RendererStoreKeys } from "../shared/ipcChannels";
 
 const LOGS_FOLDER = path.join(os.homedir(), "mqtt5-explorer-logs");
@@ -31,11 +33,25 @@ export function registerIpcHandlers({
   const batcher = new MessageBatcher((messages) =>
     sendToRenderer(Channel.MQTT_BATCH, messages)
   );
+  const notifier = new Notifier({
+    createNotification: (title, body) => new Notification({ title, body }),
+    onClick: (topic) => {
+      focusWindow();
+      sendToRenderer(Channel.NOTIFY_SELECT_TOPIC, topic);
+    },
+  });
+  let logger;
+  const filter = new MessageFilter(
+    (packet) => notifier.notify(packet),
+    (packet) => logger?.enqueue(packet)
+  );
   const mqttService = new MqttService(
-    (packet) => batcher.add(packet),
+    (packet) => {
+      filter.process(packet);
+      batcher.add(packet);
+    },
     (status) => sendToRenderer(Channel.MQTT_STATUS, status)
   );
-  let logger;
 
   const stopLogger = () => {
     logger?.stopLogging();
@@ -47,6 +63,11 @@ export function registerIpcHandlers({
     batcher.stop();
     mqttService.dispose();
     stopLogger();
+    resetNotifications();
+  };
+  const resetNotifications = () => {
+    filter.reset();
+    notifier.reset();
   };
 
   // Store
@@ -64,15 +85,22 @@ export function registerIpcHandlers({
   // MQTT
   ipcMain.on(Channel.MQTT_CONNECT, (_, properties, clientSettings) => {
     stopLogger();
+    resetNotifications();
     batcher.start();
     mqttService.connect(properties, clientSettings);
   });
   ipcMain.handle(Channel.MQTT_DISCONNECT, () => {
     batcher.stop();
+    resetNotifications();
 
     return mqttService.disconnect();
   });
   ipcMain.on(Channel.MQTT_PUBLISH, (_, packet) => mqttService.publish(packet));
+
+  // Notifications and logging: the UI owns the config, main does the matching
+  ipcMain.on(Channel.NOTIFY_SET_CONFIG, (_, config) =>
+    filter.setConfig(config)
+  );
 
   // Logger
   ipcMain.on(Channel.LOGGER_START, (_, connectionName) => {
@@ -80,7 +108,6 @@ export function registerIpcHandlers({
     logger.startLogging();
   });
   ipcMain.on(Channel.LOGGER_STOP, () => logger?.stopLogging());
-  ipcMain.on(Channel.LOGGER_ENQUEUE, (_, message) => logger?.enqueue(message));
   ipcMain.on(Channel.LOGGER_FOLDER, (event) => {
     event.returnValue = logger?.logsFolder ?? LOGS_FOLDER;
   });
@@ -101,7 +128,6 @@ export function registerIpcHandlers({
 
   // App
   ipcMain.on(Channel.APP_SEND_PAGE, (_, page) => onPageChange(page));
-  ipcMain.on(Channel.APP_FOCUS_WINDOW, () => focusWindow());
   ipcMain.on(Channel.APP_OPEN_FOLDER, (_, folderPath) => {
     // Only the logs folder tree can be opened
     const resolved = path.resolve(String(folderPath));

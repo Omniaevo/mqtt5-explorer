@@ -9,11 +9,11 @@ export const Channel = Object.freeze({
   MQTT_STATUS: "mqtt:status",
   LOGGER_START: "logger:start",
   LOGGER_STOP: "logger:stop",
-  LOGGER_ENQUEUE: "logger:enqueue",
   LOGGER_FOLDER: "logger:folder",
+  NOTIFY_SET_CONFIG: "notify:setConfig",
+  NOTIFY_SELECT_TOPIC: "notify:selectTopic",
   DIALOG_OPEN_FILE: "dialog:openFile",
   APP_SEND_PAGE: "app:sendPage",
-  APP_FOCUS_WINDOW: "app:focusWindow",
   APP_OPEN_FOLDER: "app:openFolder",
   APP_OPEN_EXTERNAL: "app:openExternal",
 });

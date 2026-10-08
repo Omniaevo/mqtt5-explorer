@@ -312,4 +312,22 @@ describe("TopicTree", () => {
       expect(node.search("garage", ALL)).toBe(false);
     });
   });
+
+  describe("path", () => {
+    it("lists the nodes from the root level to the topic", () => {
+      const tree = new TopicTree();
+
+      tree.apply(message("a/b/c"));
+
+      expect(names(tree.path("a/b/c"))).toEqual(["a", "b", "c"]);
+    });
+
+    it("is empty for a topic that does not exist", () => {
+      const tree = new TopicTree();
+
+      tree.apply(message("a/b"));
+
+      expect(tree.path("a/x")).toEqual([]);
+    });
+  });
 });
