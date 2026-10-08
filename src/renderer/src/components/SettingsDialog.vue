@@ -1,10 +1,5 @@
 <template>
-  <v-dialog
-    v-model="open"
-    max-width="900"
-    :fullscreen="xs"
-    scrollable
-  >
+  <v-dialog v-model="open" max-width="900" :fullscreen="xs" scrollable>
     <v-card>
       <v-card-title class="d-flex align-center">
         <span>Settings</span>
@@ -21,10 +16,7 @@
 
       <v-card-text class="px-4 py-2">
         <div class="settings-section text-medium-emphasis">Appearance</div>
-        <SettingsRow
-          title="Theme"
-          description="Colors of the whole app."
-        >
+        <SettingsRow title="Theme" description="Colors of the whole app.">
           <v-btn-toggle
             v-model="settings.theme"
             color="primary"
@@ -96,7 +88,9 @@
           />
         </SettingsRow>
 
-        <div class="settings-section text-medium-emphasis mt-4">Application</div>
+        <div class="settings-section text-medium-emphasis mt-4">
+          Application
+        </div>
         <SettingsRow
           title="Close to system tray"
           description="Keep the app running when the window closes."
@@ -106,6 +100,25 @@
             color="primary"
             hide-details
             inset
+          />
+        </SettingsRow>
+
+        <SettingsRow
+          title="Values kept per topic (0 to disable)"
+          description="History size for each topic. From 0 to 500."
+        >
+          <v-text-field
+            :model-value="settings.historySize"
+            class="settings-control"
+            :variant="fieldVariant"
+            type="number"
+            min="0"
+            max="500"
+            step="1"
+            hide-details
+            @update:model-value="
+              settings.historySize = clampHistorySize($event)
+            "
           />
         </SettingsRow>
 
@@ -254,7 +267,7 @@
 <script setup>
 import { computed, ref } from "vue";
 import { useDisplay } from "vuetify";
-import { useSettingsStore } from "../stores/settings";
+import { clampHistorySize, useSettingsStore } from "../stores/settings";
 import { isMacOs } from "../utils/platform";
 import SettingsRow from "./SettingsRow.vue";
 

@@ -8,6 +8,17 @@ const MIN_KEEPALIVE = 120; // In seconds
 const MIN_RECONNECT_PERIOD = 2; // In seconds
 const MIN_CONNECT_TIMEOUT = 20; // In seconds
 
+const DEFAULT_HISTORY_SIZE = 50; // Values kept per topic
+const MAX_HISTORY_SIZE = 500;
+
+/** Converts any input to an integer in 0..MAX_HISTORY_SIZE. Invalid input gives 0. */
+export const clampHistorySize = (value) => {
+  const size = Math.trunc(Number(value));
+  return Number.isFinite(size)
+    ? Math.min(Math.max(size, 0), MAX_HISTORY_SIZE)
+    : 0;
+};
+
 const defaultPrimaryColor = () => ({
   text: "Indie Indigo",
   value: { light: "#3F51B5", dark: "#5C6BC0" },
@@ -25,6 +36,7 @@ export const useSettingsStore = defineStore("settings", {
     reconnectPeriod: MIN_RECONNECT_PERIOD,
     connectTimeout: MIN_CONNECT_TIMEOUT,
     maxReconnects: 5,
+    historySize: DEFAULT_HISTORY_SIZE,
   }),
 
   getters: {
@@ -57,6 +69,9 @@ export const useSettingsStore = defineStore("settings", {
         MIN_CONNECT_TIMEOUT
       );
       this.maxReconnects = Number(data.maxReconnects || 0);
+      this.historySize = clampHistorySize(
+        data.historySize ?? DEFAULT_HISTORY_SIZE
+      );
     },
 
     /** Restores all defaults and keeps the current client ID. */

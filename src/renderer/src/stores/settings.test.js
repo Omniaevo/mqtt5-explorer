@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createPinia, setActivePinia } from "pinia";
-import { useSettingsStore } from "./settings";
+import { clampHistorySize, useSettingsStore } from "./settings";
 
 const stubStoredSettings = (stored) =>
   vi.stubGlobal("window", {
@@ -94,6 +94,36 @@ describe("settings store load()", () => {
       connectTimeout: 20,
       maxReconnects: 0,
     });
+  });
+});
+
+describe("settings store historySize", () => {
+  beforeEach(() => setActivePinia(createPinia()));
+
+  it("defaults to 50 when missing from old settings files", () => {
+    expect(loadSettings(JSON.stringify({ theme: "dark" })).historySize).toBe(
+      50
+    );
+  });
+
+  it("keeps 0 (disabled) and valid values, also as strings", () => {
+    expect(loadSettings(JSON.stringify({ historySize: 0 })).historySize).toBe(
+      0
+    );
+    expect(
+      loadSettings(JSON.stringify({ historySize: "120" })).historySize
+    ).toBe(120);
+  });
+
+  it.each([
+    [-5, 0],
+    [9999, 500],
+    [12.7, 12],
+    ["abc", 0],
+    ["", 0],
+    [null, 0],
+  ])("clamps %j to %i", (input, expected) => {
+    expect(clampHistorySize(input)).toBe(expected);
   });
 });
 
