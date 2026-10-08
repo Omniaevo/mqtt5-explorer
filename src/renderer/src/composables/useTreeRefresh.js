@@ -1,7 +1,7 @@
 import { onBeforeUnmount, shallowRef } from "vue";
 
 const REFRESH_PERIOD_MS = 100; // At most one render per period
-const BLINK_SETTLE_MS = 150; // TreeNode blink lasts 120 ms
+const BLINK_SETTLE_MS = 150; // TopicNode blink lasts 120 ms
 
 /**
  * Manual change trigger for the non-reactive topic tree.

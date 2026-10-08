@@ -239,6 +239,7 @@ import SearchInfoDialog from "../components/viewer/SearchInfoDialog.vue";
 import { useNotifyAndLogging } from "../composables/useNotifyAndLogging";
 import { useTreeRefresh } from "../composables/useTreeRefresh";
 import Connection from "../utils/Connection";
+import TopicTree from "../models/TopicTree";
 import ConnectionProperties from "../models/ConnectionProperties";
 import SearchEngine from "../utils/SearchEngine";
 import { useConnectionsStore } from "../stores/connections";
@@ -288,12 +289,12 @@ const fieldVariant = computed(() =>
 
 // The topic tree is not reactive (can be large): it is plain data plus a
 // version counter that is bumped, throttled, after every change.
-const roots = [];
+const tree = markRaw(new TopicTree());
 const { version: treeVersion, request: requestTreeRefresh } = useTreeRefresh();
 const treeItems = computed(() => {
   treeVersion.value; // Dependency only
 
-  return roots.slice();
+  return tree.roots;
 });
 
 const connectionState = ref(STATES.PENDING);
@@ -335,7 +336,7 @@ const {
 } = useNotifyAndLogging(
   () => connectionProperties.name,
   (topic) => {
-    const node = findNode(topic);
+    const node = tree.find(topic);
 
     if (node) selectNode(node);
   }
@@ -355,34 +356,12 @@ const filterNode = computed(() => (_value, query, internalItem) => {
 
 const getChildren = (node) => (node.size > 0 ? node.children : undefined);
 
-function findNode(topic) {
-  let level = roots;
-  let node;
+function onMessage(packet) {
+  const updatedNode = tree.apply(packet);
 
-  for (const name of topic.split("/")) {
-    node = level.find((n) => n.name === name);
-    if (!node) return undefined;
-    level = node.children;
-  }
-
-  return node;
-}
-
-function addRoot(node) {
-  roots.push(markRaw(node));
-  requestTreeRefresh();
-}
-
-/** @returns {boolean} True when the root is empty now and was removed. */
-function mergeIntoRoot(index, node) {
-  const toDelete = roots[index].merge(node);
-
-  if (toDelete) roots.splice(index, 1);
-  else processNotifications(node);
+  if (updatedNode) processNotifications(updatedNode);
 
   requestTreeRefresh();
-
-  return toDelete;
 }
 
 function selectNode(node) {
@@ -459,12 +438,7 @@ function confirmDelete() {
 let unsubscribeMenuEvents = [];
 
 onBeforeMount(() => {
-  connection.init(
-    connectionProperties,
-    addRoot,
-    mergeIntoRoot,
-    () => roots.length
-  );
+  connection.init(connectionProperties, onMessage);
 
   window.api.app.sendPage("viewer");
   unsubscribeMenuEvents = [

@@ -1,10 +1,9 @@
-import TreeNode from "../models/TreeNode";
 import ConnectionProperties from "../models/ConnectionProperties";
 import toPlain from "./toPlain";
 
 /**
  * Renderer side of the MQTT connection. The client itself lives in the
- * main process (`window.api.mqtt`): here packets are turned into tree nodes.
+ * main process (`window.api.mqtt`): here packets are handed to the viewer.
  */
 class Connection {
   static connectionStates = {
@@ -16,11 +15,7 @@ class Connection {
 
   #url = undefined;
   #properties = new ConnectionProperties();
-  #map = {};
-  #idCount = 1;
-  #addCallback = () => {};
-  #mergeCallback = () => {};
-  #getSize = () => 0;
+  #messageCallback = () => {};
   #unsubscribers = [];
 
   get url() {
@@ -31,18 +26,14 @@ class Connection {
     return this.#properties.version;
   }
 
-  init(properties, addCallback, mergeCallback, getSize) {
+  init(properties, messageCallback) {
     this.#properties = properties;
     this.#url = `${this.#properties.protocol}://${this.#properties.host}:${
       this.#properties.port
     }`;
-    this.#addCallback = addCallback;
-    this.#mergeCallback = mergeCallback;
-    this.#getSize = getSize;
+    this.#messageCallback = messageCallback;
 
     this.#unsubscribe();
-    this.#map = {};
-    this.#idCount = 1;
   }
 
   connect(clientProps, onConnect, onClose) {
@@ -52,7 +43,7 @@ class Connection {
         if (status === "connected") onConnect();
         else onClose(error);
       }),
-      window.api.mqtt.onMessage((packet) => this.#onMessage(packet)),
+      window.api.mqtt.onMessage((packet) => this.#messageCallback(packet)),
     ];
 
     window.api.mqtt.connect(toPlain(this.#properties), toPlain(clientProps));
@@ -70,19 +61,6 @@ class Connection {
   #unsubscribe = () => {
     this.#unsubscribers.forEach((unsubscribe) => unsubscribe());
     this.#unsubscribers = [];
-  };
-
-  #onMessage = (packet) => {
-    const splitted = packet.topic.split("/");
-    let topic = new TreeNode(() => this.#idCount++, splitted, packet);
-
-    if (this.#map[splitted[0]] === undefined) {
-      topic.initObject();
-      this.#addCallback(topic);
-      this.#map[splitted[0]] = this.#getSize() - 1;
-    } else if (this.#mergeCallback(this.#map[splitted[0]], topic)) {
-      delete this.#map[splitted[0]];
-    }
   };
 }
 

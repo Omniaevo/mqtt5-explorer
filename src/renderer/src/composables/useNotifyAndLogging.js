@@ -27,40 +27,32 @@ export function useNotifyAndLogging(getConnectionName, onSelectTopic) {
 
   onBeforeUnmount(() => window.api.logger.stop());
 
-  function findMatches(node) {
-    const found = entries.value.flatMap((entry) =>
-      node.deepSearch(entry.notifyEntry, entry.filterType)
-    );
+  function matchesConditions(node) {
+    if (entries.value.length === 0) return false;
 
-    if (joinType.value !== JOIN_MODES.AND) return found;
+    const matchesEntry = (entry) =>
+      node.search(entry.notifyEntry, entry.filterType);
 
-    return found.filter(
-      (match) =>
-        match &&
-        entries.value.every((entry) =>
-          match.search(entry.notifyEntry, entry.filterType)
-        )
-    );
+    return joinType.value === JOIN_MODES.AND
+      ? entries.value.every(matchesEntry)
+      : entries.value.some(matchesEntry);
   }
 
-  /** Logs and/or notifies the messages of `node` that match the conditions. */
+  /** Logs and/or notifies `node` when its message matches the conditions. */
   function process(node) {
     if (!notifySwitch.value && !fileLoggingSwitch.value) return;
+    if (!node.value || !matchesConditions(node)) return;
 
-    findMatches(node).forEach((match) => {
-      if (!match?.value) return;
+    if (fileLoggingSwitch.value) {
+      window.api.logger.enqueue(toPlain(node.value));
+    }
 
-      if (fileLoggingSwitch.value) {
-        window.api.logger.enqueue(toPlain(match.value));
-      }
-
-      if (notifySwitch.value) {
-        sendNotification(match.value.topic, match.value.payload, () => {
-          onSelectTopic(match.value.topic);
-          window.api.app.focusWindow();
-        });
-      }
-    });
+    if (notifySwitch.value) {
+      sendNotification(node.value.topic, node.value.payload, () => {
+        onSelectTopic(node.value.topic);
+        window.api.app.focusWindow();
+      });
+    }
   }
 
   function reset() {
