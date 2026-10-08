@@ -8,11 +8,7 @@
   >
     <template #default="{ item: row }">
       <div
-        :key="blinkKey(row.node)"
-        :class="{
-          'bg-primary text-white': selected?.id === row.id,
-          blink: isBlinking(row.node),
-        }"
+        :class="{ 'bg-primary text-white': selected?.id === row.id }"
         :style="{
           height: `${rowHeight}px`,
           marginBlock: `${ROW_GAP_PX}px`,
@@ -21,6 +17,13 @@
         class="tree-row d-flex align-center px-2 rounded"
         @click="onRowClick(row)"
       >
+        <!-- Re-created on every update to restart the animation. The row
+             itself must keep its element, or a click in progress is lost. -->
+        <span
+          v-if="isBlinking(row.node)"
+          :key="row.node.lastUpdate"
+          class="blink"
+        />
         <v-icon
           :icon="row.expanded ? 'mdi-chevron-down' : 'mdi-chevron-right'"
           :class="{ invisible: !row.hasChildren }"
@@ -82,9 +85,6 @@ const rows = computed(() => {
 // Slot height the virtual scroll reserves per row: row plus its margins
 const itemHeight = computed(() => rowHeight.value + 2 * ROW_GAP_PX);
 
-// A new key re-creates the row, which restarts the CSS animation
-const blinkKey = (node) => (props.isBlinking(node) ? node.lastUpdate : 0);
-
 function onRowClick(row) {
   if (row.hasChildren) toggle(row.id);
 
@@ -135,6 +135,7 @@ watch(rows, (newRows, oldRows) => {
 
 <style scoped>
 .tree-row {
+  position: relative;
   cursor: pointer;
   white-space: nowrap;
 }
@@ -148,14 +149,20 @@ watch(rows, (newRows, oldRows) => {
 }
 
 .blink {
-  animation: blink 120ms ease-out;
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background-color: rgb(var(--v-theme-primary));
+  animation: blink 120ms ease-out forwards;
 }
 
 @keyframes blink {
-  from,
+  from {
+    opacity: 0.5;
+  }
   to {
-    background-color: rgb(var(--v-theme-primary));
-    color: #fff;
+    opacity: 0;
   }
 }
 </style>
