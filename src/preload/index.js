@@ -58,6 +58,15 @@ const api = {
     logsFolder: () => ipcRenderer.sendSync(Channel.LOGGER_FOLDER),
   },
 
+  dialog: {
+    /**
+     * Shows the native "open file" dialog.
+     * @param {{title?: string, filters?: {name: string, extensions: string[]}[]}} [options]
+     * @returns {Promise<string | undefined>} Selected path, or undefined if canceled.
+     */
+    openFile: (options) => ipcRenderer.invoke(Channel.DIALOG_OPEN_FILE, options),
+  },
+
   app: {
     /** Operating system name, as given by `process.platform`. */
     platform: process.platform,

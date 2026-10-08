@@ -1,4 +1,4 @@
-import { ipcMain, shell } from "electron";
+import { BrowserWindow, dialog, ipcMain, shell } from "electron";
 import os from "os";
 import path from "path";
 import MqttService from "./MqttService";
@@ -73,6 +73,20 @@ export function registerIpcHandlers({
   ipcMain.on(Channel.LOGGER_ENQUEUE, (_, message) => logger?.enqueue(message));
   ipcMain.on(Channel.LOGGER_FOLDER, (event) => {
     event.returnValue = logger?.logsFolder ?? LOGS_FOLDER;
+  });
+
+  // Dialog: the renderer only picks title and filters, never the dialog kind
+  ipcMain.handle(Channel.DIALOG_OPEN_FILE, async (event, options = {}) => {
+    const result = await dialog.showOpenDialog(
+      BrowserWindow.fromWebContents(event.sender),
+      {
+        title: typeof options.title === "string" ? options.title : undefined,
+        filters: Array.isArray(options.filters) ? options.filters : undefined,
+        properties: ["openFile"],
+      }
+    );
+
+    return result.canceled ? undefined : result.filePaths[0];
   });
 
   // App

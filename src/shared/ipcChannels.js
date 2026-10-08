@@ -11,6 +11,7 @@ export const Channel = Object.freeze({
   LOGGER_STOP: "logger:stop",
   LOGGER_ENQUEUE: "logger:enqueue",
   LOGGER_FOLDER: "logger:folder",
+  DIALOG_OPEN_FILE: "dialog:openFile",
   APP_SEND_PAGE: "app:sendPage",
   APP_FOCUS_WINDOW: "app:focusWindow",
   APP_OPEN_FOLDER: "app:openFolder",

@@ -20,17 +20,18 @@ linux:
     - AppImage
 flatpak:
   runtime: org.freedesktop.Platform
-  runtimeVersion: "23.08"
+  runtimeVersion: "25.08"
   sdk: org.freedesktop.Sdk
   base: org.electronjs.Electron2.BaseApp
-  baseVersion: "23.08"
+  baseVersion: "25.08"
   category: Development
   description: &description >-
     MQTT5 Explorer is a simple yet feature-rich client to visualize data of any
     MQTT broker. Differently from many other clients, it supports version 5 of
     the MQTT protocol.
   desktop:
-    StartupWMClass: mqtt5-explorer
+    entry:
+      StartupWMClass: mqtt5-explorer
   finishArgs:
     - --share=ipc
     - --socket=x11
@@ -41,7 +42,8 @@ appImage:
   category: Development
   description: *description
   desktop:
-    StartupWMClass: mqtt5-explorer
+    entry:
+      StartupWMClass: mqtt5-explorer
   synopsis: *synopsis
 mac:
   category: public.app-category.developer-tools

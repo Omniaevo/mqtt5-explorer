@@ -263,17 +263,13 @@ export default {
       clone.init(this.connectionData);
       this.$emit(event, clone);
     },
-    selectFile(destination) {
-      const fakeInput = document.createElement("input");
+    async selectFile(destination) {
+      const filePath = await window.api.dialog.openFile();
 
-      fakeInput.type = "file";
-      fakeInput.multiple = false;
-      fakeInput.onchange = () => {
-        this.connectionData[destination] = fakeInput.files[0].name;
-        this.connectionData[`${destination}Path`] = fakeInput.files[0].path;
-      };
+      if (!filePath) return;
 
-      fakeInput.click();
+      this.connectionData[destination] = filePath.split(/[\\/]/).pop();
+      this.connectionData[`${destination}Path`] = filePath;
     },
     deselectFile(destination) {
       this.connectionData[destination] = undefined;

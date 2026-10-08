@@ -15,7 +15,8 @@ const envConstants = (prefix, values) =>
 
 export default defineConfig({
   main: {
-    plugins: [externalizeDepsPlugin()],
+    // electron-store is ESM-only: bundle it, the main bundle is CommonJS
+    plugins: [externalizeDepsPlugin({ exclude: ["electron-store"] })],
     define: envConstants("MAIN_VITE", {
       GITHUB_PAGE: pkg.homepage || "",
       GITHUB_BUGS: pkg.bugs.url || "",
