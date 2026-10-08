@@ -645,7 +645,7 @@
           <v-slide-y-transition>
             <div v-if="fileLoggingSwitch">
               <v-text-field
-                v-model="messageLogger.logsFolder"
+                v-bind:value="logsFolder"
                 v-bind:outlined="outline"
                 v-on:click:append-outer="openLogsFolder"
                 append-outer-icon="mdi-folder-open-outline"
@@ -852,6 +852,7 @@ export default {
     notifyFilterType: undefined,
     notifyEntry: undefined,
     notifyEntries: [],
+    logsFolder: "",
     notifyJoinType: "or",
     joinModes: {
       OR: "or",
@@ -894,8 +895,12 @@ export default {
     fileLoggingSwitch(newValue, oldValue) {
       if (oldValue === newValue) return;
 
-      if (newValue) window.api.logger.start(this.connectionProperties.name);
-      else window.api.logger.stop();
+      if (newValue) {
+        window.api.logger.start(this.connectionProperties.name);
+        this.logsFolder = window.api.logger.logsFolder();
+      } else {
+        window.api.logger.stop();
+      }
     },
   },
 
