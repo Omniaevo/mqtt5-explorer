@@ -5,6 +5,10 @@ export default createRouter({
   history: createWebHashHistory(),
   routes: [
     { path: "/", name: "Home", component: Home },
-    { path: "/viewer/:index", name: "Viewer", component: () => import("../views/MqttViewer.vue") },
+    {
+      path: "/viewer/:index",
+      name: "Viewer",
+      component: () => import("../views/MqttViewer.vue"),
+    },
   ],
 });

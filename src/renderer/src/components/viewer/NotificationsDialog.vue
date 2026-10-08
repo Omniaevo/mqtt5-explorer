@@ -80,7 +80,10 @@
                         variant="outlined"
                         size="small"
                       >
-                        <v-icon :icon="searchModeIcon(entry.filterType)" size="small" />
+                        <v-icon
+                          :icon="searchModeIcon(entry.filterType)"
+                          size="small"
+                        />
                       </v-chip>
                     </template>
                   </v-tooltip>
@@ -104,7 +107,11 @@
 
         <div class="mt-2 d-flex align-center justify-space-between">
           <v-switch v-model="notifySwitch" label="Enable notifications" inset />
-          <v-switch v-model="fileLoggingSwitch" label="Enable file logging" inset />
+          <v-switch
+            v-model="fileLoggingSwitch"
+            label="Enable file logging"
+            inset
+          />
         </div>
 
         <v-slide-y-transition>
@@ -146,7 +153,10 @@ const emit = defineEmits(["showInfo", "openLogsFolder", "reset"]);
 const open = defineModel({ type: Boolean, default: false });
 const entries = defineModel("entries", { type: Array, required: true });
 const joinType = defineModel("joinType", { type: String, required: true });
-const notifySwitch = defineModel("notifySwitch", { type: Boolean, default: false });
+const notifySwitch = defineModel("notifySwitch", {
+  type: Boolean,
+  default: false,
+});
 const fileLoggingSwitch = defineModel("fileLoggingSwitch", {
   type: Boolean,
   default: false,

@@ -179,6 +179,7 @@
         :disabled="!isValid"
         class="ms-2"
         color="primary"
+        variant="tonal"
         @click="emitConnectionData('connect')"
       >
         Connect

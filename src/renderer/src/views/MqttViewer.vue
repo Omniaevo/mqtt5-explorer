@@ -43,7 +43,11 @@
       </v-slide-y-transition>
       <v-spacer />
 
-      <v-tooltip v-if="fileLoggingSwitch" text="Logging is active" location="bottom">
+      <v-tooltip
+        v-if="fileLoggingSwitch"
+        text="Logging is active"
+        location="bottom"
+      >
         <template #activator="{ props: tooltipProps }">
           <v-btn
             v-bind="tooltipProps"
@@ -110,7 +114,10 @@
         <v-expansion-panels v-model="openPanels" multiple>
           <v-expansion-panel value="topic" title="Topic">
             <v-expansion-panel-text v-if="selectedView" class="wrap-text">
-              <v-tooltip :text="`Delete &quot;${selectedView.topic}&quot; topic`" location="bottom">
+              <v-tooltip
+                :text="`Delete &quot;${selectedView.topic}&quot; topic`"
+                location="bottom"
+              >
                 <template #activator="{ props: tooltipProps }">
                   <v-btn
                     v-bind="tooltipProps"
@@ -138,7 +145,10 @@
               </span>
             </v-expansion-panel-title>
             <v-expansion-panel-text v-if="selectedView">
-              <div v-if="selectedView.old" class="d-flex rounded mb-1 wrap-text">
+              <div
+                v-if="selectedView.old"
+                class="d-flex rounded mb-1 wrap-text"
+              >
                 <div class="bg-error px-2 py-1">
                   <v-icon icon="mdi-delete" size="small" />
                 </div>
@@ -186,7 +196,9 @@
         <v-card-actions>
           <v-spacer />
           <v-btn variant="text" @click="deleteDialog = false">Cancel</v-btn>
-          <v-btn color="error" variant="text" @click="confirmDelete">Delete</v-btn>
+          <v-btn color="error" variant="text" @click="confirmDelete"
+            >Delete</v-btn
+          >
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -209,7 +221,16 @@
 </template>
 
 <script setup>
-import { computed, inject, markRaw, onBeforeMount, onBeforeUnmount, onMounted, ref, shallowRef } from "vue";
+import {
+  computed,
+  inject,
+  markRaw,
+  onBeforeMount,
+  onBeforeUnmount,
+  onMounted,
+  ref,
+  shallowRef,
+} from "vue";
 import { useRoute, useRouter } from "vue-router";
 import NotificationsDialog from "../components/viewer/NotificationsDialog.vue";
 import PublishPanel from "../components/viewer/PublishPanel.vue";
@@ -226,7 +247,11 @@ import { useSettingsStore } from "../stores/settings";
 
 const STATES = Connection.connectionStates;
 const STATE_VIEWS = {
-  [STATES.CONNECTED]: { icon: "mdi-lan-connect", color: "primary", text: "Connected" },
+  [STATES.CONNECTED]: {
+    icon: "mdi-lan-connect",
+    color: "primary",
+    text: "Connected",
+  },
   [STATES.PENDING]: {
     icon: "mdi-lan-pending",
     color: "primary",
@@ -239,7 +264,11 @@ const STATE_VIEWS = {
     text: "Disconnected",
     class: "grayscale",
   },
-  [STATES.ERROR]: { icon: "mdi-lan-disconnect", color: "error", text: "An error occurred" },
+  [STATES.ERROR]: {
+    icon: "mdi-lan-disconnect",
+    color: "error",
+    text: "An error occurred",
+  },
 };
 
 const route = useRoute();
@@ -253,7 +282,9 @@ const connectionProperties = new ConnectionProperties();
 connectionProperties.init(connections.getByIndex(route.params.index));
 
 const isV5 = connectionProperties.version > 4;
-const fieldVariant = computed(() => (settings.outline ? "outlined" : "underlined"));
+const fieldVariant = computed(() =>
+  settings.outline ? "outlined" : "underlined"
+);
 
 // The topic tree is not reactive (can be large): it is plain data plus a
 // version counter that is bumped, throttled, after every change.
@@ -283,12 +314,14 @@ const selectedView = computed(() => {
   treeVersion.value; // Dependency only
   const node = selectedNode.value;
 
-  return node && {
-    topic: node.topic,
-    value: node.value,
-    old: node.old,
-    counter: node.counter,
-  };
+  return (
+    node && {
+      topic: node.topic,
+      value: node.value,
+      old: node.old,
+      counter: node.counter,
+    }
+  );
 });
 
 const {
@@ -311,7 +344,10 @@ const {
 /** Search function of the tree; an invalid regular expression matches nothing. */
 const filterNode = computed(() => (_value, query, internalItem) => {
   try {
-    return internalItem.raw.search(query, searchMode.value || SearchEngine.modes.ALL);
+    return internalItem.raw.search(
+      query,
+      searchMode.value || SearchEngine.modes.ALL
+    );
   } catch {
     return false;
   }
@@ -381,8 +417,10 @@ function disconnectFromMqtt(errorMessage = undefined) {
       errorMessage !== undefined ? STATES.ERROR : STATES.DISCONNECTED;
 
     router.replace({ name: "Home" }).then(() => {
-      if (errorMessage === undefined) notify.info("The broker is unreachable");
-      else notify.error(errorMessage);
+      // A manual disconnect (no message) needs no toast
+      if (errorMessage !== undefined) {
+        notify.error(errorMessage || "The broker is unreachable");
+      }
     });
   });
 }
@@ -397,13 +435,21 @@ function getCountMessage(count, truncate) {
 function collectValueNodes(node) {
   const own = node.value ? [node] : [];
 
-  return node.children.reduce((all, child) => all.concat(collectValueNodes(child)), own);
+  return node.children.reduce(
+    (all, child) => all.concat(collectValueNodes(child)),
+    own
+  );
 }
 
 /** Clears the retained message of the selected topic and its children. */
 function confirmDelete() {
   collectValueNodes(selectedNode.value).forEach((node) => {
-    connection.publish({ ...node.value, topic: node.topic, payload: "", retain: true });
+    connection.publish({
+      ...node.value,
+      topic: node.topic,
+      payload: "",
+      retain: true,
+    });
   });
 
   deleteDialog.value = false;
@@ -413,7 +459,12 @@ function confirmDelete() {
 let unsubscribeMenuEvents = [];
 
 onBeforeMount(() => {
-  connection.init(connectionProperties, addRoot, mergeIntoRoot, () => roots.length);
+  connection.init(
+    connectionProperties,
+    addRoot,
+    mergeIntoRoot,
+    () => roots.length
+  );
 
   window.api.app.sendPage("viewer");
   unsubscribeMenuEvents = [
@@ -430,7 +481,9 @@ onMounted(() => {
   );
 });
 
-onBeforeUnmount(() => unsubscribeMenuEvents.forEach((unsubscribe) => unsubscribe()));
+onBeforeUnmount(() =>
+  unsubscribeMenuEvents.forEach((unsubscribe) => unsubscribe())
+);
 </script>
 
 <style scoped>

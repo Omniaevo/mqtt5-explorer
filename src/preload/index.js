@@ -64,7 +64,8 @@ const api = {
      * @param {{title?: string, filters?: {name: string, extensions: string[]}[]}} [options]
      * @returns {Promise<string | undefined>} Selected path, or undefined if canceled.
      */
-    openFile: (options) => ipcRenderer.invoke(Channel.DIALOG_OPEN_FILE, options),
+    openFile: (options) =>
+      ipcRenderer.invoke(Channel.DIALOG_OPEN_FILE, options),
   },
 
   app: {

@@ -20,7 +20,10 @@ export function useThemeSync() {
       "--scrollbar-thumb-color",
       primary || `var(--scrollbar-thumb-${mode})`
     );
-    rootStyle().setProperty("--scrollbar-bg-color", `var(--scrollbar-bg-${mode})`);
+    rootStyle().setProperty(
+      "--scrollbar-bg-color",
+      `var(--scrollbar-bg-${mode})`
+    );
   };
 
   const applyPrimaryColor = () => {

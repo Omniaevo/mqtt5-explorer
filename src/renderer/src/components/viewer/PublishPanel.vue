@@ -1,7 +1,11 @@
 <template>
   <v-expansion-panel value="publish">
     <v-expansion-panel-title>
-      <v-tooltip v-if="canSync" text="Synchronize with new data" location="bottom">
+      <v-tooltip
+        v-if="canSync"
+        text="Synchronize with new data"
+        location="bottom"
+      >
         <template #activator="{ props: tooltipProps }">
           <v-btn
             v-bind="tooltipProps"
@@ -23,9 +27,20 @@
         label="Topic"
         placeholder="example/topic"
       />
-      <v-textarea v-model="form.payload" :variant="variant" label="Value" rows="2" />
+      <v-textarea
+        v-model="form.payload"
+        :variant="variant"
+        label="Value"
+        rows="2"
+      />
       <div class="form-row justify-end align-center">
-        <v-switch v-model="form.retain" class="me-4" label="Retain" hide-details inset />
+        <v-switch
+          v-model="form.retain"
+          class="me-4"
+          label="Retain"
+          hide-details
+          inset
+        />
         <v-select
           v-model="form.qos"
           :items="QOS_LEVELS"
@@ -88,9 +103,23 @@
           :key="`user-property-${i}`"
           class="form-row align-center mb-5"
         >
-          <v-text-field v-model="prop.key" :variant="variant" label="Key" hide-details />
-          <v-text-field v-model="prop.value" :variant="variant" label="Value" hide-details />
-          <v-btn icon="mdi-delete" variant="text" @click="userProperties.splice(i, 1)" />
+          <v-text-field
+            v-model="prop.key"
+            :variant="variant"
+            label="Key"
+            hide-details
+          />
+          <v-text-field
+            v-model="prop.value"
+            :variant="variant"
+            label="Value"
+            hide-details
+          />
+          <v-btn
+            icon="mdi-delete"
+            variant="text"
+            @click="userProperties.splice(i, 1)"
+          />
         </div>
         <v-tooltip text="Add new property" location="bottom">
           <template #activator="{ props: tooltipProps }">
@@ -108,7 +137,9 @@
       </template>
 
       <div class="d-flex justify-end pt-4">
-        <v-btn color="primary" @click="emit('publish', toPacket())">Publish</v-btn>
+        <v-btn color="primary" @click="emit('publish', toPacket())"
+          >Publish</v-btn
+        >
       </div>
     </v-expansion-panel-text>
 
@@ -121,6 +152,7 @@
             icon="mdi-plus"
             rounded="lg"
             block
+            variant="tonal"
             @click="loadEmpty"
           />
         </template>
@@ -147,8 +179,15 @@ const props = defineProps({
 
 const emit = defineEmits(["publish"]);
 
-const { form, userProperties, advancedProperties, load, loadEmpty, reset, toPacket } =
-  usePublishForm(() => props.isV5);
+const {
+  form,
+  userProperties,
+  advancedProperties,
+  load,
+  loadEmpty,
+  reset,
+  toPacket,
+} = usePublishForm(() => props.isV5);
 
 const canSync = computed(
   () =>

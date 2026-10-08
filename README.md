@@ -58,10 +58,21 @@ npm run dev
 npm run electron:icons
 ```
 
-### Lints and fixes files
+### Lint and format
 
 ```bash
-npm run lint
+npm run lint             # ESLint (flat config) + Prettier rules
+npm run lint -- --fix    # Fix what can be fixed automatically
+npm run format           # Prettier write
+```
+
+### Unit tests
+
+[Vitest](https://vitest.dev/) tests live next to the code as `*.test.js`.
+
+```bash
+npm test             # Run once
+npm run test:watch   # Watch mode
 ```
 
 ## Compiles and minifies for production

@@ -4,7 +4,8 @@ import toPlain from "../utils/toPlain";
 const DEFAULT_TOPIC = "example/topic";
 const NUMERIC_PROPERTIES = ["messageExpiryInterval", "topicAlias"];
 
-const isBlank = (value) => value === undefined || value === null || value === "";
+const isBlank = (value) =>
+  value === undefined || value === null || value === "";
 
 /**
  * State of the publish form.
@@ -64,5 +65,13 @@ export function usePublishForm(isV5) {
     return { ...packet, properties: cleaned };
   }
 
-  return { form, userProperties, advancedProperties, load, loadEmpty, reset, toPacket };
+  return {
+    form,
+    userProperties,
+    advancedProperties,
+    load,
+    loadEmpty,
+    reset,
+    toPacket,
+  };
 }

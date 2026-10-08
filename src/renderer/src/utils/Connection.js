@@ -33,7 +33,6 @@ class Connection {
 
   init(properties, addCallback, mergeCallback, getSize) {
     this.#properties = properties;
-    // eslint-disable-next-line prettier/prettier
     this.#url = `${this.#properties.protocol}://${this.#properties.host}:${
       this.#properties.port
     }`;

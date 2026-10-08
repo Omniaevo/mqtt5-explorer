@@ -1,15 +1,7 @@
 "use strict";
 
 import { autoUpdater } from "electron-updater";
-// eslint-disable-next-line prettier/prettier
-import {
-  app,
-  dialog,
-  Menu,
-  BrowserWindow,
-  shell,
-  Tray,
-} from "electron";
+import { app, dialog, Menu, BrowserWindow, shell, Tray } from "electron";
 import path from "path";
 import Store from "electron-store";
 import fs from "fs";

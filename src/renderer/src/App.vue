@@ -14,7 +14,11 @@
       {{ notify.message }}
 
       <template #actions>
-        <v-btn icon="mdi-close" variant="text" @click="notify.visible = false" />
+        <v-btn
+          icon="mdi-close"
+          variant="text"
+          @click="notify.visible = false"
+        />
       </template>
     </v-snackbar>
   </v-app>

@@ -25,6 +25,7 @@
             class="me-2"
             color="primary"
             icon="mdi-plus"
+            variant="tonal"
             size="small"
             @click="addTmpConnection"
           />
