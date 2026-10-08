@@ -78,37 +78,15 @@
 
     <div class="ma-2 explorer-grid-container">
       <v-card class="treeview-container" flat>
-        <v-treeview
-          :items="treeItems"
-          :search="searchTerm"
-          :custom-filter="filterNode"
-          :item-children="getChildren"
-          item-title="name"
-          item-value="id"
-          density="compact"
-          open-on-click
-        >
-          <template #title="{ item }">
-            <div
-              :key="blinkKey(item)"
-              :class="{
-                'bg-primary text-white': selectedNode?.id === item.id,
-                blink: isBlinking(item),
-              }"
-              class="px-2 ma-0 rounded"
-              @click="selectNode(item)"
-            >
-              {{ item.name }}
-              {{ item.value !== undefined ? "=" : "" }}
-              <span class="font-weight-black">
-                {{ item.value !== undefined ? item.value.payload : "" }}
-              </span>
-              <span v-if="item.size > 0" class="text-caption text-grey ms-4">
-                ({{ item.size }} elements inside)
-              </span>
-            </div>
-          </template>
-        </v-treeview>
+        <TopicTreeView
+          :tree="tree"
+          :version="treeVersion"
+          :selected="selectedNode"
+          :dense="settings.denseTree"
+          :is-blinking="isBlinking"
+          :matches="nodeMatcher"
+          @select="selectNode"
+        />
       </v-card>
 
       <div class="properties-container">
@@ -237,6 +215,7 @@ import NotificationsDialog from "../components/viewer/NotificationsDialog.vue";
 import PublishPanel from "../components/viewer/PublishPanel.vue";
 import SearchBar from "../components/viewer/SearchBar.vue";
 import SearchInfoDialog from "../components/viewer/SearchInfoDialog.vue";
+import TopicTreeView from "../components/viewer/TopicTreeView.vue";
 import { useNotifyAndLogging } from "../composables/useNotifyAndLogging";
 import { useTreeRefresh } from "../composables/useTreeRefresh";
 import Connection from "../utils/Connection";
@@ -297,14 +276,6 @@ const {
   wasUpdatedInLastBatch: isBlinking,
 } = useTreeRefresh();
 
-// A new key re-creates the row, which restarts the CSS animation
-const blinkKey = (node) => (isBlinking(node) ? node.lastUpdate : 0);
-const treeItems = computed(() => {
-  treeVersion.value; // Dependency only
-
-  return tree.roots;
-});
-
 const connectionState = ref(STATES.PENDING);
 const stateView = computed(() => STATE_VIEWS[connectionState.value]);
 
@@ -351,18 +322,20 @@ const {
 );
 
 /** Search function of the tree; an invalid regular expression matches nothing. */
-const filterNode = computed(() => (_value, query, internalItem) => {
-  try {
-    return internalItem.raw.search(
-      query,
-      searchMode.value || SearchEngine.modes.ALL
-    );
-  } catch {
-    return false;
-  }
-});
+const nodeMatcher = computed(() => {
+  const term = searchTerm.value;
+  const mode = searchMode.value || SearchEngine.modes.ALL;
 
-const getChildren = (node) => (node.size > 0 ? node.children : undefined);
+  if (!term) return undefined;
+
+  return (node) => {
+    try {
+      return node.search(term, mode);
+    } catch {
+      return false;
+    }
+  };
+});
 
 /** Applies the whole batch to the tree, then refreshes the view once. */
 function onBatch(packets) {
@@ -488,7 +461,10 @@ onBeforeUnmount(() =>
   gap: 1em;
 }
 
-.treeview-container,
+.treeview-container {
+  overflow: hidden;
+}
+
 .properties-container {
   overflow: auto;
 }
@@ -517,10 +493,6 @@ onBeforeUnmount(() =>
   filter: grayscale(100%);
 }
 
-.blink {
-  animation: blink 120ms ease-out;
-}
-
 .pending {
   animation: changeGrayscale 1s ease-in-out infinite alternate;
 }
@@ -536,14 +508,6 @@ onBeforeUnmount(() =>
 
   to {
     filter: grayscale(100%);
-  }
-}
-
-@keyframes blink {
-  from,
-  to {
-    background: rgb(var(--v-theme-primary));
-    color: #fff;
   }
 }
 

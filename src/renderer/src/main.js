@@ -7,7 +7,6 @@ import Connection from "./utils/Connection";
 
 // Custom CSS
 import "./assets/css/scrollbar.css";
-import "./assets/css/treeview.css";
 
 document.documentElement.style.overflow = "hidden";
 

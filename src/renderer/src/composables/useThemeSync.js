@@ -5,7 +5,7 @@ import { useSettingsStore } from "../stores/settings";
 const rootStyle = () => document.documentElement.style;
 
 /**
- * Keeps Vuetify theme, scrollbar CSS variables and treeview density
+ * Keeps Vuetify theme and scrollbar CSS variables
  * in line with the settings store.
  */
 export function useThemeSync() {
@@ -33,22 +33,14 @@ export function useThemeSync() {
     vuetifyTheme.themes.value.dark.colors.primary = dark;
   };
 
-  const applyDensity = () => {
-    const mode = settings.denseTree ? "dense" : "default";
-
-    rootStyle().setProperty("--margin", `var(--margin-${mode})`);
-  };
-
   const applyAll = () => {
     applyPrimaryColor();
     vuetifyTheme.change(settings.theme);
     applyScrollbarVars();
-    applyDensity();
   };
 
   watch(() => settings.theme, applyAll);
   watch(() => settings.primaryColor, applyAll, { deep: true });
-  watch(() => settings.denseTree, applyDensity);
 
   return { applyAll };
 }
