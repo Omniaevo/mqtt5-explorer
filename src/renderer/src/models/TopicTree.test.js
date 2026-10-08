@@ -368,6 +368,14 @@ describe("TopicTree", () => {
       expect(payloads(tree, "a")).toEqual(["2", "3"]);
     });
 
+    it("counts recorded entries without copying them", () => {
+      const tree = new TopicTree(2);
+
+      ["1", "2", "3"].forEach((p) => tree.apply(at("a", p, 1)));
+
+      expect(tree.find("a").historyLength).toBe(2);
+    });
+
     it("gives history only to nodes with values", () => {
       const tree = new TopicTree(2);
 

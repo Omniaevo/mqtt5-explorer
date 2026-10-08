@@ -145,6 +145,14 @@
             </v-expansion-panel-text>
           </v-expansion-panel>
 
+          <HistoryPanel
+            :node="selectedNode"
+            :version="treeVersion"
+            :capacity="settings.historySize"
+            :expanded="openPanels.includes('history')"
+            :variant="fieldVariant"
+          />
+
           <v-expansion-panel v-if="isV5" value="properties" title="Properties">
             <v-expansion-panel-text v-if="selectedView">
               <pre>{{ selectedView.value?.properties || "" }}</pre>
@@ -212,6 +220,7 @@ import {
 } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import NotificationsDialog from "../components/viewer/NotificationsDialog.vue";
+import HistoryPanel from "../components/viewer/HistoryPanel.vue";
 import PublishPanel from "../components/viewer/PublishPanel.vue";
 import SearchBar from "../components/viewer/SearchBar.vue";
 import SearchInfoDialog from "../components/viewer/SearchInfoDialog.vue";
@@ -350,7 +359,12 @@ function onBatch(packets) {
 function selectNode(node) {
   selectedNode.value = node;
   publishPanel.value?.load(node);
-  openPanels.value = ["topic", "payload", ...(isV5 ? ["properties"] : [])];
+  openPanels.value = [
+    "topic",
+    "payload",
+    ...(openPanels.value.includes("history") ? ["history"] : []),
+    ...(isV5 ? ["properties"] : []),
+  ];
 }
 
 /** Selects the topic of a clicked notification and shows it in the tree. */

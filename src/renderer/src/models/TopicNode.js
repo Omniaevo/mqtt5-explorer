@@ -71,6 +71,11 @@ class TopicNode {
     return this.#history?.toArray() ?? [];
   }
 
+  /** Number of recorded entries, without copying them. */
+  get historyLength() {
+    return this.#history?.length ?? 0;
+  }
+
   /**
    * Adds a received value to the history.
    * @param {{t: number, payload: string}} entry
