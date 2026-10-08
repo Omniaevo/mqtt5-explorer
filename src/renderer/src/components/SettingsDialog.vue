@@ -128,12 +128,12 @@
                   icon
                   variant="text"
                   size="small"
-                  aria-label="Generate a new client ID"
+                  aria-label="New random ID"
                   @click="settings.regenerateClientId()"
                 >
                   <v-icon>mdi-refresh</v-icon>
                   <v-tooltip activator="parent" location="top">
-                    Generate a new client ID
+                    New random ID
                   </v-tooltip>
                 </v-btn>
               </SettingsRow>
@@ -211,6 +211,15 @@
       <v-divider />
       <v-card-actions class="px-4">
         <span class="text-caption text-medium-emphasis">v{{ version }}</span>
+        <v-btn
+          color="error"
+          prepend-icon="mdi-restore"
+          size="x-small"
+          variant="text"
+          @click="resetDialog = true"
+        >
+          Reset to defaults
+        </v-btn>
         <v-spacer />
         <v-btn
           color="primary"
@@ -223,11 +232,27 @@
         </v-btn>
       </v-card-actions>
     </v-card>
+
+    <v-dialog v-model="resetDialog" max-width="50ch" persistent>
+      <v-card>
+        <v-card-title>Confirm reset</v-card-title>
+        <v-card-text>
+          Reset all settings to their defaults? The client ID stays the same.
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer />
+          <v-btn variant="text" @click="resetDialog = false">Cancel</v-btn>
+          <v-btn color="error" variant="text" @click="confirmReset">
+            Reset
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </v-dialog>
 </template>
 
 <script setup>
-import { computed } from "vue";
+import { computed, ref } from "vue";
 import { useDisplay } from "vuetify";
 import { useSettingsStore } from "../stores/settings";
 import { isMacOs } from "../utils/platform";
@@ -273,6 +298,7 @@ const open = defineModel({ type: Boolean, default: false });
 
 const settings = useSettingsStore();
 const { xs } = useDisplay();
+const resetDialog = ref(false);
 
 const version = import.meta.env.VITE_APP_VERSION;
 const modifierKey = isMacOs ? "Cmd" : "Ctrl";
@@ -281,6 +307,11 @@ const fieldVariant = computed(() =>
   settings.outline ? "outlined" : "underlined"
 );
 const themeMode = computed(() => (settings.isDark ? "dark" : "light"));
+
+function confirmReset() {
+  settings.resetToDefaults();
+  resetDialog.value = false;
+}
 
 function openBugsUrl() {
   window.api.app.openExternal(import.meta.env.VITE_GITHUB_BUGS);
@@ -297,7 +328,7 @@ function openBugsUrl() {
   width: 360px;
 }
 
-/* Fits "m5e-" plus a GUID (40 characters), the clear icon and the padding */
+/* Fits "m5-" plus a GUID (40 characters), the clear icon and the padding */
 .settings-control-id {
   width: calc(40ch + 80px);
 }

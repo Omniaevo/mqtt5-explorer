@@ -100,7 +100,7 @@ describe("settings store load()", () => {
 describe("settings store regenerateClientId()", () => {
   beforeEach(() => setActivePinia(createPinia()));
 
-  it("sets a new m5e- client ID each time", () => {
+  it("sets a new m5- client ID each time", () => {
     const s = loadSettings(undefined);
     const before = s.clientId;
 
@@ -108,8 +108,38 @@ describe("settings store regenerateClientId()", () => {
     const first = s.clientId;
     s.regenerateClientId();
 
-    expect(first).toMatch(/^m5e-[0-9a-f-]{36}$/);
+    expect(first).toMatch(/^m5-[0-9a-f-]{36}$/);
     expect(first).not.toBe(before);
     expect(s.clientId).not.toBe(first);
+  });
+});
+
+describe("settings store resetToDefaults()", () => {
+  beforeEach(() => setActivePinia(createPinia()));
+
+  it("restores defaults and keeps the client ID", () => {
+    const s = loadSettings(
+      JSON.stringify({
+        theme: "dark",
+        denseTree: true,
+        outline: true,
+        closeTray: false,
+        keepalive: 300,
+        maxReconnects: 10,
+        primaryColor: { text: "Usual Blue", value: {} },
+        clientId: "my-client",
+      })
+    );
+
+    s.resetToDefaults();
+
+    expect(s.theme).toBe("light");
+    expect(s.denseTree).toBe(false);
+    expect(s.outline).toBe(false);
+    expect(s.closeTray).toBe(true);
+    expect(s.primaryColor.text).toBe("Indie Indigo");
+    expect(s.keepalive).toBe(120);
+    expect(s.maxReconnects).toBe(0);
+    expect(s.clientId).toBe("my-client");
   });
 });
