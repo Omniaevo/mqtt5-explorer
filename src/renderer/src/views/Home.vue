@@ -48,14 +48,7 @@
             :variant="fieldVariant"
             label="Theme"
             hide-details
-          >
-            <template #item="{ props: itemProps }">
-              <v-list-item v-bind="itemProps" class="text-capitalize" />
-            </template>
-            <template #selection="{ item }">
-              <div class="text-capitalize">{{ item.title }}</div>
-            </template>
-          </v-select>
+          />
         </v-list-item>
 
         <v-list-item>
@@ -278,7 +271,10 @@ import { useSettingsStore } from "../stores/settings";
 import { isMacOs } from "../utils/platform";
 import logo from "../assets/logo.svg";
 
-const THEMES = ["light", "dark"];
+const THEMES = [
+  { title: "Light", value: "light" },
+  { title: "Dark", value: "dark" },
+];
 const KEEPALIVE_OPTIONS = [60, 120, 180, 240, 300];
 const RECONNECT_PERIOD_OPTIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 const MAX_RECONNECTS_OPTIONS = [0, 5, 10, 15, 20];
