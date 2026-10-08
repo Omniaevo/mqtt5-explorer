@@ -59,6 +59,20 @@
   </screenshots>
 
   <releases>
+    <release version="2.0.0" date="2026-10-08">
+      <url type="details">https://github.com/Omniaevo/mqtt5-explorer/releases/tag/v2.0.0</url>
+      <description>
+        <p>In this release:</p>
+        <ul>
+          <li>New topic history: see a chart of the latest values of a topic, or a list for text values;</li>
+          <li>Much smoother app, even with thousands of topics and many messages per second;</li>
+          <li>Faster search, notifications and message logging;</li>
+          <li>New look, with an improved settings window;</li>
+          <li>Safer and more up-to-date app. Your saved connections and settings are kept;</li>
+          <li>Bug fixes.</li>
+        </ul>
+      </description>
+    </release>
     <release version="1.19.1" date="2025-04-28">
       <url type="details">https://github.com/Omniaevo/mqtt5-explorer/releases/tag/v1.19.0</url>
       <description>
