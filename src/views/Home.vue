@@ -411,7 +411,6 @@
 <script>
 import ConnectionForm from "../components/ConnectionForm.vue";
 import ConnectionProperties from "../models/ConnectionProperties";
-import { shell, ipcRenderer } from "electron";
 import { v4 as uuidv4 } from "uuid";
 import moment from "moment";
 
@@ -542,18 +541,18 @@ export default {
     if (this.connectionsAvailable.length == 0) this.addTmpConnection();
     else this.tabId = this.$store.getters.selectedConnectionId;
 
-    ipcRenderer.send("enterHomePage");
-    ipcRenderer.on("settingsPressed", this.toggleSettingsDrawer);
-    ipcRenderer.on("exportDataPressed", this.exportConnectionData);
-    ipcRenderer.on("importDataPressed", this.importConnectionData);
+    window.api.app.sendPage("home");
+    this.unsubscribeMenuEvents = [
+      window.api.app.on("settingsPressed", this.toggleSettingsDrawer),
+      window.api.app.on("exportDataPressed", this.exportConnectionData),
+      window.api.app.on("importDataPressed", this.importConnectionData),
+    ];
   },
 
   beforeDestroy() {
     this.$store.commit("setSelectedConnectionId", this.tabId);
 
-    ipcRenderer.removeListener("settingsPressed", this.toggleSettingsDrawer);
-    ipcRenderer.removeListener("exportDataPressed", this.exportConnectionData);
-    ipcRenderer.removeListener("importDataPressed", this.importConnectionData);
+    this.unsubscribeMenuEvents.forEach((unsubscribe) => unsubscribe());
   },
 
   methods: {
@@ -574,7 +573,7 @@ export default {
       fileDownload.click();
       document.body.removeChild(fileDownload);
     },
-    importConnectionData(_, fileContent) {
+    importConnectionData(fileContent) {
       try {
         const connections = (JSON.parse(fileContent) || []).filter((props) =>
           ConnectionProperties.validate(props)
@@ -634,7 +633,7 @@ export default {
       this.$router.push({ path: `viewer/${index}` });
     },
     openBugsUrl() {
-      shell.openExternal(process.env.VUE_APP_GITHUB_BUGS);
+      window.api.app.openExternal(process.env.VUE_APP_GITHUB_BUGS);
     },
   },
 };

@@ -5,7 +5,6 @@ import router from "./router";
 import store from "./store";
 import vuetify from "./plugins/vuetify";
 import Connection from "./utils/Connection";
-import Store from "electron-store";
 import { v4 as uuidv4 } from "uuid";
 
 // Custom CSS
@@ -17,7 +16,7 @@ Vue.config.productionTip = false;
 
 Vue.prototype.$bus = new Vue();
 Vue.prototype.$connection = new Connection();
-Vue.prototype.$estore = new Store();
+Vue.prototype.$estore = window.api.store;
 
 Vue.mixin({
   data: () => ({
@@ -66,7 +65,7 @@ Vue.mixin({
       return this.$store.getters.getMaxReconnects;
     },
     isMacOs() {
-      return process.platform === "darwin";
+      return window.api.app.platform === "darwin";
     },
   },
 

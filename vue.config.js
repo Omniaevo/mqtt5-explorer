@@ -1,4 +1,5 @@
 const crypto = require("crypto");
+const path = require("path");
 const pkg = require("./package.json");
 
 /**
@@ -51,8 +52,18 @@ module.exports = {
   transpileDependencies: ["vuetify"],
   pluginOptions: {
     electronBuilder: {
-      nodeIntegration: true,
-      contextIsolation: true,
+      nodeIntegration: false,
+      preload: "src/preload.js",
+      // Main and preload bundles need Babel for private fields and `?.`
+      chainWebpackMainProcess: (config) => {
+        config.module
+          .rule("js")
+          .test(/\.js$/)
+          .include.add(path.resolve(__dirname, "src"))
+          .end()
+          .use("babel-loader")
+          .loader("babel-loader");
+      },
       builderOptions: {
         appId: `com.omniaevo.${builderOpts.appStrings.executableName}`,
         artifactName: "${name}-${version}-${platform}-${arch}.${ext}",

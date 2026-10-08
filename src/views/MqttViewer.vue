@@ -822,8 +822,7 @@ import Connection from "../utils/Connection";
 import ConnectionProperties from "../models/ConnectionProperties";
 import SearchEngine from "../utils/SearchEngine";
 import TreeNode from "../models/TreeNode";
-import MessageLogger from "../utils/MessageLogger";
-import { ipcRenderer } from "electron";
+import toPlain from "../utils/toPlain";
 
 export default {
   name: "MqttViewer",
@@ -858,17 +857,12 @@ export default {
       OR: "or",
       AND: "and",
     },
-    messageLogger: undefined,
   }),
 
   computed: {
     correlationData: {
       get() {
-        return this.itemEditing.value.properties.correlationData
-          ? Buffer.from(
-              this.itemEditing.value.properties.correlationData
-            ).toString("utf-8")
-          : undefined;
+        return this.itemEditing.value.properties.correlationData || undefined;
       },
       set(value) {
         this.itemEditing.value.properties.correlationData = value;
@@ -900,8 +894,8 @@ export default {
     fileLoggingSwitch(newValue, oldValue) {
       if (oldValue === newValue) return;
 
-      if (newValue) this.messageLogger?.startLogging();
-      else this.messageLogger?.stopLogging();
+      if (newValue) window.api.logger.start(this.connectionProperties.name);
+      else window.api.logger.stop();
     },
   },
 
@@ -916,11 +910,11 @@ export default {
       () => this.treeData.length
     );
 
-    this.messageLogger = new MessageLogger(this.connectionProperties.name);
-
-    ipcRenderer.send("enterViewerPage");
-    ipcRenderer.on("searchPressed", this.toggleSearchField);
-    ipcRenderer.on("notificationPressed", this.toggleNotificationsDialog);
+    window.api.app.sendPage("viewer");
+    this.unsubscribeMenuEvents = [
+      window.api.app.on("searchPressed", this.toggleSearchField),
+      window.api.app.on("notificationPressed", this.toggleNotificationsDialog),
+    ];
   },
 
   mounted() {
@@ -932,18 +926,13 @@ export default {
   },
 
   beforeDestroy() {
-    this.messageLogger?.stopLogging();
-    ipcRenderer.removeListener("searchPressed", this.toggleSearchField);
-    // eslint-disable-next-line prettier/prettier
-    ipcRenderer.removeListener(
-      "notificationPressed",
-      this.toggleNotificationsDialog
-    );
+    window.api.logger.stop();
+    this.unsubscribeMenuEvents.forEach((unsubscribe) => unsubscribe());
   },
 
   methods: {
     openLogsFolder() {
-      ipcRenderer.send("openFolder", this.messageLogger.logsFolder);
+      window.api.app.openFolder(window.api.logger.logsFolder());
     },
     toggleSearchField() {
       if (this.searchTreeVisible) this.$refs.searchField.blur();
@@ -1111,7 +1100,7 @@ export default {
 
         if (this.fileLoggingSwitch) {
           // Write entry to file
-          this.messageLogger.enqueue(foundNode.value);
+          window.api.logger.enqueue(toPlain(foundNode.value));
         }
 
         if (this.notifySwitch) {
@@ -1122,7 +1111,7 @@ export default {
             () => {
               // Open the app if closed/minimized and select the topic
               this.getProperties(foundNode);
-              ipcRenderer.send("focusWindow");
+              window.api.app.focusWindow();
             }
           );
         }
@@ -1156,12 +1145,6 @@ export default {
         if (this.itemEditing.value.properties.topicAlias != undefined) {
           this.itemEditing.value.properties.topicAlias = Number(
             this.itemEditing.value.properties.topicAlias
-          );
-        }
-
-        if (this.itemEditing.value.properties.correlationData != undefined) {
-          this.itemEditing.value.properties.correlationData = Buffer.from(
-            this.itemEditing.value.properties.correlationData
           );
         }
 

@@ -95,7 +95,6 @@ class TreeNode {
 
     this.value = newValue;
     this.counter += 1;
-    this.value.payload = Buffer.from(this.value.payload).toString("utf-8");
   };
 }
 

@@ -11,15 +11,15 @@ import {
   Menu,
   BrowserWindow,
   shell,
-  ipcMain,
   session,
   Tray,
 } from "electron";
 import { createProtocol } from "vue-cli-plugin-electron-builder/lib";
-import os from "os";
 import path from "path";
 import Store from "electron-store";
 import fs from "fs";
+import { registerIpcHandlers } from "./main/ipcHandlers";
+import { MenuEvent, Page } from "./shared/ipcChannels";
 
 const isDevelopment = process.env.NODE_ENV !== "production";
 const isSingleInstance = app.requestSingleInstanceLock();
@@ -37,10 +37,27 @@ const store = new Store();
 let win;
 let tray;
 
-const pages = {
-  HOME: "homePage",
-  VIEWER: "viewerPage",
+const showPage = (page) => {
+  if (Object.values(pages).includes(page)) {
+    Menu.setApplicationMenu(Menu.buildFromTemplate(menuTemplate(page)));
+  }
 };
+const focusWindow = () => {
+  if (!win) return;
+  if (!win.isVisible()) win.show();
+  if (win.isMinimized()) win.restore();
+
+  // Ensure window is visible then focus
+  setTimeout(() => win.focus(), 200);
+};
+const ipc = registerIpcHandlers({
+  getWindow: () => win,
+  store,
+  onPageChange: showPage,
+  focusWindow,
+});
+
+const pages = Page;
 const aboutMenu = [
   {
     label: "Report a bug",
@@ -118,7 +135,7 @@ let menuTemplate = (page = pages.HOME) => [
               accelerator: "CommandOrControl+,",
               click: () => {
                 if (win != undefined && win.webContents != undefined) {
-                  win.webContents.send("settingsPressed");
+                  win.webContents.send(MenuEvent.SETTINGS);
                 }
               },
             },
@@ -172,7 +189,7 @@ let menuTemplate = (page = pages.HOME) => [
               accelerator: "CommandOrControl+,",
               click: () => {
                 if (win != undefined && win.webContents != undefined) {
-                  win.webContents.send("settingsPressed");
+                  win.webContents.send(MenuEvent.SETTINGS);
                 }
               },
             },
@@ -189,7 +206,7 @@ let menuTemplate = (page = pages.HOME) => [
               label: "Export all",
               click: () => {
                 if (win != undefined && win.webContents != undefined) {
-                  win.webContents.send("exportDataPressed");
+                  win.webContents.send(MenuEvent.EXPORT_DATA);
                 }
               },
             },
@@ -214,10 +231,13 @@ let menuTemplate = (page = pages.HOME) => [
                       "utf8"
                     );
 
-                    win.webContents.send("importDataPressed", fileContent);
+                    win.webContents.send(MenuEvent.IMPORT_DATA, fileContent);
                   })
                   .catch((err) => {
-                    win.webContents.send("importDataPressed", `Error: ${err}`);
+                    win.webContents.send(
+                      MenuEvent.IMPORT_DATA,
+                      `Error: ${err}`
+                    );
                   });
               },
             },
@@ -235,7 +255,7 @@ let menuTemplate = (page = pages.HOME) => [
               accelerator: "CommandOrControl+F",
               click: () => {
                 if (win != undefined && win.webContents != undefined) {
-                  win.webContents.send("searchPressed");
+                  win.webContents.send(MenuEvent.SEARCH);
                 }
               },
             },
@@ -244,7 +264,7 @@ let menuTemplate = (page = pages.HOME) => [
               accelerator: "CommandOrControl+Shift+N",
               click: () => {
                 if (win != undefined && win.webContents != undefined) {
-                  win.webContents.send("notificationPressed");
+                  win.webContents.send(MenuEvent.NOTIFICATION);
                 }
               },
             },
@@ -253,13 +273,11 @@ let menuTemplate = (page = pages.HOME) => [
       {
         label: "Open logs folder",
         click: () => {
-          const logsFolder = os.homedir() + path.sep + "mqtt5-explorer-logs";
-
-          if (!fs.existsSync(logsFolder)) {
-            fs.mkdirSync(logsFolder);
+          if (!fs.existsSync(ipc.logsFolder)) {
+            fs.mkdirSync(ipc.logsFolder);
           }
 
-          shell.openPath(logsFolder);
+          shell.openPath(ipc.logsFolder);
         },
       },
     ],
@@ -293,7 +311,7 @@ let trayTemplate = [
       if (!win.isVisible()) win.show();
       if (win.isMinimized()) win.restore();
 
-      win.webContents.send("settingsPressed");
+      win.webContents.send(MenuEvent.SETTINGS);
     },
   },
   { type: "separator" },
@@ -312,12 +330,10 @@ async function createWindow() {
     title: appName,
     icon: path.join(__static, "icon.png"),
     webPreferences: {
-      // Use pluginOptions.nodeIntegration, leave this alone
-      // See nklayman.github.io/vue-cli-plugin-electron-builder/guide/security.html#node-integration for more info
-      nodeIntegration: process.env.ELECTRON_NODE_INTEGRATION,
-      nodeIntegrationInWorker: process.env.ELECTRON_NODE_INTEGRATION,
-      contextIsolation: !process.env.ELECTRON_NODE_INTEGRATION,
-      nativeWindowOpen: true,
+      preload: path.join(__dirname, "preload.js"),
+      contextIsolation: true,
+      nodeIntegration: false,
+      sandbox: true,
     },
   });
 
@@ -357,24 +373,8 @@ async function createWindow() {
     }
   });
 
-  // Manage renderer messages
-  ipcMain.on("enterViewerPage", () => {
-    Menu.setApplicationMenu(Menu.buildFromTemplate(menuTemplate(pages.VIEWER)));
-  });
-  ipcMain.on("enterHomePage", () => {
-    Menu.setApplicationMenu(Menu.buildFromTemplate(menuTemplate(pages.HOME)));
-  });
-  ipcMain.on("openFolder", (_, folderPath) => {
-    shell.openPath(folderPath);
-  });
-  ipcMain.on("focusWindow", () => {
-    if (!win) return;
-    if (!win.isVisible()) win.show();
-    if (win.isMinimized()) win.restore();
-
-    // Ensure window is visible then focus
-    setTimeout(() => win.focus(), 200);
-  });
+  // A page reload drops the renderer state, so the MQTT session must go too
+  win.webContents.on("did-start-loading", () => ipc.resetSession());
 
   Menu.setApplicationMenu(Menu.buildFromTemplate(menuTemplate()));
 
