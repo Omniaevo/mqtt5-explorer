@@ -37,3 +37,5 @@ io.github.Omniaevo.mqtt5-explorer.tar.gz
 #./*-lock.json
 #./package-lock.*
 #./package-lock.json
+
+sketchbook/
