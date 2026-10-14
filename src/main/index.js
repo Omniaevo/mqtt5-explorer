@@ -18,6 +18,8 @@ const isSingleInstance = app.requestSingleInstanceLock();
 const isMac = process.platform === "darwin";
 const isWindows = process.platform === "win32";
 const appName = "MQTT5 Explorer";
+const COPYRIGHT_YEAR = 2021;
+const LICENSE_URL_BASE = "https://github.com/Omniaevo/mqtt5-explorer/blob";
 
 const store = new Store();
 
@@ -90,14 +92,23 @@ const aboutMenu = [
           type: "info",
           title: `About ${appName}`,
           message: appName,
-          detail: `Version: ${app.getVersion()}-${process.platform}`,
+          detail:
+            `Version: ${app.getVersion()}-${process.platform}\n\n` +
+            `Copyright (C) ${COPYRIGHT_YEAR} Omniaevo SRL and contributors\n\n` +
+            "This program comes with ABSOLUTELY NO WARRANTY. " +
+            "It is free software, and you are welcome to redistribute it " +
+            "under the terms of the GNU General Public License version 3 only.",
           icon: aboutIcon,
-          buttons: ["GitHub page", "Close"],
+          buttons: ["GitHub page", "View license", "Close"],
         })
         .then((box) => {
           if (box.response === 0) {
             // Open GitHub page
             shell.openExternal(import.meta.env.MAIN_VITE_GITHUB_PAGE);
+          } else if (box.response === 1) {
+            shell.openExternal(
+              `${LICENSE_URL_BASE}/v${app.getVersion()}/LICENSE`
+            );
           }
         })
         .catch((err) => {

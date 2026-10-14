@@ -66,6 +66,12 @@ Once you submit your PR, a team member will review your proposal. We may ask que
 
 - As you update your PR and apply changes, mark each conversation as [resolved](https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/commenting-on-a-pull-request#resolving-conversations).
 
+### License of your contribution
+
+By submitting a contribution, you agree to license it under the [GNU General Public License version 3 only](../LICENSE) (GPL-3.0-only), the same license as the project. You keep the copyright on your work.
+
+If you add or update a dependency, run `npm run licenses` to refresh `THIRD-PARTY-NOTICES.txt`. The command fails if a dependency uses a license that is not compatible with the GPL.
+
 ### Your PR is merged
 
 Congratulations :tada::tada: The MQTT5 Explorer team thanks you :sparkles:.
