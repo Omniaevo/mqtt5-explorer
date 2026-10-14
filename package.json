@@ -2,14 +2,14 @@
   "name": "mqtt5-explorer",
   "version": "2.0.0",
   "private": false,
-  "license": "GPLv3",
+  "license": "GPL-3.0-only",
   "description": "A simple MQTT client that supports MQTT5 protocol.",
   "homepage": "https://github.com/Omniaevo/mqtt5-explorer",
   "bugs": {
     "url": "https://github.com/Omniaevo/mqtt5-explorer/issues"
   },
   "author": {
-    "name": "Omniaevo S.R.L.",
+    "name": "Omniaevo SRL",
     "email": "software@omniaevo.it",
     "url": "https://www.omniaevo.it"
   },
