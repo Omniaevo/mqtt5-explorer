@@ -7,6 +7,9 @@ files:
   - out/**
   - resources/**
   - package.json
+extraResources:
+  - LICENSE
+  - THIRD-PARTY-NOTICES.txt
 publish:
   - provider: github
     owner: Omniaevo

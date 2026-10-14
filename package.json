@@ -1,15 +1,15 @@
 {
   "name": "mqtt5-explorer",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "private": false,
-  "license": "GPLv3",
+  "license": "GPL-3.0-only",
   "description": "A simple MQTT client that supports MQTT5 protocol.",
   "homepage": "https://github.com/Omniaevo/mqtt5-explorer",
   "bugs": {
     "url": "https://github.com/Omniaevo/mqtt5-explorer/issues"
   },
   "author": {
-    "name": "Omniaevo S.R.L.",
+    "name": "Omniaevo SRL",
     "email": "software@omniaevo.it",
     "url": "https://www.omniaevo.it"
   },
@@ -34,6 +34,7 @@
     "lint": "eslint .",
     "postinstall": "electron-builder install-app-deps",
     "postuninstall": "electron-builder install-app-deps",
+    "licenses": "node scripts/generate-third-party-notices.mjs",
     "load-test": "node scripts/load-test.mjs",
     "test": "vitest run",
     "test:watch": "vitest",
