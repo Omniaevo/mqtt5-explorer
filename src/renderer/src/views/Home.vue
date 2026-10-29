@@ -15,35 +15,30 @@
         />
       </template>
 
-      <MHubSection v-if="pinned.length" title="pinned">
-        <div class="home__tiles" :style="sectionStyle(pinned.length)">
+      <MHubSection
+        v-for="section in liveSections"
+        :key="section.title"
+        :title="section.title"
+      >
+        <div class="home__tiles" :style="sectionStyle(section.list.length)">
           <MTile
-            v-for="connection in pinned"
+            v-for="(connection, index) in section.list"
             :key="connection.id"
-            :size="tileSize(pinned.length)"
+            :size="tileSize(section.list.length)"
             :selected="connection.id === selectedId"
+            :flipped="liveTiles.isFlipped(connection.id)"
+            :animation-delay="staggerDelay(index)"
+            :aria-label="tileLabel(connection)"
             @activate="connect(connection)"
             @select="select(connection)"
+            @focusin="focusedId = connection.id"
+            @focusout="focusedId = null"
           >
             <template #front>
               <ConnectionTileFront :connection="connection" />
             </template>
-          </MTile>
-        </div>
-      </MHubSection>
-
-      <MHubSection v-if="recent.length" title="recent">
-        <div class="home__tiles" :style="sectionStyle(recent.length)">
-          <MTile
-            v-for="connection in recent"
-            :key="connection.id"
-            :size="tileSize(recent.length)"
-            :selected="connection.id === selectedId"
-            @activate="connect(connection)"
-            @select="select(connection)"
-          >
-            <template #front>
-              <ConnectionTileFront :connection="connection" />
+            <template #back>
+              <ConnectionTileBack :connection="connection" />
             </template>
           </MTile>
         </div>
@@ -57,10 +52,12 @@
           :style="sectionStyle(all.length)"
         >
           <MTile
-            v-for="connection in all"
+            v-for="(connection, index) in all"
             :key="connection.id"
             :size="tileSize(all.length)"
             :selected="connection.id === selectedId"
+            :animation-delay="staggerDelay(index)"
+            :aria-label="tileLabel(connection)"
             @activate="connect(connection)"
             @select="select(connection)"
           >
@@ -130,6 +127,7 @@
 import { computed, onBeforeMount, onBeforeUnmount, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import ConnectionEditorFlyout from "../components/ConnectionEditorFlyout.vue";
+import ConnectionTileBack from "../components/ConnectionTileBack.vue";
 import ConnectionTileFront from "../components/ConnectionTileFront.vue";
 import SettingsDialog from "../components/SettingsDialog.vue";
 import MAppBar from "../components/metro/MAppBar.vue";
@@ -140,6 +138,7 @@ import MMessageDialog from "../components/metro/MMessageDialog.vue";
 import MTextBox from "../components/metro/MTextBox.vue";
 import MTile from "../components/metro/MTile.vue";
 import ConnectionProperties from "../models/ConnectionProperties";
+import { useLiveTiles } from "../composables/useLiveTiles";
 import { useConnectionsStore } from "../stores/connections";
 import { useNotifyStore } from "../stores/notify";
 import {
@@ -166,6 +165,35 @@ const visible = computed(() =>
 const pinned = computed(() => pinnedConnections(visible.value));
 const recent = computed(() => recentConnections(visible.value));
 const all = computed(() => allConnections(visible.value));
+
+// Only pinned and recent tiles are live (D15)
+const liveSections = computed(() =>
+  [
+    { title: "pinned", list: pinned.value },
+    { title: "recent", list: recent.value },
+  ].filter((section) => section.list.length)
+);
+const focusedId = ref(null);
+const liveTiles = useLiveTiles(
+  () => liveSections.value.flatMap((s) => s.list.map((c) => c.id)),
+  () => [selectedId.value, focusedId.value].filter(Boolean)
+);
+
+// Stagger the tiles on the first render of the hub only, not on later re-mounts (search)
+const STAGGER_STEP_MS = 30;
+const STAGGER_MAX_MS = 300;
+const STAGGER_WINDOW_MS = 1500;
+const isFirstRender = ref(true);
+const staggerDelay = (index) =>
+  isFirstRender.value
+    ? `${Math.min(index * STAGGER_STEP_MS, STAGGER_MAX_MS)}ms`
+    : undefined;
+const tileLabel = (connection) => `${connection.name}, ${connection.host}`;
+const staggerTimer = setTimeout(
+  () => (isFirstRender.value = false),
+  STAGGER_WINDOW_MS
+);
+onBeforeUnmount(() => clearTimeout(staggerTimer));
 const TILE_SIZE = 150;
 const WIDE_TILE_WIDTH = 310;
 const WIDE_TILES_MAX = 3; // sections with this many tiles or fewer use wide tiles

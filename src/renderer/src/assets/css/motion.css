@@ -46,10 +46,25 @@
   }
 }
 
-/* Reverse the animation to flip back */
+/* Flip and flip back are separate keyframes: a changed name restarts the animation, a changed direction does not */
 @keyframes m-flip {
+  /* Explicit start: the flipped tile already has rotateX(180deg), so an implicit start would not animate */
+  from {
+    transform: rotateX(0deg);
+  }
+
   to {
     transform: rotateX(180deg);
+  }
+}
+
+@keyframes m-unflip {
+  from {
+    transform: rotateX(180deg);
+  }
+
+  to {
+    transform: rotateX(0deg);
   }
 }
 

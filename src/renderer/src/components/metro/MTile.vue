@@ -16,7 +16,11 @@
       <div class="m-tile__face">
         <slot name="front" />
       </div>
-      <div v-if="$slots.back" class="m-tile__face m-tile__face--back">
+      <div
+        v-if="$slots.back"
+        class="m-tile__face m-tile__face--back"
+        aria-hidden="true"
+      >
         <slot name="back" />
       </div>
     </div>
@@ -69,7 +73,6 @@ const flipClass = computed(() => ({
   flex: none;
   box-sizing: border-box;
   height: 150px;
-  background: var(--m-accent);
   color: var(--m-on-accent);
   font: var(--m-font-body);
   cursor: pointer;
@@ -103,7 +106,7 @@ const flipClass = computed(() => ({
 }
 
 .m-tile__flipper--unflipped {
-  animation: m-flip var(--m-duration-slow) var(--m-ease) reverse;
+  animation: m-unflip var(--m-duration-slow) var(--m-ease);
 }
 
 .m-tile__face {
@@ -112,6 +115,8 @@ const flipClass = computed(() => ({
   box-sizing: border-box;
   padding: calc(var(--m-subunit) * 2);
   overflow: hidden;
+  /* The accent lives on the faces so the whole tile turns, background included */
+  background: var(--m-accent);
   backface-visibility: hidden;
 }
 
