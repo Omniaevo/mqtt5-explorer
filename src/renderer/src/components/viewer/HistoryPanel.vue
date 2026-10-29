@@ -1,48 +1,40 @@
 <template>
-  <v-expansion-panel v-if="isAvailable" value="history">
-    <v-expansion-panel-title>
-      <span>History</span>
-      <span class="text-caption ms-2 text-grey">
-        ({{ storedCount }} of {{ capacity }} values)
-      </span>
-    </v-expansion-panel-title>
-
-    <v-expansion-panel-text>
-      <template v-if="expanded">
-        <v-select
-          v-if="fields.length > 0"
-          v-model="selectedField"
-          :items="fields"
-          :variant="variant"
-          class="mb-2"
-          density="compact"
-          hide-details
-          label="Field"
-        />
-        <HistoryChart
-          v-if="isChartable"
-          :xs="series.xs"
-          :ys="series.ys"
-          :is-boolean="series.isBoolean"
-          :label="selectedField ?? 'Value'"
-        />
-        <v-virtual-scroll
-          v-else
-          :items="rawRows"
-          :height="RAW_LIST_HEIGHT"
-          :item-height="RAW_ROW_HEIGHT"
-          item-key="key"
-        >
-          <template #default="{ item }">
-            <div class="raw-row d-flex" :title="item.payload">
-              <span class="text-grey me-3 flex-shrink-0">{{ item.time }}</span>
-              <span class="raw-payload">{{ item.payload }}</span>
-            </div>
-          </template>
-        </v-virtual-scroll>
-      </template>
-    </v-expansion-panel-text>
-  </v-expansion-panel>
+  <div v-if="isAvailable">
+    <div class="history-count">{{ storedCount }} of {{ capacity }} values</div>
+    <template v-if="expanded">
+      <v-select
+        v-if="fields.length > 0"
+        v-model="selectedField"
+        :items="fields"
+        :variant="variant"
+        class="mb-2"
+        density="compact"
+        hide-details
+        label="Field"
+      />
+      <HistoryChart
+        v-if="isChartable"
+        :xs="series.xs"
+        :ys="series.ys"
+        :is-boolean="series.isBoolean"
+        :label="selectedField ?? 'Value'"
+      />
+      <v-virtual-scroll
+        v-else
+        :items="rawRows"
+        :height="RAW_LIST_HEIGHT"
+        :item-height="RAW_ROW_HEIGHT"
+        item-key="key"
+      >
+        <template #default="{ item }">
+          <div class="raw-row d-flex" :title="item.payload">
+            <span class="text-grey me-3 flex-shrink-0">{{ item.time }}</span>
+            <span class="raw-payload">{{ item.payload }}</span>
+          </div>
+        </template>
+      </v-virtual-scroll>
+    </template>
+  </div>
 </template>
 
 <script setup>
@@ -65,7 +57,7 @@ const props = defineProps({
   version: { type: Number, required: true },
   /** `historySize` setting. */
   capacity: { type: Number, required: true },
-  /** Work is done only while the panel is open. */
+  /** Work is done only while the pivot item is shown. */
   expanded: { type: Boolean, default: false },
   variant: { type: String, default: "underlined" },
 });
@@ -117,6 +109,12 @@ const rawRows = computed(() =>
 </script>
 
 <style scoped>
+.history-count {
+  margin-bottom: var(--m-subunit);
+  color: var(--m-fg-secondary);
+  font: var(--m-font-caption);
+}
+
 .raw-row {
   height: 28px;
   line-height: 28px;

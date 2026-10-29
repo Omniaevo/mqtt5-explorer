@@ -1,26 +1,23 @@
 <template>
-  <v-expansion-panel value="publish">
-    <v-expansion-panel-title>
-      <v-tooltip
-        v-if="canSync"
-        text="Synchronize with new data"
-        location="bottom"
-      >
-        <template #activator="{ props: tooltipProps }">
-          <v-btn
-            v-bind="tooltipProps"
-            class="me-2"
-            icon="mdi-sync"
-            size="small"
-            variant="text"
-            @click.stop="load(selected)"
-          />
-        </template>
-      </v-tooltip>
-      <span>Publish</span>
-    </v-expansion-panel-title>
+  <div>
+    <v-tooltip
+      v-if="canSync"
+      text="Synchronize with new data"
+      location="bottom"
+    >
+      <template #activator="{ props: tooltipProps }">
+        <v-btn
+          v-bind="tooltipProps"
+          class="mb-2"
+          icon="mdi-sync"
+          size="small"
+          variant="text"
+          @click="load(selected)"
+        />
+      </template>
+    </v-tooltip>
 
-    <v-expansion-panel-text v-if="form">
+    <div v-if="form">
       <v-text-field
         v-model="form.topic"
         :variant="variant"
@@ -141,9 +138,9 @@
           >Publish</v-btn
         >
       </div>
-    </v-expansion-panel-text>
+    </div>
 
-    <v-expansion-panel-text v-else>
+    <div v-else>
       <v-tooltip text="Create a new topic" location="bottom">
         <template #activator="{ props: tooltipProps }">
           <v-btn
@@ -157,8 +154,8 @@
           />
         </template>
       </v-tooltip>
-    </v-expansion-panel-text>
-  </v-expansion-panel>
+    </div>
+  </div>
 </template>
 
 <script setup>
@@ -170,7 +167,7 @@ const QOS_LEVELS = [0, 1, 2];
 const props = defineProps({
   /** Selected topic (`{ topic, value }`), source of the sync button. */
   selected: { type: Object, default: undefined },
-  /** True when this panel is open. */
+  /** True when the publish pivot item is shown. */
   expanded: { type: Boolean, default: false },
   /** True when MQTT 5 properties are supported. */
   isV5: { type: Boolean, default: false },

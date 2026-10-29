@@ -34,90 +34,75 @@
       </div>
 
       <div class="viewer__details">
-        <v-expansion-panels v-model="openPanels" multiple>
-          <v-expansion-panel value="topic" title="Topic">
-            <v-expansion-panel-text v-if="selectedView" class="wrap-text">
-              {{ selectedView.topic }}
-            </v-expansion-panel-text>
-          </v-expansion-panel>
+        <h2
+          class="viewer__topic"
+          :class="{ 'viewer__topic--hint': !selectedView }"
+        >
+          {{ selectedView?.topic ?? "Select a topic" }}
+        </h2>
 
-          <v-expansion-panel value="payload">
-            <v-expansion-panel-title>
-              <span>Payload</span>
-              <span
-                v-if="selectedView?.counter > 0"
+        <MPivot
+          v-model="activeItem"
+          class="viewer__pivot"
+          :items="pivotItems"
+          aria-label="Topic details"
+        >
+          <template #payload>
+            <template v-if="selectedView">
+              <p
+                v-if="selectedView.counter > 0"
                 :title="getCountMessage(selectedView.counter, false)"
-                class="text-caption ms-2 text-grey"
+                class="viewer__count"
               >
-                ({{ getCountMessage(selectedView.counter, true) }})
-              </span>
-            </v-expansion-panel-title>
-            <v-expansion-panel-text v-if="selectedView">
-              <div
-                v-if="selectedView.old"
-                class="d-flex rounded mb-1 wrap-text"
-              >
-                <div class="bg-error px-2 py-1">
-                  <v-icon icon="mdi-delete" size="small" />
-                </div>
-                <div class="px-4 flex-fill py-1 long-payload payload-old">
-                  {{ selectedView.old.payload }}
-                </div>
+                {{ getCountMessage(selectedView.counter, true) }}
+              </p>
+              <div v-if="selectedView.old" class="viewer__payload-old">
+                {{ selectedView.old.payload }}
               </div>
-              <div v-if="selectedView.value" class="d-flex rounded wrap-text">
-                <div class="bg-success px-2 py-1">
-                  <v-icon icon="mdi-lightning-bolt" size="small" />
-                </div>
-                <div class="px-4 flex-fill py-1 long-payload payload-new">
-                  {{ selectedView.value.payload }}
-                </div>
+              <div v-if="selectedView.value" class="viewer__payload-new">
+                {{ selectedView.value.payload }}
               </div>
-            </v-expansion-panel-text>
-          </v-expansion-panel>
+            </template>
+          </template>
 
-          <HistoryPanel
-            :node="selectedNode"
-            :version="treeVersion"
-            :capacity="settings.historySize"
-            :expanded="openPanels.includes('history')"
-            :variant="fieldVariant"
-          />
+          <template #properties>
+            <pre v-if="selectedView" class="viewer__properties">{{
+              selectedView.value?.properties || ""
+            }}</pre>
+          </template>
 
-          <v-expansion-panel v-if="isV5" value="properties" title="Properties">
-            <v-expansion-panel-text v-if="selectedView">
-              <pre>{{ selectedView.value?.properties || "" }}</pre>
-            </v-expansion-panel-text>
-          </v-expansion-panel>
+          <template #history>
+            <HistoryPanel
+              :node="selectedNode"
+              :version="treeVersion"
+              :capacity="settings.historySize"
+              :expanded="activeItem === 'history'"
+              :variant="fieldVariant"
+            />
+          </template>
 
-          <PublishPanel
-            ref="publishPanel"
-            :selected="selectedView"
-            :expanded="openPanels.includes('publish')"
-            :is-v5="isV5"
-            :variant="fieldVariant"
-            @publish="(packet) => connection.publish(packet)"
-          />
-        </v-expansion-panels>
+          <template #publish>
+            <PublishPanel
+              ref="publishPanel"
+              :selected="selectedView"
+              :expanded="activeItem === 'publish'"
+              :is-v5="isV5"
+              :variant="fieldVariant"
+              @publish="(packet) => connection.publish(packet)"
+            />
+          </template>
+        </MPivot>
       </div>
     </div>
 
-    <v-dialog v-model="deleteDialog" max-width="50ch" persistent>
-      <v-card>
-        <v-card-title>Confirm delete</v-card-title>
-        <v-card-text>
-          Are you sure you want to delete
-          <span class="font-weight-black">"{{ selectedView?.topic }}"</span>
-          topic and its children?
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer />
-          <v-btn variant="text" @click="deleteDialog = false">Cancel</v-btn>
-          <v-btn color="error" variant="text" @click="confirmDelete"
-            >Delete</v-btn
-          >
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+    <MMessageDialog
+      v-model:open="deleteDialog"
+      danger
+      title="Delete topic"
+      :message="`Delete &quot;${selectedView?.topic ?? ''}&quot; and its children?`"
+      confirm-label="Delete"
+      @confirm="confirmDelete"
+    />
 
     <MAppBar :collapsible="false" aria-label="Viewer commands">
       <template #context>
@@ -206,6 +191,8 @@ import { useRoute, useRouter } from "vue-router";
 import MAppBar from "../components/metro/MAppBar.vue";
 import MButton from "../components/metro/MButton.vue";
 import MTooltip from "../components/metro/MTooltip.vue";
+import MMessageDialog from "../components/metro/MMessageDialog.vue";
+import MPivot from "../components/metro/MPivot.vue";
 import MPageHeader from "../components/metro/MPageHeader.vue";
 import NotificationsDialog from "../components/viewer/NotificationsDialog.vue";
 import HistoryPanel from "../components/viewer/HistoryPanel.vue";
@@ -252,7 +239,7 @@ const {
 const selectedNode = shallowRef(undefined);
 const publishPanel = ref(null);
 const treeView = ref(null);
-const openPanels = ref(["publish"]);
+const activeItem = ref("payload");
 const deleteDialog = ref(false);
 const notifyDialog = ref(false);
 const searchInfoOpen = ref(false);
@@ -260,6 +247,14 @@ const searchVisible = ref(false);
 const searchTerm = ref(undefined);
 const searchMode = ref(undefined);
 const debouncedSearchTerm = useDebouncedRef(searchTerm, SEARCH_DEBOUNCE_MS);
+
+/** Pivot items; `history` is hidden when no history is kept. */
+const pivotItems = computed(() => [
+  { value: "payload", label: "payload" },
+  ...(isV5 ? [{ value: "properties", label: "properties" }] : []),
+  ...(settings.historySize > 0 ? [{ value: "history", label: "history" }] : []),
+  { value: "publish", label: "publish" },
+]);
 
 /** Plain copy of the selected node that follows tree updates. */
 const selectedView = computed(() => {
@@ -318,7 +313,13 @@ const nodeMatcher = computed(() => {
 
 watch(
   () => settings.historySize,
-  (size) => tree.setHistorySize(size)
+  (size) => {
+    tree.setHistorySize(size);
+
+    if (size === 0 && activeItem.value === "history") {
+      activeItem.value = "payload";
+    }
+  }
 );
 
 /** Applies the whole batch to the tree, then refreshes the view once. */
@@ -333,12 +334,6 @@ function onBatch(packets) {
 function selectNode(node) {
   selectedNode.value = node;
   publishPanel.value?.load(node);
-  openPanels.value = [
-    "topic",
-    "payload",
-    ...(openPanels.value.includes("history") ? ["history"] : []),
-    ...(isV5 ? ["properties"] : []),
-  ];
 }
 
 /** Selects the topic of a clicked notification and shows it in the tree. */
@@ -354,7 +349,6 @@ function selectTopic(topic) {
 function resetSelection() {
   selectedNode.value = undefined;
   publishPanel.value?.reset();
-  openPanels.value = ["publish"];
 }
 
 function toggleSearchField() {
@@ -466,7 +460,7 @@ onBeforeUnmount(() =>
 .viewer__panes {
   overflow: hidden;
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 2fr 3fr;
   grid-template-rows: 1fr;
 }
 
@@ -477,8 +471,10 @@ onBeforeUnmount(() =>
 }
 
 .viewer__details {
+  display: flex;
+  flex-direction: column;
   overflow: auto;
-  padding: var(--m-subunit);
+  padding: var(--m-subunit) var(--m-subunit) var(--m-subunit) var(--m-unit);
   background: var(--m-bg);
 }
 
@@ -499,19 +495,48 @@ onBeforeUnmount(() =>
   pointer-events: none;
 }
 
-.long-payload {
+.viewer__topic {
+  margin: 0 0 var(--m-unit);
+  font: var(--m-font-title);
+  overflow-wrap: anywhere;
+}
+
+.viewer__topic--hint {
+  color: var(--m-fg-secondary);
+}
+
+.viewer__pivot {
+  flex: 1;
+}
+
+.viewer__count {
+  margin: 0 0 var(--m-subunit);
+  color: var(--m-fg-secondary);
+  font: var(--m-font-caption);
+}
+
+.viewer__payload-old,
+.viewer__payload-new {
+  padding: var(--m-subunit) var(--m-unit) var(--m-subunit) var(--m-subunit);
+  overflow-wrap: anywhere;
   word-break: break-all;
 }
 
-.payload-old {
-  background: #ff535655;
+.viewer__payload-old {
+  margin-bottom: var(--m-subunit);
+  background: color-mix(in srgb, var(--m-error) 35%, transparent);
 }
 
-.payload-new {
-  background: #41b05655;
+.viewer__payload-new {
+  background: color-mix(in srgb, var(--m-success) 35%, transparent);
 }
 
-.wrap-text {
-  overflow-wrap: break-word;
+.viewer__properties {
+  margin: 0;
+  padding: var(--m-subunit);
+  background: var(--m-surface);
+  font-family: monospace;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
 }
 </style>

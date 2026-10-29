@@ -59,6 +59,7 @@
   /* Static colors */
   --m-error: #a20025;
   --m-on-error: #ffffff;
+  --m-success: #2e7d32;
 
   /* Light is the default until data-theme is set */
   --m-bg: #ffffff;
