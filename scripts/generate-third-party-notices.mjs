@@ -13,11 +13,21 @@ const OUTPUT_FILE = path.join(ROOT, "THIRD-PARTY-NOTICES.txt");
 
 // Dev dependencies that Vite bundles into the renderer, so they ship in the app.
 const BUNDLED_DEV_DEPENDENCIES = [
-  "@mdi/font",
+  "@fluentui/svg-icons",
   "pinia",
+  "reka-ui",
   "vue",
   "vue-router",
-  "vuetify",
+];
+
+// Shipped assets that are not npm packages. The license text lives in the repo.
+const EXTRA_NOTICES = [
+  {
+    name: "Selawik",
+    license: "OFL-1.1",
+    repository: "https://github.com/microsoft/Selawik",
+    textFile: "src/renderer/src/assets/fonts/selawik/OFL.txt",
+  },
 ];
 
 // SPDX ids that are compatible with GPL-3.0-only.
@@ -116,10 +126,15 @@ function formatMissingLicenseText(pkg) {
   return `(The package has no license file. Declared license: ${pkg.license}.${author})`;
 }
 
+function readExtraNotice({ textFile, ...notice }) {
+  const text = readFileSync(path.join(ROOT, textFile), "utf8").trim();
+  return { author: "", ...notice, text };
+}
+
 function formatEntry(pkg) {
   const lines = [
     SEPARATOR,
-    `${pkg.name}@${pkg.version}`,
+    pkg.version ? `${pkg.name}@${pkg.version}` : pkg.name,
     `License: ${pkg.license}`,
   ];
   if (pkg.repository) lines.push(`Source: ${pkg.repository}`);
@@ -154,13 +169,14 @@ function main() {
       (a, b) =>
         a.name.localeCompare(b.name) || a.version.localeCompare(b.version)
     );
+  const extras = EXTRA_NOTICES.map(readExtraNotice);
 
   const rejected = packages.filter((pkg) => !isAllowed(pkg.license));
   const withoutText = packages.filter((pkg) => pkg.text === null);
 
-  writeFileSync(OUTPUT_FILE, formatNotices(packages));
+  writeFileSync(OUTPUT_FILE, formatNotices([...packages, ...extras]));
   console.log(
-    `${packages.length} packages scanned, notices written to ${OUTPUT_FILE}`
+    `${packages.length} packages scanned, ${extras.length} extra notices, notices written to ${OUTPUT_FILE}`
   );
 
   for (const pkg of withoutText) {

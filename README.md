@@ -42,7 +42,7 @@ The aim of this project is to bring the users a client app capable of making use
 
 ## Project setup
 
-The app uses [Electron](https://www.electronjs.org/), [Vue 3](https://vuejs.org/), [Vuetify 4](https://vuetifyjs.com/), [Pinia](https://pinia.vuejs.org/) and [electron-vite](https://electron-vite.org/). You need [Node.js](https://nodejs.org/) 20 or newer.
+The app uses [Electron](https://www.electronjs.org/), [Vue 3](https://vuejs.org/), [Pinia](https://pinia.vuejs.org/) and [electron-vite](https://electron-vite.org/). The interface is a custom Metro-style design built on [Reka UI](https://reka-ui.com/) headless components, [Fluent UI System Icons](https://github.com/microsoft/fluentui-system-icons) and the Selawik font. You need [Node.js](https://nodejs.org/) 20 or newer.
 
 ```bash
 npm install
@@ -129,7 +129,7 @@ See:
 
 - [electron-vite Configuration Reference](https://electron-vite.org/config/).
 - [Vite Configuration Reference](https://vite.dev/config/).
-- [Vuetify Configuration Reference](https://vuetifyjs.com/en/introduction/why-vuetify/#feature-guides).
+- [Reka UI documentation](https://reka-ui.com/docs/overview/introduction).
 - [Electron Build Configuration Reference](https://www.electron.build/docs/configuration).
 
 ## Get involved
