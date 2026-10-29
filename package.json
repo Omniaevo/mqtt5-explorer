@@ -49,6 +49,7 @@
   "main": "./out/main/index.js",
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@fluentui/svg-icons": "^1.1.344",
     "@mdi/font": "^7.1.96",
     "@vitejs/plugin-vue": "^6.0.9",
     "electron": "^44.7.0",
