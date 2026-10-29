@@ -26,10 +26,7 @@ export default [
   },
   // Single-word view name kept to avoid a rename outside this spec
   {
-    files: [
-      "src/renderer/src/views/Home.vue",
-      "src/renderer/src/views/Gallery.vue",
-    ],
+    files: ["src/renderer/src/views/Home.vue"],
     rules: { "vue/multi-word-component-names": "off" },
   },
   prettier,

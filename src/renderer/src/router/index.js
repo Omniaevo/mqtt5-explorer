@@ -18,13 +18,4 @@ const router = createRouter({
   ],
 });
 
-// Component gallery: dev builds only (P9)
-if (import.meta.env.DEV) {
-  router.addRoute({
-    path: "/gallery",
-    name: "Gallery",
-    component: () => import("../views/Gallery.vue"),
-  });
-}
-
 export default router;
