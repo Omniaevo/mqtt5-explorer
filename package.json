@@ -41,6 +41,7 @@
     "format": "prettier --write ."
   },
   "dependencies": {
+    "@tanstack/vue-virtual": "^3.13.50",
     "electron-store": "^11.0.2",
     "electron-updater": "^6.8.9",
     "mqtt": "^5.16.0",
