@@ -120,8 +120,14 @@ const flipClass = computed(() => ({
   backface-visibility: hidden;
 }
 
+/* The back is tinted lighter on the light theme and darker on the dark theme */
 .m-tile__face--back {
+  background: color-mix(in srgb, var(--m-accent), white 14%);
   transform: rotateX(180deg);
+}
+
+:global(:root[data-theme="dark"]) .m-tile__face--back {
+  background: color-mix(in srgb, var(--m-accent), black 22%);
 }
 
 /* Win8 selection: border around the tile and a check in its top-right corner.
