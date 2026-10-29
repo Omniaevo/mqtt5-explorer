@@ -4,6 +4,9 @@ const GRID_ALPHA = 0.12;
 const BOOLEAN_TICKS = [0, 1];
 const BOOLEAN_LABELS = ["false", "true"];
 const BOOLEAN_RANGE_PADDING = 0.1;
+const FONT_FAMILY = "Selawik, 'Segoe UI', sans-serif";
+const AXIS_FONT = `12px ${FONT_FAMILY}`;
+const POINT_SIZE = 6;
 const HEX_COLOR_PATTERN = /^#[0-9a-f]{6}$/i;
 
 const pad = (n) => String(n).padStart(2, "0");
@@ -29,6 +32,25 @@ export const withAlpha = (color, alpha) =>
         .toString(16)
         .padStart(2, "0")}`
     : color;
+
+/** uPlot points path that draws squares instead of circles. */
+export const squarePoints = (plot, seriesIdx, firstIdx, lastIdx) => {
+  const { scale, points } = plot.series[seriesIdx];
+  const size = (points.size ?? POINT_SIZE) * devicePixelRatio;
+  const squares = new Path2D();
+
+  for (let i = firstIdx; i <= lastIdx; i++) {
+    const y = plot.data[seriesIdx][i];
+
+    if (y == null) continue;
+    const cx = plot.valToPos(plot.data[0][i], "x", true);
+    const cy = plot.valToPos(y, scale, true);
+
+    squares.rect(cx - size / 2, cy - size / 2, size, size);
+  }
+
+  return { fill: squares };
+};
 
 /** y value of a boolean series as `true` / `false`. */
 const formatBoolean = (value) =>
@@ -62,6 +84,8 @@ export const buildChartOptions = ({
 }) => {
   const axisStyle = {
     stroke: colors.text,
+    font: AXIS_FONT,
+    labelFont: AXIS_FONT,
     grid: { stroke: withAlpha(colors.text, GRID_ALPHA), width: 1 },
     ticks: { stroke: withAlpha(colors.text, GRID_ALPHA), width: 1 },
   };
@@ -81,6 +105,7 @@ export const buildChartOptions = ({
         label,
         stroke: colors.primary,
         width: 2,
+        points: { size: POINT_SIZE, fill: colors.primary, paths: squarePoints },
         paths: isBoolean ? steppedPaths({ align: 1 }) : undefined,
         value: isBoolean ? (_plot, value) => formatBoolean(value) : undefined,
       },

@@ -77,7 +77,6 @@
               :version="treeVersion"
               :capacity="settings.historySize"
               :expanded="activeItem === 'history'"
-              :variant="fieldVariant"
             />
           </template>
 

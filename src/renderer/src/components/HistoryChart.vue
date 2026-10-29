@@ -3,17 +3,11 @@
 </template>
 
 <script setup>
-import {
-  computed,
-  onBeforeUnmount,
-  onMounted,
-  useTemplateRef,
-  watch,
-} from "vue";
-import { useTheme } from "vuetify";
+import { onBeforeUnmount, onMounted, useTemplateRef, watch } from "vue";
 import uPlot from "uplot";
 import "uplot/dist/uPlot.min.css";
 import { CHART_HEIGHT, buildChartOptions } from "../utils/ChartOptions";
+import { useSettingsStore } from "../stores/settings";
 
 const props = defineProps({
   xs: { type: Array, required: true }, // Epoch seconds
@@ -23,17 +17,21 @@ const props = defineProps({
 });
 
 const container = useTemplateRef("container");
-const theme = useTheme();
+const settings = useSettingsStore();
 
 // Plain variable on purpose: uPlot must not be proxied by Vue.
 let plot = null;
 let resizeObserver = null;
 
-const colors = computed(() => {
-  const { primary, "on-surface": text } = theme.current.value.colors;
+/** Metro colors in effect now; read at build time, uPlot cannot use CSS vars. */
+const readColors = () => {
+  const style = getComputedStyle(document.documentElement);
 
-  return { primary, text };
-});
+  return {
+    primary: style.getPropertyValue("--m-accent").trim(),
+    text: style.getPropertyValue("--m-fg").trim(),
+  };
+};
 
 const createPlot = () => {
   plot?.destroy();
@@ -42,7 +40,7 @@ const createPlot = () => {
       width: container.value.clientWidth,
       label: props.label,
       isBoolean: props.isBoolean,
-      colors: colors.value,
+      colors: readColors(),
       steppedPaths: uPlot.paths.stepped,
     }),
     [props.xs, props.ys],
@@ -71,9 +69,14 @@ watch(
 );
 
 // uPlot cannot restyle axes or series after creation: rebuild instead.
-watch(() => [colors.value, props.isBoolean, props.label], createPlot, {
-  deep: true,
-});
+watch(() => [props.isBoolean, props.label], createPlot);
+
+// "post" runs after useThemeSync has written the CSS variables.
+watch(
+  () => [settings.resolvedTheme, settings.primaryColor],
+  createPlot,
+  { deep: true, flush: "post" }
+);
 </script>
 
 <style scoped>

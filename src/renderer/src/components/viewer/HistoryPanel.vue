@@ -1,16 +1,16 @@
 <template>
-  <div v-if="isAvailable">
-    <div class="history-count">{{ storedCount }} of {{ capacity }} values</div>
-    <template v-if="expanded">
-      <v-select
+  <div>
+    <p v-if="history.length === 0" class="history-empty">
+      No history yet for this topic.
+    </p>
+    <template v-else>
+      <div class="history-count">{{ storedCount }} of {{ capacity }} values</div>
+      <MSelect
         v-if="fields.length > 0"
         v-model="selectedField"
-        :items="fields"
-        :variant="variant"
-        class="mb-2"
-        density="compact"
-        hide-details
+        class="history-field"
         label="Field"
+        :items="fields"
       />
       <HistoryChart
         v-if="isChartable"
@@ -19,26 +19,30 @@
         :is-boolean="series.isBoolean"
         :label="selectedField ?? 'Value'"
       />
-      <v-virtual-scroll
-        v-else
-        :items="rawRows"
-        :height="RAW_LIST_HEIGHT"
-        :item-height="RAW_ROW_HEIGHT"
-        item-key="key"
-      >
-        <template #default="{ item }">
-          <div class="raw-row d-flex" :title="item.payload">
-            <span class="text-grey me-3 flex-shrink-0">{{ item.time }}</span>
-            <span class="raw-payload">{{ item.payload }}</span>
+      <div v-else ref="rawScroll" class="raw-scroll">
+        <div
+          class="raw-list"
+          :style="{ height: `${virtualizer.getTotalSize()}px` }"
+        >
+          <div
+            v-for="item in virtualizer.getVirtualItems()"
+            :key="item.key"
+            class="raw-row"
+            :title="rawRows[item.index].payload"
+            :style="{ transform: `translateY(${item.start}px)` }"
+          >
+            <span class="raw-time">{{ rawRows[item.index].time }}</span>
+            <span class="raw-payload">{{ rawRows[item.index].payload }}</span>
           </div>
-        </template>
-      </v-virtual-scroll>
+        </div>
+      </div>
     </template>
   </div>
 </template>
 
 <script setup>
-import { computed, reactive } from "vue";
+import { computed, reactive, useTemplateRef } from "vue";
+import { useVirtualizer } from "@tanstack/vue-virtual";
 import {
   chartableFields,
   extractSeries,
@@ -46,8 +50,9 @@ import {
 } from "../../utils/ValueExtractor";
 import { resolveField, toRawRows } from "../../utils/HistoryView";
 import HistoryChart from "../HistoryChart.vue";
+import MSelect from "../metro/MSelect.vue";
 
-const RAW_LIST_HEIGHT = 240;
+const RAW_OVERSCAN_ROWS = 10;
 const RAW_ROW_HEIGHT = 28;
 
 const props = defineProps({
@@ -59,7 +64,6 @@ const props = defineProps({
   capacity: { type: Number, required: true },
   /** Work is done only while the pivot item is shown. */
   expanded: { type: Boolean, default: false },
-  variant: { type: String, default: "underlined" },
 });
 
 // Field picked per topic, for the life of this view.
@@ -106,6 +110,18 @@ const series = computed(() =>
 const rawRows = computed(() =>
   isChartable.value ? [] : toRawRows(history.value)
 );
+
+const rawScroll = useTemplateRef("rawScroll");
+
+const virtualizer = useVirtualizer(
+  computed(() => ({
+    count: rawRows.value.length,
+    getScrollElement: () => rawScroll.value,
+    estimateSize: () => RAW_ROW_HEIGHT,
+    overscan: RAW_OVERSCAN_ROWS,
+    getItemKey: (index) => rawRows.value[index].key,
+  }))
+);
 </script>
 
 <style scoped>
@@ -115,11 +131,40 @@ const rawRows = computed(() =>
   font: var(--m-font-caption);
 }
 
+.history-empty {
+  margin: 0;
+  color: var(--m-fg-secondary);
+  font: var(--m-font-body);
+}
+
+.history-field {
+  margin-bottom: var(--m-subunit);
+}
+
+.raw-scroll {
+  height: 240px;
+  overflow-y: auto;
+}
+
+.raw-list {
+  position: relative;
+}
+
 .raw-row {
+  position: absolute;
+  top: 0;
+  display: flex;
+  gap: var(--m-subunit);
+  width: 100%;
   height: 28px;
-  line-height: 28px;
-  font-family: monospace;
-  font-size: 0.85em;
+  align-items: center;
+  font: var(--m-font-body);
+}
+
+.raw-time {
+  flex-shrink: 0;
+  color: var(--m-fg-secondary);
+  font: var(--m-font-caption);
 }
 
 .raw-payload {
