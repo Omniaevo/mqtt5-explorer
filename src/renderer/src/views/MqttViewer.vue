@@ -48,7 +48,7 @@
           aria-label="Topic details"
         >
           <template #payload>
-            <template v-if="selectedView">
+            <div v-if="selectedView" class="viewer__payload-pane">
               <p
                 v-if="selectedView.counter > 0"
                 :title="getCountMessage(selectedView.counter, false)"
@@ -56,13 +56,35 @@
               >
                 {{ getCountMessage(selectedView.counter, true) }}
               </p>
-              <div v-if="selectedView.old" class="viewer__payload-old">
-                {{ selectedView.old.payload }}
-              </div>
               <div v-if="selectedView.value" class="viewer__payload-new">
-                {{ selectedView.value.payload }}
+                <span class="viewer__payload">{{
+                  selectedView.value.payload
+                }}</span>
+                <span
+                  v-if="selectedView.value.receivedAt"
+                  class="viewer__time"
+                  >{{ formatEntryTime(selectedView.value.receivedAt) }}</span
+                >
               </div>
-            </template>
+              <div v-if="selectedView.old" class="viewer__payload-old">
+                <span class="viewer__payload">{{
+                  selectedView.old.payload
+                }}</span>
+                <span v-if="selectedView.old.receivedAt" class="viewer__time">{{
+                  formatEntryTime(selectedView.old.receivedAt)
+                }}</span>
+              </div>
+              <div v-if="olderRows.length" class="viewer__older">
+                <div
+                  v-for="row in olderRows"
+                  :key="row.key"
+                  class="viewer__payload-older"
+                >
+                  <span class="viewer__payload">{{ row.payload }}</span>
+                  <span class="viewer__time">{{ row.time }}</span>
+                </div>
+              </div>
+            </div>
           </template>
 
           <template #properties>
@@ -200,6 +222,7 @@ import TopicTreeView from "../components/viewer/TopicTreeView.vue";
 import { useDebouncedRef } from "../composables/useDebouncedRef";
 import { useNotifyAndLogging } from "../composables/useNotifyAndLogging";
 import { useTreeRefresh } from "../composables/useTreeRefresh";
+import { formatEntryTime, toRawRows } from "../utils/HistoryView";
 import TopicTree from "../models/TopicTree";
 import ConnectionProperties from "../models/ConnectionProperties";
 import SearchEngine from "../../../shared/SearchEngine";
@@ -208,6 +231,7 @@ import { useNotifyStore } from "../stores/notify";
 import { useSettingsStore } from "../stores/settings";
 
 const SEARCH_DEBOUNCE_MS = 250;
+const MAX_OLDER_ROWS = 50;
 
 const route = useRoute();
 const router = useRouter();
@@ -263,6 +287,21 @@ const selectedView = computed(() => {
       counter: node.counter,
     }
   );
+});
+
+/**
+ * Values received before `value` and `old`, newest first. The list is only
+ * capped; the clipped container shows as many rows as the height allows.
+ */
+const olderRows = computed(() => {
+  treeVersion.value; // Dependency only
+  const node = selectedNode.value;
+
+  if (!node) return [];
+
+  const shown = (node.value ? 1 : 0) + (node.old ? 1 : 0);
+
+  return toRawRows(node.history.slice(-MAX_OLDER_ROWS - shown)).slice(shown);
 });
 
 const {
@@ -510,19 +549,62 @@ onBeforeUnmount(() =>
 }
 
 .viewer__payload-old,
-.viewer__payload-new {
+.viewer__payload-new,
+.viewer__payload-older {
   padding: var(--m-subunit) var(--m-unit) var(--m-subunit) var(--m-subunit);
   overflow-wrap: anywhere;
   word-break: break-all;
 }
 
+.viewer__payload-new,
+.viewer__payload-old,
+.viewer__payload-older {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--m-unit);
+}
+
+.viewer__payload {
+  min-width: 0;
+}
+
+.viewer__payload-new {
+  margin-bottom: var(--m-subunit);
+  padding-block: calc(var(--m-unit) / 2);
+  font-size: 1.25em;
+  background: color-mix(in srgb, var(--m-success) 35%, transparent);
+}
+
 .viewer__payload-old {
+  background: color-mix(in srgb, var(--m-error) 35%, transparent);
+}
+
+.viewer__payload-pane {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* Fills the free height; rows beyond it are clipped and the rest fades out */
+.viewer__older {
+  flex: 1;
+  min-height: 0;
+  margin-top: var(--m-subunit);
+  overflow: hidden;
+  mask-image: linear-gradient(to bottom, #000, transparent);
+}
+
+.viewer__payload-older {
   margin-bottom: var(--m-subunit);
   background: color-mix(in srgb, var(--m-error) 35%, transparent);
 }
 
-.viewer__payload-new {
-  background: color-mix(in srgb, var(--m-success) 35%, transparent);
+.viewer__time {
+  flex: none;
+  color: var(--m-fg-secondary);
+  font: var(--m-font-caption);
+  white-space: nowrap;
 }
 
 .viewer__properties {

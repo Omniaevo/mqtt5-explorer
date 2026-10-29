@@ -1,20 +1,20 @@
 <template>
   <div class="publish">
-    <MTooltip v-if="canSync" text="Synchronize with new data">
-      <MButton
-        variant="text"
-        icon="sync"
-        aria-label="Synchronize with new data"
-        @click="load(selected)"
-      />
-    </MTooltip>
-
-    <div v-if="form" class="publish__form">
-      <MTextBox
-        v-model="form.topic"
-        label="Topic"
-        placeholder="example/topic"
-      />
+    <div class="publish__form">
+      <div class="publish__row publish__row--end">
+        <MTextBox
+          v-model="form.topic"
+          label="Topic"
+          placeholder="example/topic"
+        />
+        <MTooltip v-if="canSync" text="Synchronize with new data">
+          <MButton
+            icon="sync"
+            aria-label="Synchronize with new data"
+            @click="load(selected)"
+          />
+        </MTooltip>
+      </div>
       <MTextArea v-model="form.payload" label="Value" :rows="2" />
       <div class="publish__row">
         <MSelect v-model="form.qos" :items="QOS_LEVELS" label="QoS" />
@@ -89,14 +89,6 @@
       </div>
     </div>
 
-    <MTooltip v-else text="Create a new topic">
-      <MButton
-        class="publish__wide"
-        icon="add"
-        aria-label="Create a new topic"
-        @click="loadEmpty"
-      />
-    </MTooltip>
   </div>
 </template>
 
@@ -128,7 +120,6 @@ const {
   userProperties,
   advancedProperties,
   load,
-  loadEmpty,
   reset,
   toPacket,
 } = usePublishForm(() => props.isV5);
@@ -136,7 +127,6 @@ const {
 const canSync = computed(
   () =>
     props.expanded &&
-    form.value !== undefined &&
     props.selected?.value?.payload !== undefined
 );
 
@@ -173,10 +163,6 @@ defineExpose({ load, reset });
   margin: 0;
   font-size: 1.25rem;
   font-weight: 300;
-}
-
-.publish__wide {
-  width: 100%;
 }
 
 .publish__actions {

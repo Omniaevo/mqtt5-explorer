@@ -42,11 +42,13 @@ export function usePublishForm(isV5) {
     load({ topic: DEFAULT_TOPIC });
   }
 
+  /** Back to the default empty form. */
   function reset() {
-    form.value = undefined;
-    userProperties.value = [];
+    loadEmpty();
     advancedProperties.value = false;
   }
+
+  loadEmpty();
 
   /** @returns {object} Packet ready for `Connection.publish`. */
   function toPacket() {
