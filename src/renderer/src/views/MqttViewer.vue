@@ -589,7 +589,7 @@ onBeforeUnmount(() =>
 .viewer__crumbs li + li::before {
   content: "/";
   padding-inline: var(--m-subunit);
-  color: var(--m-fg-secondary);
+  color: var(--m-accent);
 }
 
 .viewer__topic--hint {
