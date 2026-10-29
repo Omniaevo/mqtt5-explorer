@@ -89,7 +89,7 @@ function focusFirstField(event) {
   flex-direction: column;
   box-sizing: border-box;
   max-width: 100vw;
-  border-left: 1px solid var(--m-border);
+  border-left: var(--m-border-width) solid var(--m-border);
   border-radius: 0;
   background: var(--m-bg);
   color: var(--m-fg);
@@ -145,7 +145,7 @@ function focusFirstField(event) {
   justify-content: flex-end;
   gap: var(--m-subunit);
   padding: var(--m-unit);
-  border-top: 1px solid var(--m-border);
+  border-top: var(--m-border-width) solid var(--m-border);
 }
 
 @keyframes m-flyout-in {

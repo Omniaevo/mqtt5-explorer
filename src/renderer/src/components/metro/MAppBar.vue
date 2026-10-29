@@ -129,7 +129,7 @@ function moveFocus(event) {
   box-sizing: border-box;
   height: var(--app-bar-collapsed-height);
   overflow: hidden;
-  border-top: 1px solid var(--m-border);
+  border-top: var(--m-border-width) solid var(--m-border);
   background: var(--m-surface);
   color: var(--m-fg);
   font: var(--m-font-body);

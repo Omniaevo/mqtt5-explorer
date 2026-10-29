@@ -18,7 +18,7 @@
   gap: var(--m-subunit);
   box-sizing: border-box;
   padding: 0 var(--m-subunit);
-  border: 2px solid var(--m-fg-secondary);
+  border: var(--m-border-width) solid var(--m-fg-secondary);
   border-radius: 0;
   background: var(--m-bg);
   box-shadow: none;

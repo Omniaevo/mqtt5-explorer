@@ -46,7 +46,7 @@ defineProps({
   box-sizing: border-box;
   max-width: 320px;
   padding: 4px 8px;
-  border: 1px solid var(--m-fg-secondary);
+  border: var(--m-border-width) solid var(--m-fg-secondary);
   border-radius: 0;
   background: var(--m-surface);
   color: var(--m-fg);

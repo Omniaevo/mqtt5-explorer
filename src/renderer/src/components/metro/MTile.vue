@@ -135,7 +135,7 @@ const flipClass = computed(() => ({
 .m-tile__marker {
   position: absolute;
   inset: -3px;
-  border: 3px solid var(--m-fg);
+  border: var(--m-border-width-strong) solid var(--m-fg);
   pointer-events: none;
   /* Keep the marker above the 3D flipper */
   transform: translateZ(1px);

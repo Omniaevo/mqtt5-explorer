@@ -150,7 +150,7 @@ const selected = computed(() => {
   width: var(--reka-select-trigger-width);
   max-height: min(var(--reka-select-content-available-height), 320px);
   overflow: hidden;
-  border: 1px solid var(--m-border);
+  border: var(--m-border-width) solid var(--m-border);
   border-radius: 0;
   background: var(--m-surface);
   color: var(--m-fg);

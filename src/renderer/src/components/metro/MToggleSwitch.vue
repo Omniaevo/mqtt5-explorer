@@ -61,7 +61,7 @@ const id = useId();
   width: 44px;
   height: 20px;
   padding: 0;
-  border: 2px solid var(--m-fg);
+  border: var(--m-border-width) solid var(--m-fg);
   border-radius: 0;
   background: transparent;
   cursor: pointer;

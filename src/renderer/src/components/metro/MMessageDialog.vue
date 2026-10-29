@@ -91,7 +91,7 @@ function confirm() {
   height: fit-content;
   margin-block: auto;
   padding: calc(var(--m-unit) * 2) var(--m-unit);
-  border-block: 1px solid var(--m-border);
+  border-block: var(--m-border-width) solid var(--m-border);
   border-radius: 0;
   background: var(--m-surface);
   color: var(--m-fg);

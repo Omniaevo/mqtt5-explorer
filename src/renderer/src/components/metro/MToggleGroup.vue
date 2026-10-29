@@ -72,7 +72,7 @@ if (import.meta.env.DEV && props.options.some((o) => !o.ariaLabel)) {
   min-width: 32px;
   min-height: 32px;
   padding: 4px 12px;
-  border: 2px solid var(--m-fg);
+  border: var(--m-border-width) solid var(--m-fg);
   border-radius: 0;
   background: transparent;
   color: var(--m-fg);

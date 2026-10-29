@@ -253,7 +253,7 @@ watch(rows, (newRows, oldRows) => {
 }
 
 .tree-row:focus-visible {
-  outline: 2px solid var(--m-fg);
+  outline: var(--m-border-width) solid var(--m-fg);
   outline-offset: -2px;
 }
 

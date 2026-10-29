@@ -66,7 +66,7 @@ if (import.meta.env.DEV && !hasText.value && !props.ariaLabel) {
   min-width: 32px;
   min-height: 32px;
   padding: 4px 12px;
-  border: 2px solid var(--m-fg);
+  border: var(--m-border-width) solid var(--m-fg);
   border-radius: 0;
   background: transparent;
   color: var(--m-fg);
@@ -133,7 +133,7 @@ if (import.meta.env.DEV && !hasText.value && !props.ariaLabel) {
   box-sizing: border-box;
   width: 40px;
   height: 40px;
-  border: 2px solid currentColor;
+  border: var(--m-border-width) solid currentColor;
   border-radius: 50%;
 }
 

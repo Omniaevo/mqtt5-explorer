@@ -26,25 +26,20 @@
               title="Accent color"
               description="Color of buttons and highlights."
             >
-              <MSelect
-                v-model="settings.primaryColor"
-                class="settings-page__control"
-                :items="COLORS"
-                aria-label="Accent color"
-                item-title="text"
-                return-object
+              <span
+                class="settings-page__color-name"
+                :style="{ color: settings.primaryColor.value[themeMode] }"
               >
-                <template #item="{ item }">
-                  <span class="settings-page__swatch-item">
-                    <span
-                      class="settings-page__swatch"
-                      :style="{ background: item.value[themeMode] }"
-                    />
-                    {{ item.text }}
-                  </span>
-                </template>
-              </MSelect>
+                {{ settings.primaryColor.text }}
+              </span>
             </SettingsRow>
+            <MSwatchPicker
+              v-model="settings.primaryColor"
+              class="settings-page__swatches"
+              :items="COLORS"
+              :theme="themeMode"
+              aria-label="Accent color"
+            />
           </section>
 
           <section aria-labelledby="settings-tree">
@@ -194,6 +189,7 @@ import MButton from "../components/metro/MButton.vue";
 import MMessageDialog from "../components/metro/MMessageDialog.vue";
 import MPageHeader from "../components/metro/MPageHeader.vue";
 import MSelect from "../components/metro/MSelect.vue";
+import MSwatchPicker from "../components/metro/MSwatchPicker.vue";
 import MTooltip from "../components/metro/MTooltip.vue";
 import MTextBox from "../components/metro/MTextBox.vue";
 import MToggleGroup from "../components/metro/MToggleGroup.vue";
@@ -339,15 +335,13 @@ function openBugsUrl() {
   max-width: 100%;
 }
 
-.settings-page__swatch-item {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--m-subunit);
+.settings-page__color-name {
+  font: var(--m-font-title);
 }
 
-.settings-page__swatch {
-  width: 14px;
-  height: 14px;
+/* Room for the selection ring */
+.settings-page__swatches {
+  padding: 4px 4px var(--m-subunit);
 }
 
 .settings-page__keys {

@@ -46,6 +46,10 @@
   --m-font-body: 400 14px/1.4 var(--m-font-family);
   --m-font-caption: 400 12px/1.3 var(--m-font-family);
 
+  /* Borders */
+  --m-border-width: 1px;
+  --m-border-width-strong: 2px;
+
   /* Grid */
   --m-unit: 20px;
   --m-subunit: 5px;
