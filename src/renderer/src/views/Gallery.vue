@@ -150,6 +150,88 @@
     </section>
 
     <section class="gallery__section">
+      <h2>MSelect</h2>
+      <div class="gallery__grid">
+        <MSelect
+          v-model="settings.primaryColor"
+          label="Primary color (return object)"
+          :items="COLORS"
+          item-title="text"
+          item-value="value"
+          return-object
+        >
+          <template #item="{ item, title }">
+            <span class="gallery__item-row">
+              <span
+                class="gallery__item-swatch"
+                :style="{ background: item.value[settings.resolvedTheme] }"
+              />
+              {{ title }}
+            </span>
+          </template>
+        </MSelect>
+        <MSelect v-model="qos" label="QoS" :items="QOS_ITEMS" />
+        <MSelect v-model="qos" label="Disabled" :items="QOS_ITEMS" disabled />
+        <MSelect
+          v-model="empty"
+          label="Placeholder"
+          placeholder="Select one"
+          :items="QOS_ITEMS"
+        />
+      </div>
+    </section>
+
+    <section class="gallery__section">
+      <h2>MCombobox</h2>
+      <div class="gallery__grid">
+        <MCombobox
+          v-model="subscriptions"
+          label="Subscriptions"
+          placeholder="Add topic"
+        />
+        <MCombobox v-model="subscriptions" label="Disabled" disabled />
+      </div>
+      <p class="gallery__hint">
+        Enter adds, Backspace selects then removes the last tag.
+      </p>
+    </section>
+
+    <section class="gallery__section">
+      <h2>MToggleGroup</h2>
+      <div class="gallery__row">
+        <MToggleGroup
+          v-model="searchMode"
+          aria-label="Search mode"
+          :options="SEARCH_MODES"
+        />
+        <MToggleGroup
+          v-model="themeMode"
+          aria-label="Theme"
+          :options="THEME_OPTIONS"
+          mandatory
+        />
+        <MToggleGroup
+          v-model="themeMode"
+          aria-label="Theme (disabled)"
+          :options="THEME_OPTIONS"
+          disabled
+        />
+      </div>
+    </section>
+
+    <section class="gallery__section">
+      <h2>MTooltip</h2>
+      <div class="gallery__row">
+        <MTooltip text="Add new property">
+          <MButton icon="add" aria-label="Add" />
+        </MTooltip>
+        <MTooltip text="Shown above" side="top">
+          <MButton label="Hover me" />
+        </MTooltip>
+      </div>
+    </section>
+
+    <section class="gallery__section">
       <h2>MIcon</h2>
       <div class="gallery__icons">
         <figure v-for="name in ICON_NAMES" :key="name" class="gallery__icon">
@@ -168,11 +250,16 @@ import { COLORS } from "../utils/accentColors";
 import { ICONS } from "../components/metro/icons";
 import MButton from "../components/metro/MButton.vue";
 import MCheckBox from "../components/metro/MCheckBox.vue";
+import MCombobox from "../components/metro/MCombobox.vue";
 import MIcon from "../components/metro/MIcon.vue";
 import MPasswordBox from "../components/metro/MPasswordBox.vue";
+import MSelect from "../components/metro/MSelect.vue";
 import MTextArea from "../components/metro/MTextArea.vue";
 import MTextBox from "../components/metro/MTextBox.vue";
+import MToggleGroup from "../components/metro/MToggleGroup.vue";
 import MToggleSwitch from "../components/metro/MToggleSwitch.vue";
+import MTooltip from "../components/metro/MTooltip.vue";
+import SearchEngine from "../../../shared/SearchEngine";
 
 /** Dev-only page that shows every Metro component in its states (P9). */
 const THEME_MODES = ["light", "dark", "system"];
@@ -181,6 +268,28 @@ const BUTTON_STATES = [
   { name: "disabled", disabled: true },
 ];
 const ICON_NAMES = Object.keys(ICONS);
+const QOS_ITEMS = [0, 1, 2];
+const SEARCH_MODES = [
+  {
+    value: SearchEngine.modes.CASES,
+    icon: "matchCase",
+    ariaLabel: "Uppercase/Lowercase",
+  },
+  {
+    value: SearchEngine.modes.WORDS,
+    icon: "wholeWord",
+    ariaLabel: "Match whole word",
+  },
+  {
+    value: SearchEngine.modes.REG_EXP,
+    icon: "regex",
+    ariaLabel: "Regular expression",
+  },
+];
+const THEME_OPTIONS = [
+  { value: "light", text: "Light", ariaLabel: "Light theme" },
+  { value: "dark", text: "Dark", ariaLabel: "Dark theme" },
+];
 
 const settings = useSettingsStore();
 const text = ref("");
@@ -188,6 +297,11 @@ const password = ref("secret");
 const area = ref("");
 const toggle = ref(true);
 const checked = ref(false);
+const qos = ref(1);
+const empty = ref(undefined);
+const subscriptions = ref(["sensors/#", "$SYS/broker/uptime"]);
+const searchMode = ref(undefined);
+const themeMode = ref("light");
 
 const isActiveAccent = (color) => settings.primaryColor.text === color.text;
 </script>
@@ -259,6 +373,17 @@ const isActiveAccent = (color) => settings.primaryColor.text === color.text;
 .gallery__swatch:focus-visible {
   outline: 1px dotted currentColor;
   outline-offset: 2px;
+}
+
+.gallery__item-row {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--m-subunit);
+}
+
+.gallery__item-swatch {
+  width: 14px;
+  height: 14px;
 }
 
 .gallery__icons {
