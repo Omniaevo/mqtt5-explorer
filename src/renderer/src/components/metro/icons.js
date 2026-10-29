@@ -38,6 +38,7 @@ import arrowLeftRaw24 from "@fluentui/svg-icons/icons/arrow_left_24_regular.svg?
 import arrowResetRaw20 from "@fluentui/svg-icons/icons/arrow_reset_20_regular.svg?raw";
 import arrowSyncRaw20 from "@fluentui/svg-icons/icons/arrow_sync_20_regular.svg?raw";
 import bugRaw20 from "@fluentui/svg-icons/icons/bug_20_regular.svg?raw";
+import checkmarkRaw20 from "@fluentui/svg-icons/icons/checkmark_20_regular.svg?raw";
 import chevronDownRaw20 from "@fluentui/svg-icons/icons/chevron_down_20_regular.svg?raw";
 import chevronRightRaw20 from "@fluentui/svg-icons/icons/chevron_right_20_regular.svg?raw";
 import codeRaw20 from "@fluentui/svg-icons/icons/code_20_regular.svg?raw";
@@ -82,6 +83,7 @@ export const ICONS = {
   add: { 20: addRaw20, 24: addRaw24 },
   back: { 20: arrowLeftRaw20, 24: arrowLeftRaw24 },
   bug: { 20: bugRaw20 },
+  check: { 20: checkmarkRaw20 },
   chevronDown: { 20: chevronDownRaw20 },
   chevronRight: { 20: chevronRightRaw20 },
   connect: { 20: plugConnectedRaw20, 24: plugConnectedRaw24 },

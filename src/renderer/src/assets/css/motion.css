@@ -1,0 +1,76 @@
+/*
+ * Metro motion. CSS only, all timing from the tokens in tokens.css.
+ * Component classes start with "m-", so one reduced-motion block turns them all off.
+ *
+ * Page transitions (turnstile). Use out-in so the old page leaves first:
+ *
+ *   <router-view v-slot="{ Component }">
+ *     <Transition name="m-turnstile" mode="out-in">
+ *       <component :is="Component" />
+ *     </Transition>
+ *   </router-view>
+ */
+
+@keyframes m-entrance {
+  from {
+    opacity: 0;
+    transform: translateX(40px);
+  }
+}
+
+@keyframes m-turnstile-in {
+  from {
+    opacity: 0;
+    transform: perspective(1200px) rotateY(80deg);
+  }
+}
+
+@keyframes m-turnstile-out {
+  to {
+    opacity: 0;
+    transform: perspective(1200px) rotateY(80deg);
+  }
+}
+
+@keyframes m-slide-in-right {
+  from {
+    transform: translateX(100%);
+  }
+}
+
+/* Direction comes from --m-pivot-dir: 1 = next item (from the right), -1 = previous */
+@keyframes m-pivot-in {
+  from {
+    opacity: 0;
+    transform: translateX(calc(var(--m-pivot-dir, 1) * 40px));
+  }
+}
+
+/* Reverse the animation to flip back */
+@keyframes m-flip {
+  to {
+    transform: rotateX(180deg);
+  }
+}
+
+.m-entrance {
+  animation: m-entrance var(--m-duration-slow) var(--m-ease) backwards;
+}
+
+.m-turnstile-enter-active {
+  animation: m-turnstile-in var(--m-duration-normal) var(--m-ease) backwards;
+  transform-origin: left center;
+}
+
+.m-turnstile-leave-active {
+  animation: m-turnstile-out var(--m-duration-fast) var(--m-ease) both;
+  transform-origin: left center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [class^="m-"],
+  [class*=" m-"] {
+    animation: none !important;
+    transition: none !important;
+  }
+}

@@ -9,6 +9,7 @@ import Connection from "./utils/Connection";
 import "./assets/css/scrollbar.css";
 import "./assets/css/tokens.css";
 import "./assets/css/base.css";
+import "./assets/css/motion.css";
 
 document.documentElement.style.overflow = "hidden";
 

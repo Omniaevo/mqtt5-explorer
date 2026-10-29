@@ -90,7 +90,8 @@ if (import.meta.env.DEV && props.options.some((o) => !o.ariaLabel)) {
   background: color-mix(in srgb, var(--m-fg) 12%, transparent);
 }
 
-.m-toggle-group__item[data-state="on"] {
+/* aria-pressed, not data-state: the tooltip trigger overwrites data-state on the same element */
+.m-toggle-group__item[aria-pressed="true"] {
   border-color: var(--m-accent);
   background: var(--m-accent);
   color: var(--m-on-accent);

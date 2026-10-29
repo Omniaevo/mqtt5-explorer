@@ -329,6 +329,82 @@
     </section>
 
     <section class="gallery__section">
+      <h2>MPivot</h2>
+      <MPivot v-model="pivot" :items="PIVOT_ITEMS" aria-label="Demo pivot">
+        <template v-for="item in PIVOT_ITEMS" :key="item.value" #[item.value]>
+          <p>Content of {{ item.label }}</p>
+        </template>
+      </MPivot>
+      <p class="gallery__hint">
+        Click a header or use the arrow keys. Content slides in from the side of
+        the move.
+      </p>
+    </section>
+
+    <section class="gallery__section">
+      <h2>MHub, MHubSection, MTile</h2>
+      <div class="gallery__hub-box">
+        <MHub title="hub">
+          <MHubSection title="pinned">
+            <div class="gallery__tiles">
+              <MTile
+                size="wide"
+                :flipped="tileFlipped"
+                :selected="selectedTile === 'wide'"
+                @activate="tileActivations++"
+                @select="toggleTile('wide')"
+              >
+                <template #front>Wide tile</template>
+                <template #back>host:1883 · MQTT 5 · connected today</template>
+              </MTile>
+            </div>
+          </MHubSection>
+          <MHubSection title="recent">
+            <div class="gallery__tiles">
+              <MTile
+                v-for="n in 2"
+                :key="n"
+                :selected="selectedTile === n"
+                :animation-delay="`${n * 80}ms`"
+                @activate="tileActivations++"
+                @select="toggleTile(n)"
+              >
+                <template #front>Tile {{ n }}</template>
+              </MTile>
+            </div>
+          </MHubSection>
+          <MHubSection title="all connections" :width="340">
+            <div class="gallery__tiles">
+              <MTile v-for="n in 4" :key="n" @activate="tileActivations++">
+                <template #front>Tile {{ n }}</template>
+              </MTile>
+            </div>
+          </MHubSection>
+        </MHub>
+      </div>
+      <div class="gallery__row">
+        <MButton
+          :label="tileFlipped ? 'Flip back' : 'Flip wide tile'"
+          @click="tileFlipped = !tileFlipped"
+        />
+        <span class="gallery__hint">
+          Activated {{ tileActivations }} times. Enter activates, Space or
+          right-click selects. The mouse wheel scrolls the hub sideways.
+        </span>
+      </div>
+    </section>
+
+    <section class="gallery__section">
+      <h2>vTilt</h2>
+      <div class="gallery__row">
+        <button v-tilt type="button" class="gallery__tilt">Press me</button>
+      </div>
+      <p class="gallery__hint">
+        Press and hold. No effect with reduced motion.
+      </p>
+    </section>
+
+    <section class="gallery__section">
       <h2>MIcon</h2>
       <div class="gallery__icons">
         <figure v-for="name in ICON_NAMES" :key="name" class="gallery__icon">
@@ -353,15 +429,20 @@ import MCombobox from "../components/metro/MCombobox.vue";
 import MFlyout from "../components/metro/MFlyout.vue";
 import MIcon from "../components/metro/MIcon.vue";
 import MMessageDialog from "../components/metro/MMessageDialog.vue";
+import MHub from "../components/metro/MHub.vue";
+import MHubSection from "../components/metro/MHubSection.vue";
 import MPageHeader from "../components/metro/MPageHeader.vue";
+import MPivot from "../components/metro/MPivot.vue";
 import MPasswordBox from "../components/metro/MPasswordBox.vue";
 import MSelect from "../components/metro/MSelect.vue";
+import MTile from "../components/metro/MTile.vue";
 import MTextArea from "../components/metro/MTextArea.vue";
 import MTextBox from "../components/metro/MTextBox.vue";
 import MToaster from "../components/metro/MToaster.vue";
 import MToggleGroup from "../components/metro/MToggleGroup.vue";
 import MToggleSwitch from "../components/metro/MToggleSwitch.vue";
 import MTooltip from "../components/metro/MTooltip.vue";
+import { vTilt } from "../components/metro/vTilt";
 import SearchEngine from "../../../shared/SearchEngine";
 
 /** Dev-only page that shows every Metro component in its states (P9). */
@@ -369,6 +450,12 @@ const THEME_MODES = ["light", "dark", "system"];
 const BUTTON_STATES = [
   { name: "enabled", disabled: false },
   { name: "disabled", disabled: true },
+];
+const PIVOT_ITEMS = [
+  { value: "payload", label: "Payload" },
+  { value: "properties", label: "Properties" },
+  { value: "history", label: "History" },
+  { value: "publish", label: "Publish" },
 ];
 const ICON_NAMES = Object.keys(ICONS);
 const QOS_ITEMS = [0, 1, 2];
@@ -411,6 +498,13 @@ const dialog = ref("");
 const dialogResult = ref("none");
 const backCount = ref(0);
 const appBarExpanded = ref(false);
+const pivot = ref("payload");
+const tileFlipped = ref(false);
+const tileActivations = ref(0);
+const selectedTile = ref(undefined);
+
+const toggleTile = (id) =>
+  (selectedTile.value = selectedTile.value === id ? undefined : id);
 
 const isActiveAccent = (color) => settings.primaryColor.text === color.text;
 </script>
@@ -500,6 +594,29 @@ const isActiveAccent = (color) => settings.primaryColor.text === color.text;
   height: 200px;
   margin-bottom: var(--m-unit);
   border: 1px dashed var(--m-fg-secondary);
+}
+
+.gallery__hub-box {
+  height: 360px;
+  margin-bottom: var(--m-unit);
+  border: 1px dashed var(--m-fg-secondary);
+}
+
+.gallery__tiles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--m-subunit);
+}
+
+.gallery__tilt {
+  width: 150px;
+  height: 80px;
+  border: 0;
+  border-radius: 0;
+  background: var(--m-accent);
+  color: var(--m-on-accent);
+  font: var(--m-font-title);
+  cursor: pointer;
 }
 
 .gallery__icons {
