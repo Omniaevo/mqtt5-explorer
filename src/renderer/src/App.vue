@@ -1,21 +1,16 @@
 <template>
-  <v-app class="app-shell">
-    <!-- v-main stays: it offsets the content below the Vuetify app bars (until M3-01) -->
-    <v-main>
-      <router-view v-slot="{ Component }">
-        <Transition
-          name="m-turnstile"
-          mode="out-in"
-          appear
-          appear-active-class="m-entrance"
-        >
-          <component :is="Component" />
-        </Transition>
-      </router-view>
-    </v-main>
+  <router-view v-slot="{ Component }">
+    <Transition
+      name="m-turnstile"
+      mode="out-in"
+      appear
+      appear-active-class="m-entrance"
+    >
+      <component :is="Component" />
+    </Transition>
+  </router-view>
 
-    <MToaster />
-  </v-app>
+  <MToaster />
 </template>
 
 <script setup>
@@ -36,17 +31,3 @@ applyAll();
 // Every settings change is saved right away
 watch(() => settings.$state, settings.persist, { deep: true });
 </script>
-
-<style scoped>
-.app-shell {
-  background: var(--m-bg);
-}
-</style>
-
-<style>
-/* Still used by MqttViewer and TopicTreeView; overrides the Vuetify utility */
-.rounded {
-  border-radius: 10vw;
-  overflow: hidden;
-}
-</style>

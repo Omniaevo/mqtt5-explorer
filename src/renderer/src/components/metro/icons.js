@@ -1,33 +1,7 @@
 /**
  * App icon registry: short app name -> Fluent System Icons raw SVG (MIT).
  * Each entry has a 20 px "regular" SVG. App bar icons also have a 24 px one.
- *
- * Migration guide (mdi-* -> app name):
- *   mdi-close                  -> dismiss
- *   mdi-plus                   -> add
- *   mdi-delete, -delete-outline -> delete
- *   mdi-arrow-left             -> back
- *   mdi-pin-outline            -> pin (unpin = pin off)
- *   mdi-chevron-right / -down  -> chevronRight / chevronDown
- *   mdi-information-outline    -> info
- *   mdi-lan-connect            -> connect
- *   mdi-lan-disconnect         -> disconnect
- *   mdi-lan-pending            -> connecting
- *   mdi-white-balance-sunny    -> sun
- *   mdi-moon-waning-crescent   -> moon
- *   mdi-tune-variant           -> options
- *   mdi-sync, mdi-refresh      -> sync
- *   mdi-restore                -> reset
- *   mdi-regex                  -> regex
- *   mdi-format-letter-case     -> matchCase
- *   mdi-format-letter-matches  -> wholeWord
- *   mdi-equal                  -> exactMatch
- *   mdi-record-rec             -> record
- *   mdi-lightning-bolt         -> flash
- *   mdi-folder-open-outline    -> folderOpen
- *   mdi-eye / mdi-eye-off      -> eye / eyeOff
- *   mdi-bug                    -> bug
- *   New UI only: more, edit, settings, search, notifications, document
+ * Beyond the original set: more, edit, settings, search, notifications, document
  */
 import addRaw20 from "@fluentui/svg-icons/icons/add_20_regular.svg?raw";
 import addRaw24 from "@fluentui/svg-icons/icons/add_24_regular.svg?raw";

@@ -2,11 +2,8 @@ import { createApp } from "vue";
 import { createPinia } from "pinia";
 import App from "./App.vue";
 import router from "./router";
-import vuetify from "./plugins/vuetify";
 import Connection from "./utils/Connection";
 
-// Custom CSS (after Vuetify styles, which are imported by the plugin)
-import "./assets/css/scrollbar.css";
 import "./assets/css/tokens.css";
 import "./assets/css/base.css";
 import "./assets/css/motion.css";
@@ -18,5 +15,4 @@ const app = createApp(App);
 app.provide("connection", new Connection());
 app.use(createPinia());
 app.use(router);
-app.use(vuetify);
 app.mount("#app");

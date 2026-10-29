@@ -1,4 +1,4 @@
-/* Metro base rules. Vuetify roots (.v-application) keep their own look. */
+/* Metro base rules */
 
 body {
   margin: 0;
@@ -7,7 +7,7 @@ body {
   font: var(--m-font-body);
 }
 
-:focus-visible:not(.v-application *) {
+:focus-visible {
   outline: 1px dotted currentColor;
   outline-offset: 2px;
 }
@@ -15,4 +15,20 @@ body {
 ::selection {
   background: var(--m-accent);
   color: var(--m-on-accent);
+}
+
+/* Thin square scrollbars: secondary thumb, accent on hover */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--m-fg-secondary);
+  border-radius: 0;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--m-accent);
 }
