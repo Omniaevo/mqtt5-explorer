@@ -1,217 +1,266 @@
 <template>
-  <div class="connection-container">
-    <v-app-bar flat>
-      <div
-        class="title ms-4"
-        style="cursor: pointer"
-        @click="scrollTabs('top')"
-      >
-        MQTT Connections
-      </div>
-      <v-spacer />
-      <v-text-field
-        v-model="searchConnection"
-        label="Search connections"
-        variant="outlined"
-        density="compact"
-        clearable
-        hide-details
-      />
-      <v-spacer />
-      <v-tooltip location="bottom">
-        <template #activator="{ props: tooltipProps }">
-          <v-btn
-            v-bind="tooltipProps"
-            class="me-2"
-            color="primary"
-            icon="mdi-plus"
-            variant="tonal"
-            size="small"
-            @click="addTmpConnection"
+  <div
+    class="home"
+    @click="deselectOnEmptyArea"
+    @keydown.esc="selectedId = null"
+  >
+    <MHub title="MQTT5 Explorer">
+      <template #header-end>
+        <MTextBox
+          v-model="searchConnection"
+          class="home__search"
+          placeholder="Search connections"
+          prefix-icon="search"
+          clearable
+        />
+      </template>
+
+      <MHubSection v-if="pinned.length" title="pinned">
+        <div class="home__tiles" :style="sectionStyle(pinned.length)">
+          <MTile
+            v-for="connection in pinned"
+            :key="connection.id"
+            :size="tileSize(pinned.length)"
+            :selected="connection.id === selectedId"
+            @activate="connect(connection)"
+            @select="select(connection)"
+          >
+            <template #front>
+              <ConnectionTileFront :connection="connection" />
+            </template>
+          </MTile>
+        </div>
+      </MHubSection>
+
+      <MHubSection v-if="recent.length" title="recent">
+        <div class="home__tiles" :style="sectionStyle(recent.length)">
+          <MTile
+            v-for="connection in recent"
+            :key="connection.id"
+            :size="tileSize(recent.length)"
+            :selected="connection.id === selectedId"
+            @activate="connect(connection)"
+            @select="select(connection)"
+          >
+            <template #front>
+              <ConnectionTileFront :connection="connection" />
+            </template>
+          </MTile>
+        </div>
+      </MHubSection>
+
+      <MHubSection title="all connections">
+        <p v-if="noMatch" class="home__empty">no connections match</p>
+        <div
+          ref="tilesArea"
+          class="home__tiles"
+          :style="sectionStyle(all.length)"
+        >
+          <MTile
+            v-for="connection in all"
+            :key="connection.id"
+            :size="tileSize(all.length)"
+            :selected="connection.id === selectedId"
+            @activate="connect(connection)"
+            @select="select(connection)"
+          >
+            <template #front>
+              <ConnectionTileFront :connection="connection" />
+            </template>
+          </MTile>
+        </div>
+      </MHubSection>
+    </MHub>
+
+    <MAppBar expanded :collapsible="false" aria-label="Connection commands">
+      <template #context>
+        <template v-if="selected">
+          <MButton
+            variant="round"
+            icon="edit"
+            label="Edit"
+            @click="openEditor(selected)"
+          />
+          <MButton
+            variant="round"
+            :icon="selected.pinned ? 'unpin' : 'pin'"
+            :label="selected.pinned ? 'Unpin' : 'Pin'"
+            @click="connections.togglePinned(selected.id)"
+          />
+          <MButton
+            variant="round"
+            icon="delete"
+            label="Delete"
+            @click="deleteDialogOpen = true"
           />
         </template>
-        <span>New connection</span>
-      </v-tooltip>
-    </v-app-bar>
+      </template>
+      <template #global>
+        <MButton
+          variant="round"
+          icon="add"
+          label="New connection"
+          @click="openNewEditor"
+        />
+      </template>
+    </MAppBar>
 
     <SettingsDialog v-model="settingsOpen" />
 
     <ConnectionEditorFlyout
       v-model:open="editorOpen"
       :connection="editedConnection"
-      @connect="connect($event, tabId)"
+      @connect="saveAndConnect"
       @delete="deleteFromEditor"
       @updated="saveFromEditor"
     />
 
-    <div class="ma-2 connection-area">
-      <v-card ref="tabsList" class="conn-tabs-container" flat>
-        <v-tabs v-model="tabId" direction="vertical">
-          <v-tab
-            v-for="(connection, i) in connections.brokerConnections"
-            v-show="filteredConnectionIds.has(connection.id)"
-            :key="'tab-' + connection.id"
-            :value="i"
-            class="tabs-left"
-            @click="openEditor(i)"
-          >
-            <div class="tab-truncate" :class="{ 'text-primary': tabId === i }">
-              {{ connection.name }}
-            </div>
-          </v-tab>
-        </v-tabs>
-      </v-card>
-
-    </div>
-
-    <div class="foot-bar">
-      <div class="text-caption text-grey client-id pa-2">
-        <span>Client ID:</span>
-        <span class="text-primary font-weight-bold">{{
-          settings.clientId
-        }}</span>
-      </div>
-
-      <div class="app-version text-grey pa-2">
-        <div class="d-flex align-center">
-          <v-img :src="logo" class="me-1" width="1.4em" />
-          v{{ version }}
-        </div>
-      </div>
-    </div>
-
-    <!-- Connection deletion confirmation -->
-    <v-dialog v-model="deleteDialog" max-width="50ch" persistent>
-      <v-card v-if="connectionToDelete">
-        <v-card-title>Confirm delete</v-card-title>
-        <v-card-text>
-          Are you sure you want to delete
-          <span class="font-weight-black"
-            >"{{ connectionToDelete.name }}"?</span
-          >
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer />
-          <v-btn variant="text" @click="cancelDelete">Cancel</v-btn>
-          <v-btn color="error" variant="text" @click="deleteConnection">
-            Delete
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+    <MMessageDialog
+      v-model:open="deleteDialogOpen"
+      title="Delete connection"
+      :message="deleteMessage"
+      confirm-label="Delete"
+      danger
+      @confirm="deleteSelected"
+    />
   </div>
 </template>
 
 <script setup>
-import { computed, nextTick, onBeforeMount, onBeforeUnmount, ref } from "vue";
+import { computed, onBeforeMount, onBeforeUnmount, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import ConnectionEditorFlyout from "../components/ConnectionEditorFlyout.vue";
+import ConnectionTileFront from "../components/ConnectionTileFront.vue";
 import SettingsDialog from "../components/SettingsDialog.vue";
+import MAppBar from "../components/metro/MAppBar.vue";
+import MButton from "../components/metro/MButton.vue";
+import MHub from "../components/metro/MHub.vue";
+import MHubSection from "../components/metro/MHubSection.vue";
+import MMessageDialog from "../components/metro/MMessageDialog.vue";
+import MTextBox from "../components/metro/MTextBox.vue";
+import MTile from "../components/metro/MTile.vue";
 import ConnectionProperties from "../models/ConnectionProperties";
 import { useConnectionsStore } from "../stores/connections";
 import { useNotifyStore } from "../stores/notify";
-import { useSettingsStore } from "../stores/settings";
-import logo from "../assets/logo.svg";
+import {
+  allConnections,
+  filterConnections,
+  pinnedConnections,
+  recentConnections,
+} from "../utils/hubSections";
 
 const router = useRouter();
-const settings = useSettingsStore();
 const connections = useConnectionsStore();
 const notify = useNotifyStore();
 
-const version = import.meta.env.VITE_APP_VERSION;
-
-const tabId = ref(0);
-const settingsOpen = ref(false);
 const searchConnection = ref("");
-const deleteDialog = ref(false);
-const deleteIndex = ref(-1);
-const tabsList = ref(null);
+const selectedId = ref(null);
+const settingsOpen = ref(false);
 const editorOpen = ref(false);
+const deleteDialogOpen = ref(false);
+const editedConnection = ref(null);
 
-const connectionToDelete = computed(
-  () => connections.brokerConnections[deleteIndex.value]
+const visible = computed(() =>
+  filterConnections(connections.savedConnections, searchConnection.value)
 );
+const pinned = computed(() => pinnedConnections(visible.value));
+const recent = computed(() => recentConnections(visible.value));
+const all = computed(() => allConnections(visible.value));
+const TILE_SIZE = 150;
+const WIDE_TILE_WIDTH = 310;
+const WIDE_TILES_MAX = 3; // sections with this many tiles or fewer use wide tiles
+const TILE_GAP = 5; // keep equal to --m-subunit
 
-const editedConnection = computed(
-  () => connections.brokerConnections[tabId.value]
-);
+// Rows that fit in the section height; tiles fill a column before starting the next
+const tilesArea = ref(null);
+const rows = ref(2);
+const tileSize = (count) => (count <= WIDE_TILES_MAX ? "wide" : "medium");
+const sectionStyle = (count) => ({
+  "--rows": rows.value,
+  "--tile-width": `${tileSize(count) === "wide" ? WIDE_TILE_WIDTH : TILE_SIZE}px`,
+});
 
-const filteredConnectionIds = computed(() => {
-  const search = (searchConnection.value || "").toLowerCase();
-
-  return new Set(
-    connections.brokerConnections
-      .filter((c) => c.name.toLowerCase().includes(search))
-      .map((c) => c.id)
+const heightObserver = new ResizeObserver(([entry]) => {
+  rows.value = Math.max(
+    1,
+    Math.floor((entry.contentRect.height + TILE_GAP) / (TILE_SIZE + TILE_GAP))
   );
 });
 
-function scrollTabs(to = "bottom") {
-  nextTick(() => {
-    const tabs = tabsList.value?.$el;
+onMounted(() => heightObserver.observe(tilesArea.value));
+onBeforeUnmount(() => heightObserver.disconnect());
 
-    tabs?.scroll({
-      top: to === "bottom" ? tabs.scrollHeight : 0,
-      behavior: "smooth",
-    });
-  });
+const noMatch = computed(
+  () => searchConnection.value.trim() !== "" && all.value.length === 0
+);
+const selected = computed(() =>
+  connections.savedConnections.find((c) => c.id === selectedId.value)
+);
+
+const deleteMessage = computed(
+  () => `Are you sure you want to delete "${selected.value?.name}"?`
+);
+
+function select(connection) {
+  selectedId.value = connection.id;
 }
 
-function toggleSettings() {
-  settingsOpen.value = !settingsOpen.value;
+/** A click that lands outside any tile and outside the app bar clears the selection. */
+function deselectOnEmptyArea(event) {
+  if (!event.target.closest(".m-tile, .m-app-bar")) selectedId.value = null;
 }
 
-function addTmpConnection() {
-  connections.add(new ConnectionProperties());
-  searchConnection.value = "";
-  tabId.value = connections.brokerConnections.length - 1;
-  scrollTabs("bottom");
+const indexOf = (connection) =>
+  connections.brokerConnections.indexOf(connection);
+
+function connect(connection) {
+  router.push({ name: "Viewer", params: { index: indexOf(connection) } });
+}
+
+function openNewEditor() {
+  editedConnection.value = new ConnectionProperties();
   editorOpen.value = true;
 }
 
-function openEditor(index) {
-  tabId.value = index;
+function openEditor(connection) {
+  editedConnection.value = connection;
   editorOpen.value = true;
+}
+
+/** Stores the editor copy: replaces the saved connection or appends a new one. */
+function save(data) {
+  data.saved = true;
+  const index = connections.brokerConnections.findIndex(
+    (c) => c.id === data.id
+  );
+
+  if (index === -1) connections.add(data);
+  else connections.update(index, data);
+  connections.persist();
+  return data;
 }
 
 function saveFromEditor(data) {
-  dataChanged(data, tabId.value);
+  save(data);
   editorOpen.value = false;
+}
+
+function saveAndConnect(data) {
+  editorOpen.value = false;
+  connect(save(data));
 }
 
 function deleteFromEditor() {
   editorOpen.value = false;
-  confirmDelete(tabId.value);
+  selectedId.value = editedConnection.value.id;
+  deleteDialogOpen.value = true;
 }
 
-function dataChanged(data, index) {
-  data.saved = true;
-  connections.update(index, data);
-  connections.persist();
-}
+function deleteSelected() {
+  const index = indexOf(selected.value);
 
-function connect(data, index) {
-  dataChanged(data, index);
-  router.push({ name: "Viewer", params: { index } });
-}
-
-function confirmDelete(index) {
-  deleteIndex.value = index;
-  deleteDialog.value = true;
-}
-
-function cancelDelete() {
-  deleteDialog.value = false;
-  deleteIndex.value = -1;
-}
-
-function deleteConnection() {
-  connections.remove(deleteIndex.value, () => {
-    connections.persist();
-    tabId.value = 0;
-    scrollTabs("top");
-  });
-  deleteDialog.value = false;
+  connections.remove(index, connections.persist);
+  selectedId.value = null;
 }
 
 function exportConnectionData() {
@@ -239,7 +288,7 @@ function importConnectionData(fileContent) {
 
     connections.replaceAll(imported);
     connections.persist();
-    tabId.value = 0;
+    selectedId.value = null;
   } catch {
     notify.error("The selected file is not a valid connections file");
   }
@@ -248,67 +297,48 @@ function importConnectionData(fileContent) {
 let unsubscribeMenuEvents = [];
 
 onBeforeMount(() => {
-  if (connections.brokerConnections.length === 0) addTmpConnection();
-  else tabId.value = connections.selectedConnectionId;
-
   window.api.app.sendPage("home");
   unsubscribeMenuEvents = [
-    window.api.app.on("settingsPressed", toggleSettings),
+    window.api.app.on(
+      "settingsPressed",
+      () => (settingsOpen.value = !settingsOpen.value)
+    ),
     window.api.app.on("exportDataPressed", exportConnectionData),
     window.api.app.on("importDataPressed", importConnectionData),
   ];
 });
 
-onBeforeUnmount(() => {
-  connections.setSelectedConnectionId(tabId.value);
-  unsubscribeMenuEvents.forEach((unsubscribe) => unsubscribe());
-});
+onBeforeUnmount(() =>
+  unsubscribeMenuEvents.forEach((unsubscribe) => unsubscribe())
+);
 </script>
 
 <style scoped>
-.connection-container {
-  height: calc(100vh - var(--v-layout-top, 0px));
+.home {
+  position: relative;
+  box-sizing: border-box;
+  height: 100vh;
+  /* Keep the last row of tiles clear of the collapsed app bar */
+  padding-bottom: 76px;
+}
+
+.home__search {
+  width: 280px;
+}
+
+/* Tiles fill columns top to bottom; the section is as wide as its columns */
+.home__tiles {
   display: grid;
-  grid-template-columns: 1fr;
-  grid-template-rows: 1fr min-content;
+  grid-auto-flow: column;
+  grid-template-rows: repeat(var(--rows), 150px);
+  grid-auto-columns: var(--tile-width);
+  align-content: start;
+  height: 100%;
+  gap: var(--m-subunit);
 }
 
-.connection-area {
-  overflow: hidden;
-  display: grid;
-  grid-template-columns: 1fr;
-  grid-template-rows: 1fr;
-  gap: 1em;
-}
-
-.conn-tabs-container {
-  overflow: auto;
-}
-
-.tabs-left {
-  display: flex;
-  justify-content: left;
-}
-
-.tab-truncate {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.foot-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.app-version {
-  font-size: 0.8rem;
-}
-
-.client-id {
-  display: flex;
-  gap: 0.5em;
-  align-items: center;
+.home__empty {
+  margin: 0 0 var(--m-unit);
+  color: var(--m-fg-secondary);
 }
 </style>

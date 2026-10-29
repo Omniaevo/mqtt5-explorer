@@ -17,12 +17,12 @@
 /* Handle */
 ::-webkit-scrollbar-thumb {
   background: var(--scrollbar-thumb-color);
-  border-radius: 4px;
+  border-radius: 0;
 }
 
 ::-webkit-scrollbar-thumb:window-inactive {
   background: var(--scrollbar-thumb-color);
-  border-radius: 4px;
+  border-radius: 0;
 }
 
 ::selection {

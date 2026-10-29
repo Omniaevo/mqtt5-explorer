@@ -10,7 +10,7 @@
     aria-orientation="horizontal"
     :aria-label="ariaLabel"
     @contextmenu.prevent="toggle"
-    @keydown.esc="expanded = false"
+    @keydown.esc="collapsible && (expanded = false)"
     @keydown="moveFocus"
   >
     <div class="m-app-bar__primary">
@@ -20,6 +20,7 @@
       <div class="m-app-bar__group">
         <slot name="global" />
         <MButton
+          v-if="collapsible"
           variant="round"
           icon="more"
           aria-label="More commands"
@@ -28,7 +29,11 @@
         />
       </div>
     </div>
-    <div v-if="$slots.secondary" class="m-app-bar__secondary" :inert="!expanded">
+    <div
+      v-if="$slots.secondary"
+      class="m-app-bar__secondary"
+      :inert="!expanded"
+    >
       <slot name="secondary" />
     </div>
   </div>
@@ -44,23 +49,27 @@ const ARROW_STEPS = { ArrowLeft: -1, ArrowRight: 1 };
  * Metro app bar, pinned to the bottom of its (positioned) parent.
  * Collapsed: round icon buttons only. Expanded: captions plus the `secondary` text commands.
  * Toggled by "…", right-click on the bar, or the `expanded` model. Esc collapses.
+ * With `collapsible` off, the bar keeps its `expanded` state.
  */
-defineProps({
+const props = defineProps({
   ariaLabel: { type: String, default: "Commands" },
+  /** False: no "…" button and no toggling; the bar stays as set by `expanded`. */
+  collapsible: { type: Boolean, default: true },
 });
 
 const expanded = defineModel("expanded", { type: Boolean, default: false });
 const bar = ref(null);
 
 function toggle() {
+  if (!props.collapsible) return;
   expanded.value = !expanded.value;
 }
 
 /** Arrow keys, Home and End move focus between the enabled, reachable buttons. */
 function moveFocus(event) {
-  const buttons = [...bar.value.querySelectorAll("button:not(:disabled)")].filter(
-    (button) => !button.closest("[inert]")
-  );
+  const buttons = [
+    ...bar.value.querySelectorAll("button:not(:disabled)"),
+  ].filter((button) => !button.closest("[inert]"));
   const current = buttons.indexOf(document.activeElement);
   if (current === -1) return;
 

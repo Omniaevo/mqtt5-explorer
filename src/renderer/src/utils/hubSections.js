@@ -1,6 +1,6 @@
 // Pure selectors that build the hub sections from the saved connections.
 
-const RECENT_LIMIT = 4;
+const RECENT_LIMIT = 9;
 
 const byName = (a, b) =>
   a.name.localeCompare(b.name, undefined, { sensitivity: "base" });

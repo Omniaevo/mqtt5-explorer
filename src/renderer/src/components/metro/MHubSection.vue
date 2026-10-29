@@ -27,7 +27,9 @@ defineProps({
 
 <style scoped>
 .m-hub-section {
+  display: flex;
   flex: none;
+  flex-direction: column;
   /* Each section enters a little after the previous one */
   animation: m-entrance var(--m-duration-slow) var(--m-ease) backwards;
   animation-delay: calc((sibling-index() - 1) * 80ms);
@@ -43,7 +45,14 @@ defineProps({
   text-transform: lowercase;
 }
 
+.m-hub-section__content {
+  flex: 1;
+  min-height: 0;
+}
+
 .m-hub-section__title .m-icon {
   color: var(--m-fg-secondary);
+  /* Lowercase text has its visual center below the line-box center */
+  transform: translateY(2px);
 }
 </style>
