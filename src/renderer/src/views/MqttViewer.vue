@@ -460,6 +460,7 @@ onMounted(() => {
     settings.mqttClientSettings,
     () => {
       connectionState.value = STATES.CONNECTED;
+      connections.markConnected(connectionProperties.id);
       pushNotifyConfig();
     },
     (err) => disconnectFromMqtt(err)

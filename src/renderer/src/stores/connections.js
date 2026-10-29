@@ -36,6 +36,24 @@ export const useConnectionsStore = defineStore("connections", {
       this.brokerConnections = connections;
     },
 
+    /** Flips the pinned flag of the connection and saves. */
+    togglePinned(id) {
+      const connection = this.brokerConnections.find((c) => c.id === id);
+      if (!connection) return;
+
+      connection.pinned = !connection.pinned;
+      this.persist();
+    },
+
+    /** Stamps the connection with the current time and saves. */
+    markConnected(id) {
+      const connection = this.brokerConnections.find((c) => c.id === id);
+      if (!connection) return;
+
+      connection.lastConnectedAt = Date.now();
+      this.persist();
+    },
+
     load() {
       const saved = JSON.parse(window.api.store.get(CONNECTIONS_KEY) || "[]");
 

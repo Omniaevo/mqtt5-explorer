@@ -19,6 +19,8 @@ class ConnectionProperties {
   clientCertPath = undefined;
   clientKeyPath = undefined;
   saved = false;
+  pinned = false;
+  lastConnectedAt = undefined;
 
   static rules = {
     name: [(val) => !!val || "Connection name is required"],
@@ -61,6 +63,9 @@ class ConnectionProperties {
     this.caCertPath = properties.caCertPath;
     this.clientCertPath = properties.clientCertPath;
     this.clientKeyPath = properties.clientKeyPath;
+    // Absent in data saved by older versions
+    this.pinned = properties.pinned ?? false;
+    this.lastConnectedAt = properties.lastConnectedAt;
 
     this.tls = this.protocol.replace("mqtt", "").replace("ws", "") === "s";
   }
