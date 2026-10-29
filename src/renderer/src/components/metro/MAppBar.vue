@@ -10,8 +10,9 @@
     aria-orientation="horizontal"
     :aria-label="ariaLabel"
     @contextmenu.prevent="toggle"
-    @keydown.esc="collapsible && (expanded = false)"
+    @keydown.esc="collapse"
     @keydown="moveFocus"
+    @focusin="rememberFocus"
   >
     <div class="m-app-bar__primary">
       <div class="m-app-bar__group">
@@ -40,10 +41,11 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { onUpdated, ref } from "vue";
 import MButton from "./MButton.vue";
 
 const ARROW_STEPS = { ArrowLeft: -1, ArrowRight: 1 };
+const ENABLED_BUTTONS = "button:not(:disabled)";
 
 /**
  * Metro app bar, pinned to the bottom of its (positioned) parent.
@@ -59,17 +61,43 @@ const props = defineProps({
 
 const expanded = defineModel("expanded", { type: Boolean, default: false });
 const bar = ref(null);
+let lastFocused = null;
+
+const reachableButtons = () =>
+  [...bar.value.querySelectorAll(ENABLED_BUTTONS)].filter(
+    (button) => !button.closest("[inert]")
+  );
 
 function toggle() {
   if (!props.collapsible) return;
   expanded.value = !expanded.value;
 }
 
+/** Esc collapses the bar. Focus in the secondary row (about to go inert) moves to the first button. */
+function collapse() {
+  if (!props.collapsible) return;
+  expanded.value = false;
+
+  const secondary = bar.value.querySelector(".m-app-bar__secondary");
+  if (secondary?.contains(document.activeElement))
+    reachableButtons()[0]?.focus();
+}
+
+function rememberFocus(event) {
+  lastFocused = event.target;
+}
+
+// A command that was just removed (e.g. "Edit" after the selection ends) must not strand the focus
+onUpdated(() => {
+  if (!lastFocused || lastFocused.isConnected) return;
+
+  lastFocused = null;
+  if (document.activeElement === document.body) reachableButtons()[0]?.focus();
+});
+
 /** Arrow keys, Home and End move focus between the enabled, reachable buttons. */
 function moveFocus(event) {
-  const buttons = [
-    ...bar.value.querySelectorAll("button:not(:disabled)"),
-  ].filter((button) => !button.closest("[inert]"));
+  const buttons = reachableButtons();
   const current = buttons.indexOf(document.activeElement);
   if (current === -1) return;
 

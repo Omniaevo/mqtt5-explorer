@@ -33,7 +33,7 @@
 }
 
 .m-field--error .m-field__box {
-  border-color: var(--m-error);
+  border-color: var(--m-error-text);
 }
 
 .m-field--disabled .m-field__box {
@@ -65,6 +65,6 @@
 
 .m-field__error {
   margin: 0;
-  color: var(--m-error);
+  color: var(--m-error-text);
   font: var(--m-font-caption);
 }

@@ -60,6 +60,6 @@ const title = computed(() =>
 <style>
 .editor-flyout__delete {
   margin-right: auto;
-  color: var(--m-error);
+  color: var(--m-error-text);
 }
 </style>

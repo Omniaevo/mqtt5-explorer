@@ -8,6 +8,7 @@
         :id="id"
         class="m-field__box m-select__trigger"
         :aria-labelledby="label ? labelId : undefined"
+        :aria-label="label ? undefined : ariaLabel"
       >
         <span
           class="m-select__value"
@@ -70,6 +71,8 @@ const props = defineProps({
   itemValue: { type: String, default: "value" },
   returnObject: { type: Boolean, default: false },
   label: { type: String, default: "" },
+  /** Accessible name when there is no visible `label`. */
+  ariaLabel: { type: String, default: undefined },
   placeholder: { type: String, default: "" },
   disabled: { type: Boolean, default: false },
 });

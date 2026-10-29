@@ -148,6 +148,7 @@
       <template #global>
         <MTooltip text="Search" side="top">
           <MButton
+            ref="searchButton"
             variant="round"
             icon="search"
             label="Search"
@@ -199,6 +200,7 @@ import {
   computed,
   inject,
   markRaw,
+  nextTick,
   onBeforeMount,
   onBeforeUnmount,
   onMounted,
@@ -257,6 +259,7 @@ const {
 const selectedNode = shallowRef(undefined);
 const publishPanel = ref(null);
 const treeView = ref(null);
+const searchButton = ref(null);
 const activeItem = ref("payload");
 const deleteDialog = ref(false);
 const notifyDialog = ref(false);
@@ -387,7 +390,11 @@ function resetSelection() {
 function toggleSearchField() {
   searchVisible.value = !searchVisible.value;
 
-  if (!searchVisible.value) searchTerm.value = undefined;
+  if (searchVisible.value) return;
+
+  searchTerm.value = undefined;
+  // The search bar (and its focus) is gone: return to its command
+  nextTick(() => searchButton.value?.$el.focus());
 }
 
 function toggleNotificationsDialog() {
@@ -600,9 +607,10 @@ onBeforeUnmount(() =>
   background: color-mix(in srgb, var(--m-error) 35%, transparent);
 }
 
+/* Sits on the success / error tint: the secondary color would be too faint there */
 .viewer__time {
   flex: none;
-  color: var(--m-fg-secondary);
+  color: var(--m-fg);
   font: var(--m-font-caption);
   white-space: nowrap;
 }

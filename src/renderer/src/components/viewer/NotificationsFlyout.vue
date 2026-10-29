@@ -234,7 +234,7 @@ function deleteEntry(entry) {
 
 .notify__mode {
   display: inline-flex;
-  color: var(--m-accent);
+  color: var(--m-fg);
 }
 
 .notify__entry {

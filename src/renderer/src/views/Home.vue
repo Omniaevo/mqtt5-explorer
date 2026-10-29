@@ -10,6 +10,7 @@
           v-model="searchConnection"
           class="home__search"
           placeholder="Search connections"
+          aria-label="Search connections"
           prefix-icon="search"
           clearable
         />

@@ -31,7 +31,7 @@
         <span
           v-if="isBlinking(rows[item.index].node)"
           :key="rows[item.index].node.lastUpdate"
-          class="m-tree-blink"
+          class="tree-blink"
         />
         <MIcon
           name="chevronRight"
@@ -294,16 +294,17 @@ watch(rows, (newRows, oldRows) => {
   opacity: 0.7;
 }
 
-/* "m-" prefix: the global reduced-motion rule turns it off */
-.m-tree-blink {
+/* No "m-" prefix on purpose: the blink shows a new message, so it stays under
+   reduced motion. It only changes opacity, nothing moves. */
+.tree-blink {
   position: absolute;
   inset: 0;
   pointer-events: none;
   background-color: var(--m-accent);
-  animation: m-tree-blink 120ms ease-out forwards;
+  animation: tree-blink 120ms ease-out forwards;
 }
 
-@keyframes m-tree-blink {
+@keyframes tree-blink {
   from {
     opacity: 0.4;
   }

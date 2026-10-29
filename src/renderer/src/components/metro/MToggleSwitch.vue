@@ -7,6 +7,7 @@
         v-model="model"
         class="m-switch__track"
         :disabled="disabled"
+        :aria-label="label ? undefined : ariaLabel"
       >
         <SwitchThumb class="m-switch__thumb" />
       </SwitchRoot>
@@ -24,6 +25,8 @@ import { SwitchRoot, SwitchThumb } from "reka-ui";
 /** Metro toggle switch (Reka Switch): rectangular track, square thumb, on/off text. */
 defineProps({
   label: { type: String, default: "" },
+  /** Accessible name when there is no visible `label`. */
+  ariaLabel: { type: String, default: undefined },
   onText: { type: String, default: "On" },
   offText: { type: String, default: "Off" },
   disabled: { type: Boolean, default: false },

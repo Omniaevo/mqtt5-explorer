@@ -30,6 +30,7 @@
                 v-model="settings.primaryColor"
                 class="settings-page__control"
                 :items="COLORS"
+                aria-label="Accent color"
                 item-title="text"
                 return-object
               >
@@ -54,13 +55,19 @@
               title="Dense tree"
               description="Smaller rows. More topics fit on the screen."
             >
-              <MToggleSwitch v-model="settings.denseTree" />
+              <MToggleSwitch
+                v-model="settings.denseTree"
+                aria-label="Dense tree"
+              />
             </SettingsRow>
             <SettingsRow
               title="Close to system tray"
               description="Keep the app running when the window closes."
             >
-              <MToggleSwitch v-model="settings.closeTray" />
+              <MToggleSwitch
+                v-model="settings.closeTray"
+                aria-label="Close to system tray"
+              />
             </SettingsRow>
           </section>
 
@@ -118,6 +125,7 @@
                 v-model="settings[field.key]"
                 class="settings-page__control"
                 :items="field.options"
+                :aria-label="field.title"
               />
             </SettingsRow>
           </section>
