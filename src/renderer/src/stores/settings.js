@@ -33,7 +33,6 @@ export const useSettingsStore = defineStore("settings", {
   state: () => ({
     theme: "system",
     denseTree: false,
-    outline: false,
     closeTray: true,
     primaryColor: defaultPrimaryColor(),
     clientId: undefined,
@@ -64,7 +63,6 @@ export const useSettingsStore = defineStore("settings", {
     setAll(data = {}) {
       this.theme = data.theme || "system";
       this.denseTree = data.denseTree ?? false;
-      this.outline = data.outline ?? false;
       this.closeTray = data.closeTray ?? true;
       this.primaryColor = data.primaryColor || defaultPrimaryColor();
       this.clientId = data.clientId || `m5-${crypto.randomUUID()}`;

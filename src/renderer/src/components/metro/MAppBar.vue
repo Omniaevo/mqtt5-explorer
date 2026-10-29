@@ -90,7 +90,7 @@ function moveFocus(event) {
 
 <style scoped>
 .m-app-bar {
-  --app-bar-collapsed-height: 48px;
+  --app-bar-collapsed-height: 56px;
   --app-bar-primary-expanded-height: 76px;
 
   position: absolute;
@@ -121,6 +121,11 @@ function moveFocus(event) {
   align-items: flex-start;
   justify-content: space-between;
   padding: 4px var(--m-unit);
+}
+
+/* Collapsed: even space above and below the 40 px buttons */
+.m-app-bar:not(.m-app-bar--expanded) .m-app-bar__primary {
+  padding-block: 8px;
 }
 
 .m-app-bar__group {

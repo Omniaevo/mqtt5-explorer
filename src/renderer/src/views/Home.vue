@@ -102,8 +102,6 @@
       </template>
     </MAppBar>
 
-    <SettingsDialog v-model="settingsOpen" />
-
     <ConnectionEditorFlyout
       v-model:open="editorOpen"
       :connection="editedConnection"
@@ -129,7 +127,6 @@ import { useRouter } from "vue-router";
 import ConnectionEditorFlyout from "../components/ConnectionEditorFlyout.vue";
 import ConnectionTileBack from "../components/ConnectionTileBack.vue";
 import ConnectionTileFront from "../components/ConnectionTileFront.vue";
-import SettingsDialog from "../components/SettingsDialog.vue";
 import MAppBar from "../components/metro/MAppBar.vue";
 import MButton from "../components/metro/MButton.vue";
 import MHub from "../components/metro/MHub.vue";
@@ -154,7 +151,6 @@ const notify = useNotifyStore();
 
 const searchConnection = ref("");
 const selectedId = ref(null);
-const settingsOpen = ref(false);
 const editorOpen = ref(false);
 const deleteDialogOpen = ref(false);
 const editedConnection = ref(null);
@@ -245,6 +241,10 @@ function connect(connection) {
   router.push({ name: "Viewer", params: { index: indexOf(connection) } });
 }
 
+function openSettings() {
+  router.push({ name: "Settings" });
+}
+
 function openNewEditor() {
   editedConnection.value = new ConnectionProperties();
   editorOpen.value = true;
@@ -327,10 +327,7 @@ let unsubscribeMenuEvents = [];
 onBeforeMount(() => {
   window.api.app.sendPage("home");
   unsubscribeMenuEvents = [
-    window.api.app.on(
-      "settingsPressed",
-      () => (settingsOpen.value = !settingsOpen.value)
-    ),
+    window.api.app.on("settingsPressed", openSettings),
     window.api.app.on("exportDataPressed", exportConnectionData),
     window.api.app.on("importDataPressed", importConnectionData),
   ];

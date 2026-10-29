@@ -22,7 +22,6 @@ describe("settings store load()", () => {
 
     expect(s.theme).toBe("system");
     expect(s.denseTree).toBe(false);
-    expect(s.outline).toBe(false);
     expect(s.closeTray).toBe(true);
     expect(s.primaryColor.text).toBe("Indie Indigo");
     expect(s.clientId).toMatch(/^m5-/);
@@ -63,7 +62,6 @@ describe("settings store load()", () => {
       JSON.stringify({
         theme: "dark",
         denseTree: true,
-        outline: true,
         closeTray: false,
         clientId: "my-client",
       })
@@ -71,10 +69,16 @@ describe("settings store load()", () => {
 
     expect(s.theme).toBe("dark");
     expect(s.denseTree).toBe(true);
-    expect(s.outline).toBe(true);
     expect(s.closeTray).toBe(false);
     expect(s.clientId).toBe("my-client");
     expect(s.isDark).toBe(true);
+  });
+
+  it("loads old data that still has the removed outline key", () => {
+    const s = loadSettings(JSON.stringify({ theme: "dark", outline: true }));
+
+    expect(s.theme).toBe("dark");
+    expect(s.$state).not.toHaveProperty("outline");
   });
 
   it("resolves the system theme from the OS preference", () => {
@@ -168,7 +172,6 @@ describe("settings store resetToDefaults()", () => {
       JSON.stringify({
         theme: "dark",
         denseTree: true,
-        outline: true,
         closeTray: false,
         keepalive: 300,
         maxReconnects: 10,
@@ -181,7 +184,6 @@ describe("settings store resetToDefaults()", () => {
 
     expect(s.theme).toBe("system");
     expect(s.denseTree).toBe(false);
-    expect(s.outline).toBe(false);
     expect(s.closeTray).toBe(true);
     expect(s.primaryColor.text).toBe("Indie Indigo");
     expect(s.keepalive).toBe(120);
