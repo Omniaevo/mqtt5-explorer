@@ -1,68 +1,26 @@
 <template>
-  <div class="page-grid-container">
-    <v-app-bar :color="settings.isDark ? 'surface' : 'white'" flat>
-      <v-tooltip text="Disconnect" location="bottom">
-        <template #activator="{ props: tooltipProps }">
-          <v-btn
-            v-bind="tooltipProps"
-            icon="mdi-arrow-left"
-            variant="text"
-            @click="disconnectFromMqtt()"
-          />
-        </template>
-      </v-tooltip>
-
-      <v-tooltip :text="stateView.text" location="bottom">
-        <template #activator="{ props: tooltipProps }">
-          <v-icon
-            v-bind="tooltipProps"
-            :class="stateView.class"
-            :color="stateView.color"
-            :icon="stateView.icon"
-            class="ms-4"
-          />
-        </template>
-      </v-tooltip>
-
-      <div class="ms-4">
-        <div class="text-h6">Connection: {{ connectionProperties.name }}</div>
-        <div class="text-caption text-grey">{{ connection.url }}</div>
-      </div>
-
-      <v-tooltip
-        v-if="fileLoggingSwitch"
-        text="Logging is active"
-        location="bottom"
-      >
-        <template #activator="{ props: tooltipProps }">
-          <v-btn
-            v-bind="tooltipProps"
-            class="ms-2"
-            color="error"
-            variant="text"
-            icon
-            @click="toggleNotificationsDialog"
-          >
-            <v-icon class="rec-icon" icon="mdi-record-rec" />
-          </v-btn>
-        </template>
-      </v-tooltip>
-
-      <v-spacer />
-      <v-slide-y-transition>
+  <div class="viewer">
+    <MPageHeader
+      class="viewer__header"
+      :title="connectionProperties.name"
+      :caption="connection.url"
+      size="subheader"
+      show-back
+      @back="disconnectFromMqtt()"
+    >
+      <template v-if="searchVisible" #actions>
         <SearchBar
-          v-if="searchVisible"
           v-model:term="searchTerm"
           v-model:mode="searchMode"
-          class="search-bar me-4"
+          class="viewer__search"
           @close="toggleSearchField"
-          @show-info="searchInfoDialog = true"
+          @show-info="searchInfoOpen = true"
         />
-      </v-slide-y-transition>
-    </v-app-bar>
+      </template>
+    </MPageHeader>
 
-    <div class="ma-2 explorer-grid-container">
-      <v-card class="treeview-container pa-2" flat>
+    <div class="viewer__panes">
+      <div class="viewer__tree">
         <TopicTreeView
           ref="treeView"
           :tree="tree"
@@ -73,41 +31,13 @@
           :matches="nodeMatcher"
           @select="selectNode"
         />
-      </v-card>
+      </div>
 
-      <div class="properties-container">
+      <div class="viewer__details">
         <v-expansion-panels v-model="openPanels" multiple>
           <v-expansion-panel value="topic" title="Topic">
             <v-expansion-panel-text v-if="selectedView" class="wrap-text">
-              <div class="d-flex align-center">
-                <span class="flex-grow-1">{{ selectedView.topic }}</span>
-                <v-tooltip text="Clear selection" location="bottom">
-                  <template #activator="{ props: tooltipProps }">
-                    <v-btn
-                      v-bind="tooltipProps"
-                      :color="settings.isDark ? 'white' : undefined"
-                      class="ms-2"
-                      icon="mdi-close"
-                      variant="text"
-                      @click="resetSelection"
-                    />
-                  </template>
-                </v-tooltip>
-                <v-tooltip
-                  :text="`Delete &quot;${selectedView.topic}&quot; topic`"
-                  location="bottom"
-                >
-                  <template #activator="{ props: tooltipProps }">
-                    <v-btn
-                      v-bind="tooltipProps"
-                      color="error"
-                      icon="mdi-delete"
-                      variant="text"
-                      @click="deleteDialog = true"
-                    />
-                  </template>
-                </v-tooltip>
-              </div>
+              {{ selectedView.topic }}
             </v-expansion-panel-text>
           </v-expansion-panel>
 
@@ -189,6 +119,60 @@
       </v-card>
     </v-dialog>
 
+    <MAppBar :collapsible="false" aria-label="Viewer commands">
+      <template #context>
+        <template v-if="selectedView">
+          <MTooltip text="Clear selection" side="top">
+            <MButton
+              variant="round"
+              icon="dismiss"
+              label="Clear selection"
+              @click="resetSelection"
+            />
+          </MTooltip>
+          <MTooltip text="Delete topic" side="top">
+            <MButton
+              variant="round"
+              icon="delete"
+              label="Delete topic"
+              @click="deleteDialog = true"
+            />
+          </MTooltip>
+        </template>
+      </template>
+      <template #global>
+        <MTooltip text="Search" side="top">
+          <MButton
+            variant="round"
+            icon="search"
+            label="Search"
+            :aria-pressed="searchVisible"
+            @click="toggleSearchField"
+          />
+        </MTooltip>
+        <span class="viewer__status">
+          <MTooltip text="Notifications" side="top">
+            <MButton
+              variant="round"
+              icon="notifications"
+              label="Notifications"
+              :aria-label="notificationsLabel"
+              @click="toggleNotificationsDialog"
+            />
+          </MTooltip>
+          <span v-if="hasActiveStatus" class="viewer__dot" aria-hidden="true" />
+        </span>
+        <MTooltip text="Disconnect" side="top">
+          <MButton
+            variant="round"
+            icon="disconnect"
+            label="Disconnect"
+            @click="disconnectFromMqtt()"
+          />
+        </MTooltip>
+      </template>
+    </MAppBar>
+
     <NotificationsDialog
       v-model="notifyDialog"
       v-model:entries="notifyEntries"
@@ -197,12 +181,12 @@
       v-model:file-logging-switch="fileLoggingSwitch"
       :logs-folder="logsFolder"
       :variant="fieldVariant"
-      @show-info="searchInfoDialog = true"
+      @show-info="searchInfoOpen = true"
       @open-logs-folder="openLogsFolder"
       @reset="resetNotifyAndLogging"
     />
 
-    <SearchInfoDialog v-model="searchInfoDialog" />
+    <SearchInfoFlyout v-model:open="searchInfoOpen" />
   </div>
 </template>
 
@@ -219,16 +203,19 @@ import {
   watch,
 } from "vue";
 import { useRoute, useRouter } from "vue-router";
+import MAppBar from "../components/metro/MAppBar.vue";
+import MButton from "../components/metro/MButton.vue";
+import MTooltip from "../components/metro/MTooltip.vue";
+import MPageHeader from "../components/metro/MPageHeader.vue";
 import NotificationsDialog from "../components/viewer/NotificationsDialog.vue";
 import HistoryPanel from "../components/viewer/HistoryPanel.vue";
 import PublishPanel from "../components/viewer/PublishPanel.vue";
 import SearchBar from "../components/viewer/SearchBar.vue";
-import SearchInfoDialog from "../components/viewer/SearchInfoDialog.vue";
+import SearchInfoFlyout from "../components/viewer/SearchInfoFlyout.vue";
 import TopicTreeView from "../components/viewer/TopicTreeView.vue";
 import { useDebouncedRef } from "../composables/useDebouncedRef";
 import { useNotifyAndLogging } from "../composables/useNotifyAndLogging";
 import { useTreeRefresh } from "../composables/useTreeRefresh";
-import Connection from "../utils/Connection";
 import TopicTree from "../models/TopicTree";
 import ConnectionProperties from "../models/ConnectionProperties";
 import SearchEngine from "../../../shared/SearchEngine";
@@ -237,32 +224,6 @@ import { useNotifyStore } from "../stores/notify";
 import { useSettingsStore } from "../stores/settings";
 
 const SEARCH_DEBOUNCE_MS = 250;
-
-const STATES = Connection.connectionStates;
-const STATE_VIEWS = {
-  [STATES.CONNECTED]: {
-    icon: "mdi-lan-connect",
-    color: "primary",
-    text: "Connected",
-  },
-  [STATES.PENDING]: {
-    icon: "mdi-lan-pending",
-    color: "primary",
-    text: "Connection pending ...",
-    class: "pending",
-  },
-  [STATES.DISCONNECTED]: {
-    icon: "mdi-lan-pending",
-    color: "primary",
-    text: "Disconnected",
-    class: "grayscale",
-  },
-  [STATES.ERROR]: {
-    icon: "mdi-lan-disconnect",
-    color: "error",
-    text: "An error occurred",
-  },
-};
 
 const route = useRoute();
 const router = useRouter();
@@ -288,16 +249,13 @@ const {
   wasUpdatedInLastBatch: isBlinking,
 } = useTreeRefresh();
 
-const connectionState = ref(STATES.PENDING);
-const stateView = computed(() => STATE_VIEWS[connectionState.value]);
-
 const selectedNode = shallowRef(undefined);
 const publishPanel = ref(null);
 const treeView = ref(null);
 const openPanels = ref(["publish"]);
 const deleteDialog = ref(false);
 const notifyDialog = ref(false);
-const searchInfoDialog = ref(false);
+const searchInfoOpen = ref(false);
 const searchVisible = ref(false);
 const searchTerm = ref(undefined);
 const searchMode = ref(undefined);
@@ -327,6 +285,22 @@ const {
   pushConfig: pushNotifyConfig,
   reset: resetNotifyAndLogging,
 } = useNotifyAndLogging(() => connectionProperties.name);
+
+const hasActiveStatus = computed(
+  () => notifySwitch.value || fileLoggingSwitch.value
+);
+
+/** Button name that also tells what is active, for screen readers. */
+const notificationsLabel = computed(() => {
+  const active = [
+    notifySwitch.value && "notifications active",
+    fileLoggingSwitch.value && "logging active",
+  ].filter(Boolean);
+
+  return active.length
+    ? `Notifications and logging, ${active.join(", ")}`
+    : "Notifications and logging";
+});
 
 /** Node filter of the tree; compiled once per (term, mode). */
 const nodeMatcher = computed(() => {
@@ -399,9 +373,6 @@ function openLogsFolder() {
 
 function disconnectFromMqtt(errorMessage = undefined) {
   connection.disconnect(() => {
-    connectionState.value =
-      errorMessage !== undefined ? STATES.ERROR : STATES.DISCONNECTED;
-
     router.replace({ name: "Home" }).then(() => {
       // A manual disconnect (no message) needs no toast
       if (errorMessage !== undefined) {
@@ -459,7 +430,6 @@ onMounted(() => {
   connection.connect(
     settings.mqttClientSettings,
     () => {
-      connectionState.value = STATES.CONNECTED;
       connections.markConnected(connectionProperties.id);
       pushNotifyConfig();
     },
@@ -473,30 +443,60 @@ onBeforeUnmount(() =>
 </script>
 
 <style scoped>
-.page-grid-container {
-  height: calc(100vh - var(--v-layout-top, 0px));
+.viewer {
+  position: relative;
+  box-sizing: border-box;
+  height: 100vh;
   display: grid;
-  grid-template-rows: 1fr;
+  grid-template-rows: auto 1fr;
+  /* Keep the panes clear of the collapsed app bar */
+  padding-bottom: 56px;
+  background: var(--m-bg);
 }
 
-.explorer-grid-container {
+.viewer__header {
+  padding: var(--m-unit);
+}
+
+.viewer__search {
+  width: 60ch;
+  max-width: 100%;
+}
+
+.viewer__panes {
   overflow: hidden;
   display: grid;
   grid-template-columns: 1fr 1fr;
   grid-template-rows: 1fr;
-  gap: 1em;
 }
 
-.treeview-container {
+.viewer__tree {
   overflow: hidden;
+  padding: var(--m-subunit);
+  background: var(--m-surface);
 }
 
-.properties-container {
+.viewer__details {
   overflow: auto;
+  padding: var(--m-subunit);
+  background: var(--m-bg);
 }
 
-.search-bar {
-  max-width: 60ch;
+.viewer__status {
+  position: relative;
+  display: inline-flex;
+}
+
+/* Accent dot at the top right of the circle */
+.viewer__dot {
+  position: absolute;
+  top: 0;
+  left: calc(50% + 10px);
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--m-accent);
+  pointer-events: none;
 }
 
 .long-payload {
@@ -513,36 +513,5 @@ onBeforeUnmount(() =>
 
 .wrap-text {
   overflow-wrap: break-word;
-}
-
-.grayscale {
-  filter: grayscale(100%);
-}
-
-.pending {
-  animation: changeGrayscale 1s ease-in-out infinite alternate;
-}
-
-.rec-icon {
-  animation: recording 1s ease-in-out infinite alternate;
-}
-
-@keyframes changeGrayscale {
-  from {
-    filter: grayscale(0%);
-  }
-
-  to {
-    filter: grayscale(100%);
-  }
-}
-
-@keyframes recording {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
 }
 </style>

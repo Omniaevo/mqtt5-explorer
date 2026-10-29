@@ -69,36 +69,44 @@
       </MHubSection>
     </MHub>
 
-    <MAppBar expanded :collapsible="false" aria-label="Connection commands">
+    <MAppBar :collapsible="false" aria-label="Connection commands">
       <template #context>
         <template v-if="selected">
-          <MButton
-            variant="round"
-            icon="edit"
-            label="Edit"
-            @click="openEditor(selected)"
-          />
-          <MButton
-            variant="round"
-            :icon="selected.pinned ? 'unpin' : 'pin'"
-            :label="selected.pinned ? 'Unpin' : 'Pin'"
-            @click="connections.togglePinned(selected.id)"
-          />
-          <MButton
-            variant="round"
-            icon="delete"
-            label="Delete"
-            @click="deleteDialogOpen = true"
-          />
+          <MTooltip text="Edit" side="top">
+            <MButton
+              variant="round"
+              icon="edit"
+              label="Edit"
+              @click="openEditor(selected)"
+            />
+          </MTooltip>
+          <MTooltip :text="selected.pinned ? 'Unpin' : 'Pin'" side="top">
+            <MButton
+              variant="round"
+              :icon="selected.pinned ? 'unpin' : 'pin'"
+              :label="selected.pinned ? 'Unpin' : 'Pin'"
+              @click="connections.togglePinned(selected.id)"
+            />
+          </MTooltip>
+          <MTooltip text="Delete" side="top">
+            <MButton
+              variant="round"
+              icon="delete"
+              label="Delete"
+              @click="deleteDialogOpen = true"
+            />
+          </MTooltip>
         </template>
       </template>
       <template #global>
-        <MButton
-          variant="round"
-          icon="add"
-          label="New connection"
-          @click="openNewEditor"
-        />
+        <MTooltip text="New connection" side="top">
+          <MButton
+            variant="round"
+            icon="add"
+            label="New connection"
+            @click="openNewEditor"
+          />
+        </MTooltip>
       </template>
     </MAppBar>
 
@@ -134,6 +142,7 @@ import MHubSection from "../components/metro/MHubSection.vue";
 import MMessageDialog from "../components/metro/MMessageDialog.vue";
 import MTextBox from "../components/metro/MTextBox.vue";
 import MTile from "../components/metro/MTile.vue";
+import MTooltip from "../components/metro/MTooltip.vue";
 import ConnectionProperties from "../models/ConnectionProperties";
 import { useLiveTiles } from "../composables/useLiveTiles";
 import { useConnectionsStore } from "../stores/connections";
@@ -344,7 +353,7 @@ onBeforeUnmount(() =>
   box-sizing: border-box;
   height: 100vh;
   /* Keep the last row of tiles clear of the collapsed app bar */
-  padding-bottom: 76px;
+  padding-bottom: 56px;
 }
 
 .home__search {
