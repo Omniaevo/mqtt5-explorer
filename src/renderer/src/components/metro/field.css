@@ -1,0 +1,70 @@
+/* Shared look of MTextBox and MTextArea. */
+
+.m-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--m-subunit);
+  font: var(--m-font-body);
+  color: var(--m-fg);
+}
+
+.m-field__label {
+  color: var(--m-fg);
+}
+
+.m-field__box {
+  display: flex;
+  align-items: center;
+  gap: var(--m-subunit);
+  box-sizing: border-box;
+  padding: 0 var(--m-subunit);
+  border: 2px solid var(--m-fg-secondary);
+  border-radius: 0;
+  background: var(--m-bg);
+  box-shadow: none;
+}
+
+.m-field__box:hover {
+  border-color: var(--m-fg);
+}
+
+.m-field__box:focus-within {
+  border-color: var(--m-accent);
+}
+
+.m-field--error .m-field__box {
+  border-color: var(--m-error);
+}
+
+.m-field--disabled .m-field__box {
+  opacity: 0.4;
+}
+
+.m-field--disabled .m-field__box:hover {
+  border-color: var(--m-fg-secondary);
+}
+
+.m-field__input {
+  flex: 1;
+  min-width: 0;
+  padding: 5px 3px;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+}
+
+.m-field__input::placeholder {
+  color: var(--m-fg-secondary);
+}
+
+.m-field__prefix {
+  color: var(--m-fg-secondary);
+}
+
+.m-field__error {
+  margin: 0;
+  color: var(--m-error);
+  font: var(--m-font-caption);
+}

@@ -1,7 +1,7 @@
 import { createRouter, createWebHashHistory } from "vue-router";
 import Home from "../views/Home.vue";
 
-export default createRouter({
+const router = createRouter({
   history: createWebHashHistory(),
   routes: [
     { path: "/", name: "Home", component: Home },
@@ -12,3 +12,14 @@ export default createRouter({
     },
   ],
 });
+
+// Component gallery: dev builds only (P9)
+if (import.meta.env.DEV) {
+  router.addRoute({
+    path: "/gallery",
+    name: "Gallery",
+    component: () => import("../views/Gallery.vue"),
+  });
+}
+
+export default router;

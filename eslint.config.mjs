@@ -8,7 +8,12 @@ export default [
   js.configs.recommended,
   ...pluginVue.configs["flat/recommended"],
   {
-    files: ["src/main/**/*.js", "src/preload/**/*.js", "*.config.{js,mjs}", "scripts/**/*.{js,mjs}"],
+    files: [
+      "src/main/**/*.js",
+      "src/preload/**/*.js",
+      "*.config.{js,mjs}",
+      "scripts/**/*.{js,mjs}",
+    ],
     languageOptions: { globals: globals.node },
   },
   {
@@ -21,7 +26,10 @@ export default [
   },
   // Single-word view name kept to avoid a rename outside this spec
   {
-    files: ["src/renderer/src/views/Home.vue"],
+    files: [
+      "src/renderer/src/views/Home.vue",
+      "src/renderer/src/views/Gallery.vue",
+    ],
     rules: { "vue/multi-word-component-names": "off" },
   },
   prettier,
