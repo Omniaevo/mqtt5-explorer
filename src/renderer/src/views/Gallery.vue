@@ -232,6 +232,103 @@
     </section>
 
     <section class="gallery__section">
+      <h2>MFlyout</h2>
+      <div class="gallery__row">
+        <MButton label="Narrow flyout" @click="flyout = 'narrow'" />
+        <MButton label="Wide flyout" @click="flyout = 'wide'" />
+      </div>
+      <MFlyout
+        :open="flyout !== ''"
+        :title="flyout === 'wide' ? 'Wide flyout' : 'Notifications'"
+        :size="flyout || 'narrow'"
+        @update:open="flyout = ''"
+      >
+        <MTextBox v-model="text" label="First field" />
+        <MToggleSwitch v-model="toggle" label="Option" />
+        <p v-for="n in 30" :key="n">Scrolling body line {{ n }}</p>
+        <template #footer>
+          <MButton variant="accent" label="Apply" @click="flyout = ''" />
+        </template>
+      </MFlyout>
+    </section>
+
+    <section class="gallery__section">
+      <h2>MMessageDialog</h2>
+      <div class="gallery__row">
+        <MButton label="Confirm" @click="dialog = 'plain'" />
+        <MButton label="Danger confirm" @click="dialog = 'danger'" />
+      </div>
+      <p class="gallery__hint">Last result: {{ dialogResult }}</p>
+      <MMessageDialog
+        :open="dialog !== ''"
+        :danger="dialog === 'danger'"
+        title="Delete connection?"
+        message="The connection and its settings are removed. This cannot be undone."
+        confirm-label="Delete"
+        @update:open="dialog = ''"
+        @confirm="dialogResult = 'confirm'"
+        @cancel="dialogResult = 'cancel'"
+      />
+    </section>
+
+    <section class="gallery__section">
+      <h2>MToaster</h2>
+      <div class="gallery__row">
+        <MButton label="Info toast" @click="notify.info('Connection saved')" />
+        <MButton
+          label="Error toast"
+          @click="notify.error('The broker is unreachable')"
+        />
+      </div>
+      <p class="gallery__hint">
+        The old v-snackbar in App.vue still shows the same message until M2-01.
+      </p>
+      <MToaster />
+    </section>
+
+    <section class="gallery__section">
+      <h2>MPageHeader</h2>
+      <MPageHeader
+        title="Settings"
+        caption="Application preferences"
+        show-back
+        @back="backCount++"
+      >
+        <template #actions>
+          <MButton variant="text" label="Reset" />
+        </template>
+      </MPageHeader>
+      <MPageHeader title="Subheader size" size="subheader" />
+      <MPageHeader title="Hub size" size="hub" />
+      <p class="gallery__hint">Back pressed {{ backCount }} times.</p>
+    </section>
+
+    <section class="gallery__section">
+      <h2>MAppBar</h2>
+      <div class="gallery__appbar-box">
+        <MAppBar v-model:expanded="appBarExpanded">
+          <template #context>
+            <MButton variant="round" icon="edit" label="Edit" />
+            <MButton variant="round" icon="delete" label="Delete" />
+          </template>
+          <template #global>
+            <MButton variant="round" icon="add" label="Add" />
+            <MButton variant="round" icon="settings" label="Settings" />
+          </template>
+          <template #secondary>
+            <MButton variant="text" label="Export" />
+            <MButton variant="text" label="Import" />
+          </template>
+        </MAppBar>
+      </div>
+      <p class="gallery__hint">
+        Toggle with "…", right-click or the button below. Esc collapses, arrow
+        keys move between buttons.
+      </p>
+      <MButton label="Expand on selection" @click="appBarExpanded = true" />
+    </section>
+
+    <section class="gallery__section">
       <h2>MIcon</h2>
       <div class="gallery__icons">
         <figure v-for="name in ICON_NAMES" :key="name" class="gallery__icon">
@@ -245,17 +342,23 @@
 
 <script setup>
 import { ref } from "vue";
+import { useNotifyStore } from "../stores/notify";
 import { useSettingsStore } from "../stores/settings";
 import { COLORS } from "../utils/accentColors";
 import { ICONS } from "../components/metro/icons";
+import MAppBar from "../components/metro/MAppBar.vue";
 import MButton from "../components/metro/MButton.vue";
 import MCheckBox from "../components/metro/MCheckBox.vue";
 import MCombobox from "../components/metro/MCombobox.vue";
+import MFlyout from "../components/metro/MFlyout.vue";
 import MIcon from "../components/metro/MIcon.vue";
+import MMessageDialog from "../components/metro/MMessageDialog.vue";
+import MPageHeader from "../components/metro/MPageHeader.vue";
 import MPasswordBox from "../components/metro/MPasswordBox.vue";
 import MSelect from "../components/metro/MSelect.vue";
 import MTextArea from "../components/metro/MTextArea.vue";
 import MTextBox from "../components/metro/MTextBox.vue";
+import MToaster from "../components/metro/MToaster.vue";
 import MToggleGroup from "../components/metro/MToggleGroup.vue";
 import MToggleSwitch from "../components/metro/MToggleSwitch.vue";
 import MTooltip from "../components/metro/MTooltip.vue";
@@ -292,6 +395,7 @@ const THEME_OPTIONS = [
 ];
 
 const settings = useSettingsStore();
+const notify = useNotifyStore();
 const text = ref("");
 const password = ref("secret");
 const area = ref("");
@@ -302,6 +406,11 @@ const empty = ref(undefined);
 const subscriptions = ref(["sensors/#", "$SYS/broker/uptime"]);
 const searchMode = ref(undefined);
 const themeMode = ref("light");
+const flyout = ref("");
+const dialog = ref("");
+const dialogResult = ref("none");
+const backCount = ref(0);
+const appBarExpanded = ref(false);
 
 const isActiveAccent = (color) => settings.primaryColor.text === color.text;
 </script>
@@ -384,6 +493,13 @@ const isActiveAccent = (color) => settings.primaryColor.text === color.text;
 .gallery__item-swatch {
   width: 14px;
   height: 14px;
+}
+
+.gallery__appbar-box {
+  position: relative;
+  height: 200px;
+  margin-bottom: var(--m-unit);
+  border: 1px dashed var(--m-fg-secondary);
 }
 
 .gallery__icons {
