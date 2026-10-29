@@ -22,6 +22,10 @@ export function usePublishForm(isV5) {
       value.properties ?? {}
     );
 
+    NUMERIC_PROPERTIES.forEach((key) => {
+      if (!isBlank(properties[key])) properties[key] = String(properties[key]);
+    });
+
     form.value = {
       topic,
       payload: value.payload,

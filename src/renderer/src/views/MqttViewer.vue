@@ -87,7 +87,6 @@
               :selected="selectedView"
               :expanded="activeItem === 'publish'"
               :is-v5="isV5"
-              :variant="fieldVariant"
               @publish="(packet) => connection.publish(packet)"
             />
           </template>

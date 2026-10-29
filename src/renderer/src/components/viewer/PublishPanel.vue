@@ -1,165 +1,113 @@
 <template>
-  <div>
-    <v-tooltip
-      v-if="canSync"
-      text="Synchronize with new data"
-      location="bottom"
-    >
-      <template #activator="{ props: tooltipProps }">
-        <v-btn
-          v-bind="tooltipProps"
-          class="mb-2"
-          icon="mdi-sync"
-          size="small"
-          variant="text"
-          @click="load(selected)"
-        />
-      </template>
-    </v-tooltip>
+  <div class="publish">
+    <MTooltip v-if="canSync" text="Synchronize with new data">
+      <MButton
+        variant="text"
+        icon="sync"
+        aria-label="Synchronize with new data"
+        @click="load(selected)"
+      />
+    </MTooltip>
 
-    <div v-if="form">
-      <v-text-field
+    <div v-if="form" class="publish__form">
+      <MTextBox
         v-model="form.topic"
-        :variant="variant"
         label="Topic"
         placeholder="example/topic"
       />
-      <v-textarea
-        v-model="form.payload"
-        :variant="variant"
-        label="Value"
-        rows="2"
-      />
-      <div class="form-row justify-end align-center">
-        <v-switch
-          v-model="form.retain"
-          class="me-4"
-          label="Retain"
-          hide-details
-          inset
-        />
-        <v-select
-          v-model="form.qos"
-          :items="QOS_LEVELS"
-          :variant="variant"
-          class="qos-input"
-          label="QoS"
-          hide-details
-        />
+      <MTextArea v-model="form.payload" label="Value" :rows="2" />
+      <div class="publish__row">
+        <MSelect v-model="form.qos" :items="QOS_LEVELS" label="QoS" />
+        <MToggleSwitch v-model="form.retain" label="Retain" />
       </div>
+      <MTextBox
+        v-if="isV5"
+        v-model="form.properties.contentType"
+        label="Content type"
+      />
 
-      <template v-if="isV5">
-        <v-divider class="mt-4" />
-        <div class="text-h6 my-2">Properties</div>
-        <v-text-field
-          v-model="form.properties.contentType"
-          :variant="variant"
-          label="Content type"
-          hide-details
-        />
-        <v-switch
-          v-model="advancedProperties"
-          label="Advanced properties"
-          hide-details
-          inset
-        />
+      <section v-if="isV5" class="publish__section">
+        <h3 class="publish__subheader">advanced properties</h3>
+        <MToggleSwitch v-model="advancedProperties" label="Show advanced" />
         <template v-if="advancedProperties">
-          <div class="form-row">
-            <v-text-field
+          <div class="publish__row">
+            <MTextBox
               v-model="form.properties.topicAlias"
-              :variant="variant"
               label="Topic alias"
               min="1"
               type="number"
             />
-            <v-text-field
+            <MTextBox
               v-model="form.properties.messageExpiryInterval"
-              :variant="variant"
               label="Expiring interval (s)"
               min="1"
               type="number"
             />
           </div>
-          <div class="form-row">
-            <v-text-field
+          <div class="publish__row">
+            <MTextBox
               v-model="form.properties.responseTopic"
-              :variant="variant"
               label="Response topic"
             />
-            <v-text-field
+            <MTextBox
               v-model="form.properties.correlationData"
-              :variant="variant"
               label="Correlation data"
             />
           </div>
         </template>
 
-        <div class="my-2">User properties</div>
+        <h3 class="publish__subheader">user properties</h3>
         <div
           v-for="(prop, i) in userProperties"
           :key="`user-property-${i}`"
-          class="form-row align-center mb-5"
+          class="publish__row publish__row--end"
         >
-          <v-text-field
-            v-model="prop.key"
-            :variant="variant"
-            label="Key"
-            hide-details
-          />
-          <v-text-field
-            v-model="prop.value"
-            :variant="variant"
-            label="Value"
-            hide-details
-          />
-          <v-btn
-            icon="mdi-delete"
-            variant="text"
+          <MTextBox v-model="prop.key" label="Key" />
+          <MTextBox v-model="prop.value" label="Value" />
+          <MButton
+            variant="round"
+            icon="delete"
+            aria-label="Remove property"
             @click="userProperties.splice(i, 1)"
           />
         </div>
-        <v-tooltip text="Add new property" location="bottom">
-          <template #activator="{ props: tooltipProps }">
-            <v-btn
-              v-bind="tooltipProps"
-              color="primary"
-              icon="mdi-plus"
-              rounded="lg"
-              variant="tonal"
-              block
-              @click="userProperties.push({ key: 'key', value: 'value' })"
-            />
-          </template>
-        </v-tooltip>
-      </template>
+        <MTooltip text="Add new property">
+          <MButton
+            icon="add"
+            aria-label="Add new property"
+            @click="userProperties.push({ key: 'key', value: 'value' })"
+          />
+        </MTooltip>
+      </section>
 
-      <div class="d-flex justify-end pt-4">
-        <v-btn color="primary" @click="emit('publish', toPacket())"
-          >Publish</v-btn
-        >
+      <div class="publish__actions">
+        <MButton
+          variant="accent"
+          label="Publish"
+          @click="emit('publish', toPacket())"
+        />
       </div>
     </div>
 
-    <div v-else>
-      <v-tooltip text="Create a new topic" location="bottom">
-        <template #activator="{ props: tooltipProps }">
-          <v-btn
-            v-bind="tooltipProps"
-            color="primary"
-            icon="mdi-plus"
-            rounded="lg"
-            block
-            variant="tonal"
-            @click="loadEmpty"
-          />
-        </template>
-      </v-tooltip>
-    </div>
+    <MTooltip v-else text="Create a new topic">
+      <MButton
+        class="publish__wide"
+        icon="add"
+        aria-label="Create a new topic"
+        @click="loadEmpty"
+      />
+    </MTooltip>
   </div>
 </template>
 
 <script setup>
 import { computed } from "vue";
+import MButton from "../metro/MButton.vue";
+import MSelect from "../metro/MSelect.vue";
+import MTextArea from "../metro/MTextArea.vue";
+import MTextBox from "../metro/MTextBox.vue";
+import MToggleSwitch from "../metro/MToggleSwitch.vue";
+import MTooltip from "../metro/MTooltip.vue";
 import { usePublishForm } from "../../composables/usePublishForm";
 
 const QOS_LEVELS = [0, 1, 2];
@@ -171,7 +119,6 @@ const props = defineProps({
   expanded: { type: Boolean, default: false },
   /** True when MQTT 5 properties are supported. */
   isV5: { type: Boolean, default: false },
-  variant: { type: String, default: "outlined" },
 });
 
 const emit = defineEmits(["publish"]);
@@ -197,13 +144,43 @@ defineExpose({ load, reset });
 </script>
 
 <style scoped>
-.form-row {
-  display: flex;
-  flex-direction: row;
-  gap: 1.5em;
+.publish {
+  padding-inline-end: var(--m-unit);
 }
 
-.qos-input {
-  max-width: 12ch;
+.publish__form,
+.publish__section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--m-unit);
+}
+
+.publish__row {
+  display: flex;
+  flex-direction: row;
+  gap: var(--m-unit);
+}
+
+.publish__row > :not(button) {
+  flex: 1;
+}
+
+.publish__row--end {
+  align-items: flex-end;
+}
+
+.publish__subheader {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 300;
+}
+
+.publish__wide {
+  width: 100%;
+}
+
+.publish__actions {
+  display: flex;
+  justify-content: flex-end;
 }
 </style>
