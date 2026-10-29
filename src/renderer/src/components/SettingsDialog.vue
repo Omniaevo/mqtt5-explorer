@@ -269,6 +269,7 @@ import { computed, ref } from "vue";
 import { useDisplay } from "vuetify";
 import { clampHistorySize, useSettingsStore } from "../stores/settings";
 import { isMacOs } from "../utils/platform";
+import { COLORS } from "../utils/accentColors";
 import SettingsRow from "./SettingsRow.vue";
 
 const THEMES = [
@@ -279,22 +280,6 @@ const KEEPALIVE_OPTIONS = [60, 120, 180, 240, 300];
 const RECONNECT_PERIOD_OPTIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 const MAX_RECONNECTS_OPTIONS = [0, 5, 10, 15, 20];
 const CONNECT_TIMEOUT_OPTIONS = [10, 20, 30, 40, 50, 60, 120, 180, 240, 300];
-
-const COLORS = [
-  { text: "Punchy Pink", value: { light: "#E91E63", dark: "#EC407A" } },
-  { text: "Hipster Purple", value: { light: "#9C27B0", dark: "#AB47BC" } },
-  { text: "Sober Purple", value: { light: "#673AB7", dark: "#7E57C2" } },
-  { text: "Indie Indigo", value: { light: "#3F51B5", dark: "#5C6BC0" } },
-  { text: "Usual Blue", value: { light: "#2196F3", dark: "#42A5F5" } },
-  { text: "Delicate Cyan", value: { light: "#00BCD4", dark: "#00BCD4" } },
-  { text: "Tasty Teal", value: { light: "#009688", dark: "#26A69A" } },
-  { text: "Envy Green", value: { light: "#4CAF50", dark: "#66BB6A" } },
-  { text: "Juicy Lime", value: { light: "#C0CA33", dark: "#C0CA33" } },
-  { text: "Precious Amber", value: { light: "#FFB300", dark: "#FFB300" } },
-  { text: "Original Orange", value: { light: "#FF5722", dark: "#FF7043" } },
-  { text: "Boring Brown", value: { light: "#795548", dark: "#8D6E63" } },
-  { text: "Metallic Grey", value: { light: "#607D8B", dark: "#78909C" } },
-];
 
 const SHORTCUTS = [
   { label: "Edit settings", keys: "COMMA" },

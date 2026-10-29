@@ -1,0 +1,18 @@
+/* Metro base rules. Vuetify roots (.v-application) keep their own look. */
+
+body {
+  margin: 0;
+  background: var(--m-bg);
+  color: var(--m-fg);
+  font: var(--m-font-body);
+}
+
+:focus-visible:not(.v-application *) {
+  outline: 1px dotted currentColor;
+  outline-offset: 2px;
+}
+
+::selection {
+  background: var(--m-accent);
+  color: var(--m-on-accent);
+}

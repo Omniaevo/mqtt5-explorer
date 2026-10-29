@@ -1,29 +1,41 @@
 import { watch } from "vue";
 import { useTheme } from "vuetify";
 import { useSettingsStore } from "../stores/settings";
+import { textOnAccent } from "../utils/color";
 
-const rootStyle = () => document.documentElement.style;
+const rootElement = () => document.documentElement;
 
 /**
- * Keeps Vuetify theme and scrollbar CSS variables
- * in line with the settings store.
+ * Keeps the Metro CSS variables, Vuetify theme and scrollbar variables
+ * in line with the settings store and the OS color scheme.
  */
 export function useThemeSync() {
   const settings = useSettingsStore();
   const vuetifyTheme = useTheme();
+  const darkQuery = window.matchMedia("(prefers-color-scheme: dark)");
+
+  const currentAccent = () =>
+    settings.primaryColor.value?.[settings.resolvedTheme];
+
+  const applyMetroVars = () => {
+    const accent = currentAccent();
+    const style = rootElement().style;
+
+    rootElement().dataset.theme = settings.resolvedTheme;
+    if (!accent) return;
+    style.setProperty("--m-accent", accent);
+    style.setProperty("--m-on-accent", textOnAccent(accent));
+  };
 
   const applyScrollbarVars = () => {
-    const mode = settings.isDark ? "dark" : "light";
-    const primary = settings.primaryColor.value?.[mode];
+    const mode = settings.resolvedTheme;
+    const style = rootElement().style;
 
-    rootStyle().setProperty(
+    style.setProperty(
       "--scrollbar-thumb-color",
-      primary || `var(--scrollbar-thumb-${mode})`
+      currentAccent() || `var(--scrollbar-thumb-${mode})`
     );
-    rootStyle().setProperty(
-      "--scrollbar-bg-color",
-      `var(--scrollbar-bg-${mode})`
-    );
+    style.setProperty("--scrollbar-bg-color", `var(--scrollbar-bg-${mode})`);
   };
 
   const applyPrimaryColor = () => {
@@ -35,11 +47,17 @@ export function useThemeSync() {
 
   const applyAll = () => {
     applyPrimaryColor();
-    vuetifyTheme.change(settings.theme);
+    vuetifyTheme.change(settings.resolvedTheme);
     applyScrollbarVars();
+    applyMetroVars();
   };
 
-  watch(() => settings.theme, applyAll);
+  settings.setSystemPrefersDark(darkQuery.matches);
+  darkQuery.addEventListener("change", (event) =>
+    settings.setSystemPrefersDark(event.matches)
+  );
+
+  watch(() => settings.resolvedTheme, applyAll);
   watch(() => settings.primaryColor, applyAll, { deep: true });
 
   return { applyAll };

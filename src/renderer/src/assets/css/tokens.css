@@ -1,0 +1,86 @@
+/* Metro design tokens. Components read colors only from these variables. */
+
+@font-face {
+  font-family: Selawik;
+  font-weight: 300;
+  font-display: swap;
+  src: url("../fonts/selawik/Selawik-Light.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: Selawik;
+  font-weight: 350;
+  font-display: swap;
+  src: url("../fonts/selawik/Selawik-Semilight.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: Selawik;
+  font-weight: 400;
+  font-display: swap;
+  src: url("../fonts/selawik/Selawik-Regular.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: Selawik;
+  font-weight: 600;
+  font-display: swap;
+  src: url("../fonts/selawik/Selawik-Semibold.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: Selawik;
+  font-weight: 700;
+  font-display: swap;
+  src: url("../fonts/selawik/Selawik-Bold.woff2") format("woff2");
+}
+
+:root {
+  --m-font-family: "Segoe UI", Selawik, sans-serif;
+
+  /* Type ramp: weight size/line-height family */
+  --m-font-hub-title: 300 42px/1.1 var(--m-font-family);
+  --m-font-header: 300 34px/1.15 var(--m-font-family);
+  --m-font-subheader: 300 26px/1.2 var(--m-font-family);
+  --m-font-title: 600 15px/1.3 var(--m-font-family);
+  --m-font-body: 400 14px/1.4 var(--m-font-family);
+  --m-font-caption: 400 12px/1.3 var(--m-font-family);
+
+  /* Grid */
+  --m-unit: 20px;
+  --m-subunit: 5px;
+
+  /* Motion */
+  --m-ease: cubic-bezier(0.1, 0.9, 0.2, 1);
+  --m-duration-fast: 167ms;
+  --m-duration-normal: 333ms;
+  --m-duration-slow: 500ms;
+
+  /* Static colors */
+  --m-error: #a20025;
+
+  /* Light is the default until data-theme is set */
+  --m-bg: #ffffff;
+  --m-surface: #f2f2f2;
+  --m-fg: #000000;
+  --m-fg-secondary: #5c5c5c;
+  --m-border: transparent;
+  --m-accent: #3f51b5;
+  --m-on-accent: #ffffff;
+}
+
+:root[data-theme="light"] {
+  --m-bg: #ffffff;
+  --m-surface: #f2f2f2;
+  --m-fg: #000000;
+  --m-fg-secondary: #5c5c5c;
+  --m-border: transparent;
+}
+
+:root[data-theme="dark"] {
+  --m-bg: #1d1d1d;
+  --m-surface: #2b2b2b;
+  --m-fg: #ffffff;
+  --m-fg-secondary: #b3b3b3;
+  --m-border: #4a4a4a;
+}

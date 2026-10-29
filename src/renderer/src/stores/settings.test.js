@@ -20,7 +20,7 @@ describe("settings store load()", () => {
   it("applies defaults when nothing is stored", () => {
     const s = loadSettings(undefined);
 
-    expect(s.theme).toBe("light");
+    expect(s.theme).toBe("system");
     expect(s.denseTree).toBe(false);
     expect(s.outline).toBe(false);
     expect(s.closeTray).toBe(true);
@@ -75,6 +75,22 @@ describe("settings store load()", () => {
     expect(s.closeTray).toBe(false);
     expect(s.clientId).toBe("my-client");
     expect(s.isDark).toBe(true);
+  });
+
+  it("resolves the system theme from the OS preference", () => {
+    const s = loadSettings(JSON.stringify({ theme: "system" }));
+
+    s.setSystemPrefersDark(true);
+    expect(s.isDark).toBe(true);
+    s.setSystemPrefersDark(false);
+    expect(s.isDark).toBe(false);
+  });
+
+  it("ignores the OS preference for an explicit theme", () => {
+    const s = loadSettings(JSON.stringify({ theme: "light" }));
+
+    s.setSystemPrefersDark(true);
+    expect(s.isDark).toBe(false);
   });
 
   it("fills only the missing fields", () => {
@@ -163,7 +179,7 @@ describe("settings store resetToDefaults()", () => {
 
     s.resetToDefaults();
 
-    expect(s.theme).toBe("light");
+    expect(s.theme).toBe("system");
     expect(s.denseTree).toBe(false);
     expect(s.outline).toBe(false);
     expect(s.closeTray).toBe(true);

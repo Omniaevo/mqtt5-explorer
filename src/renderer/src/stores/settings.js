@@ -1,4 +1,6 @@
+import { ref } from "vue";
 import { defineStore } from "pinia";
+import { resolveTheme } from "../utils/themeMode";
 
 // Persisted keys: must stay unchanged to keep user data
 const SETTINGS_KEY = "saved_app_settings";
@@ -19,6 +21,9 @@ export const clampHistorySize = (value) => {
     : 0;
 };
 
+// OS color scheme preference. Not persisted, kept in sync by useThemeSync.
+const systemPrefersDark = ref(false);
+
 const defaultPrimaryColor = () => ({
   text: "Indie Indigo",
   value: { light: "#3F51B5", dark: "#5C6BC0" },
@@ -26,7 +31,7 @@ const defaultPrimaryColor = () => ({
 
 export const useSettingsStore = defineStore("settings", {
   state: () => ({
-    theme: "light",
+    theme: "system",
     denseTree: false,
     outline: false,
     closeTray: true,
@@ -40,7 +45,11 @@ export const useSettingsStore = defineStore("settings", {
   }),
 
   getters: {
-    isDark: (state) => state.theme === "dark",
+    resolvedTheme: (state) =>
+      resolveTheme(state.theme, systemPrefersDark.value),
+    isDark() {
+      return this.resolvedTheme === "dark";
+    },
     mqttClientSettings: (state) => ({
       clientId: state.clientId,
       keepalive: Number(state.keepalive),
@@ -53,7 +62,7 @@ export const useSettingsStore = defineStore("settings", {
   actions: {
     /** Applies stored data, filling defaults and clamping to the minimums. */
     setAll(data = {}) {
-      this.theme = data.theme || "light";
+      this.theme = data.theme || "system";
       this.denseTree = data.denseTree ?? false;
       this.outline = data.outline ?? false;
       this.closeTray = data.closeTray ?? true;
@@ -72,6 +81,10 @@ export const useSettingsStore = defineStore("settings", {
       this.historySize = clampHistorySize(
         data.historySize ?? DEFAULT_HISTORY_SIZE
       );
+    },
+
+    setSystemPrefersDark(value) {
+      systemPrefersDark.value = value;
     },
 
     /** Restores all defaults and keeps the current client ID. */
