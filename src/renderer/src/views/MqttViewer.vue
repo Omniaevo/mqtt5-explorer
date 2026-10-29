@@ -156,14 +156,13 @@
       </template>
     </MAppBar>
 
-    <NotificationsDialog
-      v-model="notifyDialog"
+    <NotificationsFlyout
+      v-model:open="notifyDialog"
       v-model:entries="notifyEntries"
       v-model:join-type="notifyJoinType"
       v-model:notify-switch="notifySwitch"
       v-model:file-logging-switch="fileLoggingSwitch"
       :logs-folder="logsFolder"
-      :variant="fieldVariant"
       @show-info="searchInfoOpen = true"
       @open-logs-folder="openLogsFolder"
       @reset="resetNotifyAndLogging"
@@ -192,7 +191,7 @@ import MTooltip from "../components/metro/MTooltip.vue";
 import MMessageDialog from "../components/metro/MMessageDialog.vue";
 import MPivot from "../components/metro/MPivot.vue";
 import MPageHeader from "../components/metro/MPageHeader.vue";
-import NotificationsDialog from "../components/viewer/NotificationsDialog.vue";
+import NotificationsFlyout from "../components/viewer/NotificationsFlyout.vue";
 import HistoryPanel from "../components/viewer/HistoryPanel.vue";
 import PublishPanel from "../components/viewer/PublishPanel.vue";
 import SearchBar from "../components/viewer/SearchBar.vue";
@@ -221,9 +220,6 @@ const connectionProperties = new ConnectionProperties();
 connectionProperties.init(connections.getByIndex(route.params.index));
 
 const isV5 = connectionProperties.version > 4;
-const fieldVariant = computed(() =>
-  settings.outline ? "outlined" : "underlined"
-);
 
 // The topic tree is not reactive (can be large): it is plain data plus a
 // version counter that is bumped, throttled, after every change.

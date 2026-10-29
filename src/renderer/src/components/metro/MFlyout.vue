@@ -5,6 +5,7 @@
         class="m-flyout"
         :class="`m-flyout--${size}`"
         aria-describedby="undefined"
+        @interact-outside="keepWhenStacked"
         @open-auto-focus="focusFirstField"
         @close-auto-focus="restoreFocus"
       >
@@ -58,6 +59,14 @@ const header = ref(null);
 const body = ref(null);
 
 const { restoreFocus } = useOpenerFocus(open);
+
+/** A flyout stacked on top of this one (e.g. search info) must not dismiss it. */
+function keepWhenStacked(event) {
+  const target = event.detail.originalEvent.target;
+  if (target instanceof Element && target.closest(".m-flyout")) {
+    event.preventDefault();
+  }
+}
 
 /** Focus goes to the first field of the body, or to the back button when the body has none. */
 function focusFirstField(event) {
