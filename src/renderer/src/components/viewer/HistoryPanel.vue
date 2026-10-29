@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="history">
     <p v-if="history.length === 0" class="history-empty">
       No history yet for this topic.
     </p>
@@ -14,12 +14,13 @@
       />
       <HistoryChart
         v-if="isChartable"
+        class="history-body"
         :xs="series.xs"
         :ys="series.ys"
         :is-boolean="series.isBoolean"
         :label="selectedField ?? 'Value'"
       />
-      <div v-else ref="rawScroll" class="raw-scroll">
+      <div v-else ref="rawScroll" class="history-body raw-scroll">
         <div
           class="raw-list"
           :style="{ height: `${virtualizer.getTotalSize()}px` }"
@@ -131,6 +132,17 @@ const virtualizer = useVirtualizer(
   font: var(--m-font-caption);
 }
 
+.history {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.history-body {
+  flex: 1;
+  min-height: 0;
+}
+
 .history-empty {
   margin: 0;
   color: var(--m-fg-secondary);
@@ -142,7 +154,7 @@ const virtualizer = useVirtualizer(
 }
 
 .raw-scroll {
-  height: 240px;
+  min-height: 120px;
   overflow-y: auto;
 }
 

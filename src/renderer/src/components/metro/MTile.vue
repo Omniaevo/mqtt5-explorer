@@ -115,19 +115,19 @@ const flipClass = computed(() => ({
   box-sizing: border-box;
   padding: calc(var(--m-subunit) * 2);
   overflow: hidden;
-  /* The accent lives on the faces so the whole tile turns, background included */
-  background: var(--m-accent);
+  /* The color lives on the faces so the whole tile turns. A section sets --m-tile-bg to tone it. */
+  background: var(--m-tile-bg, var(--m-accent));
   backface-visibility: hidden;
 }
 
 /* The back is tinted lighter on the light theme and darker on the dark theme */
 .m-tile__face--back {
-  background: color-mix(in srgb, var(--m-accent), white 14%);
+  background: color-mix(in srgb, var(--m-tile-bg, var(--m-accent)), white 14%);
   transform: rotateX(180deg);
 }
 
 :global(:root[data-theme="dark"]) .m-tile__face--back {
-  background: color-mix(in srgb, var(--m-accent), black 22%);
+  background: color-mix(in srgb, var(--m-tile-bg, var(--m-accent)), black 22%);
 }
 
 /* Win8 selection: border around the tile and a check in its top-right corner.

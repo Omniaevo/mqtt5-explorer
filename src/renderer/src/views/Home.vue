@@ -21,7 +21,11 @@
         :key="section.title"
         :title="section.title"
       >
-        <div class="home__tiles" :style="sectionStyle(section.list.length)">
+        <div
+          class="home__tiles"
+          :class="`home__tiles--${section.title}`"
+          :style="sectionStyle(section.list.length)"
+        >
           <MTile
             v-for="(connection, index) in section.list"
             :key="connection.id"
@@ -370,6 +374,15 @@ onBeforeUnmount(() =>
   align-content: start;
   height: 100%;
   gap: var(--m-subunit);
+}
+
+/* Section tones: the accent hue turned 15 degrees one way (pinned) or the other (recent); "all" keeps the plain accent */
+.home__tiles--pinned {
+  --m-tile-bg: hsl(from var(--m-accent) calc(h - 15) s l);
+}
+
+.home__tiles--recent {
+  --m-tile-bg: hsl(from var(--m-accent) calc(h + 15) s l);
 }
 
 .home__empty {

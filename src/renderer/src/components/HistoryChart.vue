@@ -33,11 +33,22 @@ const readColors = () => {
   };
 };
 
+/** Plot height that leaves room for the legend below it. */
+const plotHeight = (containerHeight) => {
+  const legend = container.value.querySelector(".u-legend");
+
+  return Math.max(
+    CHART_HEIGHT,
+    containerHeight - (legend?.offsetHeight ?? 0)
+  );
+};
+
 const createPlot = () => {
   plot?.destroy();
   plot = new uPlot(
     buildChartOptions({
       width: container.value.clientWidth,
+      height: plotHeight(container.value.clientHeight),
       label: props.label,
       isBoolean: props.isBoolean,
       colors: readColors(),
@@ -51,7 +62,10 @@ const createPlot = () => {
 onMounted(() => {
   createPlot();
   resizeObserver = new ResizeObserver(([entry]) => {
-    plot.setSize({ width: entry.contentRect.width, height: CHART_HEIGHT });
+    plot.setSize({
+      width: entry.contentRect.width,
+      height: plotHeight(entry.contentRect.height),
+    });
   });
   resizeObserver.observe(container.value);
 });
@@ -83,5 +97,7 @@ watch(
 .history-chart {
   width: 100%;
   min-width: 0;
+  height: 100%;
+  min-height: 240px;
 }
 </style>

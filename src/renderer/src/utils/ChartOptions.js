@@ -1,3 +1,4 @@
+/** Smallest plot height; also the default. */
 export const CHART_HEIGHT = 200;
 
 const GRID_ALPHA = 0.12;
@@ -69,6 +70,7 @@ const yAxisFor = (isBoolean, axisStyle) =>
  * uPlot options for a history chart.
  * @param {object} config
  * @param {number} config.width Chart width in pixels.
+ * @param {number} [config.height] Plot height in pixels (legend excluded).
  * @param {string} config.label Series name shown in the legend.
  * @param {boolean} config.isBoolean Stepped 0/1 line labelled false/true.
  * @param {{primary: string, text: string}} config.colors Theme colors.
@@ -77,6 +79,7 @@ const yAxisFor = (isBoolean, axisStyle) =>
  */
 export const buildChartOptions = ({
   width,
+  height = CHART_HEIGHT,
   label,
   isBoolean,
   colors,
@@ -92,7 +95,7 @@ export const buildChartOptions = ({
 
   return {
     width,
-    height: CHART_HEIGHT,
+    height,
     scales: {
       y: isBoolean
         ? { range: [-BOOLEAN_RANGE_PADDING, 1 + BOOLEAN_RANGE_PADDING] }
