@@ -36,6 +36,14 @@
 
     <SettingsDialog v-model="settingsOpen" />
 
+    <ConnectionEditorFlyout
+      v-model:open="editorOpen"
+      :connection="editedConnection"
+      @connect="connect($event, tabId)"
+      @delete="deleteFromEditor"
+      @updated="saveFromEditor"
+    />
+
     <div class="ma-2 connection-area">
       <v-card ref="tabsList" class="conn-tabs-container" flat>
         <v-tabs v-model="tabId" direction="vertical">
@@ -45,6 +53,7 @@
             :key="'tab-' + connection.id"
             :value="i"
             class="tabs-left"
+            @click="openEditor(i)"
           >
             <div class="tab-truncate" :class="{ 'text-primary': tabId === i }">
               {{ connection.name }}
@@ -53,21 +62,6 @@
         </v-tabs>
       </v-card>
 
-      <v-tabs-window v-model="tabId" class="tab-items-container">
-        <v-tabs-window-item
-          v-for="(connection, i) in connections.brokerConnections"
-          :key="'connection-' + connection.id"
-          :value="i"
-          class="tab-items-container"
-        >
-          <ConnectionForm
-            :properties="connection"
-            @connect="connect($event, i)"
-            @delete="confirmDelete(i)"
-            @updated="dataChanged($event, i)"
-          />
-        </v-tabs-window-item>
-      </v-tabs-window>
     </div>
 
     <div class="foot-bar">
@@ -111,7 +105,7 @@
 <script setup>
 import { computed, nextTick, onBeforeMount, onBeforeUnmount, ref } from "vue";
 import { useRouter } from "vue-router";
-import ConnectionForm from "../components/ConnectionForm.vue";
+import ConnectionEditorFlyout from "../components/ConnectionEditorFlyout.vue";
 import SettingsDialog from "../components/SettingsDialog.vue";
 import ConnectionProperties from "../models/ConnectionProperties";
 import { useConnectionsStore } from "../stores/connections";
@@ -132,9 +126,14 @@ const searchConnection = ref("");
 const deleteDialog = ref(false);
 const deleteIndex = ref(-1);
 const tabsList = ref(null);
+const editorOpen = ref(false);
 
 const connectionToDelete = computed(
   () => connections.brokerConnections[deleteIndex.value]
+);
+
+const editedConnection = computed(
+  () => connections.brokerConnections[tabId.value]
 );
 
 const filteredConnectionIds = computed(() => {
@@ -167,6 +166,22 @@ function addTmpConnection() {
   searchConnection.value = "";
   tabId.value = connections.brokerConnections.length - 1;
   scrollTabs("bottom");
+  editorOpen.value = true;
+}
+
+function openEditor(index) {
+  tabId.value = index;
+  editorOpen.value = true;
+}
+
+function saveFromEditor(data) {
+  dataChanged(data, tabId.value);
+  editorOpen.value = false;
+}
+
+function deleteFromEditor() {
+  editorOpen.value = false;
+  confirmDelete(tabId.value);
 }
 
 function dataChanged(data, index) {
@@ -261,19 +276,13 @@ onBeforeUnmount(() => {
 .connection-area {
   overflow: hidden;
   display: grid;
-  grid-template-columns: 1fr 2fr;
+  grid-template-columns: 1fr;
   grid-template-rows: 1fr;
   gap: 1em;
 }
 
 .conn-tabs-container {
   overflow: auto;
-}
-
-.tab-items-container {
-  width: 100%;
-  height: 100%;
-  background: transparent !important;
 }
 
 .tabs-left {
