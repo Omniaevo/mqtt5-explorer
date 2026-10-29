@@ -34,12 +34,18 @@
       </div>
 
       <div class="viewer__details">
-        <h2
+        <nav
           class="viewer__topic"
           :class="{ 'viewer__topic--hint': !selectedView }"
+          aria-label="Topic path"
         >
-          {{ selectedView?.topic ?? "Select a topic" }}
-        </h2>
+          <ol v-if="selectedView" class="viewer__crumbs">
+            <li v-for="(segment, index) in topicSegments" :key="index">
+              {{ segment }}
+            </li>
+          </ol>
+          <template v-else>Select a topic</template>
+        </nav>
 
         <MPivot
           v-model="activeItem"
@@ -56,34 +62,23 @@
               >
                 {{ getCountMessage(selectedView.counter, true) }}
               </p>
-              <div v-if="selectedView.value" class="viewer__payload-new">
-                <span class="viewer__payload">{{
-                  selectedView.value.payload
-                }}</span>
-                <span
-                  v-if="selectedView.value.receivedAt"
-                  class="viewer__time"
-                  >{{ formatEntryTime(selectedView.value.receivedAt) }}</span
-                >
-              </div>
-              <div v-if="selectedView.old" class="viewer__payload-old">
-                <span class="viewer__payload">{{
-                  selectedView.old.payload
-                }}</span>
-                <span v-if="selectedView.old.receivedAt" class="viewer__time">{{
-                  formatEntryTime(selectedView.old.receivedAt)
-                }}</span>
-              </div>
-              <div v-if="olderRows.length" class="viewer__older">
+              <TransitionGroup
+                v-if="payloadRows.length"
+                :key="selectedView.topic"
+                tag="div"
+                name="m-rows"
+                class="viewer__rows"
+              >
                 <div
-                  v-for="row in olderRows"
+                  v-for="row in payloadRows"
                   :key="row.key"
-                  class="viewer__payload-older"
+                  class="viewer__row"
+                  :class="{ 'viewer__row--current': row.isCurrent }"
                 >
                   <span class="viewer__payload">{{ row.payload }}</span>
                   <span class="viewer__time">{{ row.time }}</span>
                 </div>
-              </div>
+              </TransitionGroup>
             </div>
           </template>
 
@@ -233,7 +228,7 @@ import { useNotifyStore } from "../stores/notify";
 import { useSettingsStore } from "../stores/settings";
 
 const SEARCH_DEBOUNCE_MS = 250;
-const MAX_OLDER_ROWS = 50;
+const MAX_PAYLOAD_ROWS = 50;
 
 const route = useRoute();
 const router = useRouter();
@@ -292,19 +287,55 @@ const selectedView = computed(() => {
   );
 });
 
+const timeOf = (message) =>
+  message.receivedAt ? formatEntryTime(message.receivedAt) : "";
+
 /**
- * Values received before `value` and `old`, newest first. The list is only
- * capped; the clipped container shows as many rows as the height allows.
+ * Received values of the selected topic, newest first: the current value,
+ * the previous one, then the history. The list is only capped; the clipped
+ * container shows as many rows as the height allows.
+ *
+ * The row key is the message sequence number: it stays the same while the row
+ * moves down, which lets the list animate.
  */
-const olderRows = computed(() => {
+const payloadRows = computed(() => {
   treeVersion.value; // Dependency only
   const node = selectedNode.value;
 
   if (!node) return [];
 
-  const shown = (node.value ? 1 : 0) + (node.old ? 1 : 0);
+  const expected = (node.value ? 1 : 0) + (node.old ? 1 : 0);
+  const entries = node.history.slice(-MAX_PAYLOAD_ROWS);
+  const rows = toRawRows(entries).map((row) => ({
+    ...row,
+    key: node.counter - (entries.length - 1 - row.key),
+  }));
 
-  return toRawRows(node.history.slice(-MAX_OLDER_ROWS - shown)).slice(shown);
+  // Without history (size 0) only the last two values are known
+  if (rows.length < expected) {
+    rows.length = 0;
+
+    if (node.value) {
+      rows.push({
+        key: node.counter,
+        payload: node.value.payload,
+        time: timeOf(node.value),
+      });
+    }
+
+    if (node.old) {
+      rows.push({
+        key: node.counter - 1,
+        payload: node.old.payload,
+        time: timeOf(node.old),
+      });
+    }
+  }
+
+  return rows.map((row, index) => ({
+    ...row,
+    isCurrent: index === 0 && Boolean(node.value),
+  }));
 });
 
 const {
@@ -316,6 +347,11 @@ const {
   pushConfig: pushNotifyConfig,
   reset: resetNotifyAndLogging,
 } = useNotifyAndLogging(() => connectionProperties.name);
+
+/** Topic levels; the "/" separators are drawn by CSS. */
+const topicSegments = computed(
+  () => selectedView.value?.topic.split("/") ?? []
+);
 
 const hasActiveStatus = computed(
   () => notifySwitch.value || fileLoggingSwitch.value
@@ -541,6 +577,21 @@ onBeforeUnmount(() =>
   overflow-wrap: anywhere;
 }
 
+.viewer__crumbs {
+  display: flex;
+  flex-wrap: wrap;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* The separator is drawn here, so it is not part of the topic text */
+.viewer__crumbs li + li::before {
+  content: "/";
+  padding-inline: var(--m-subunit);
+  color: var(--m-fg-secondary);
+}
+
 .viewer__topic--hint {
   color: var(--m-fg-secondary);
 }
@@ -555,38 +606,6 @@ onBeforeUnmount(() =>
   font: var(--m-font-caption);
 }
 
-.viewer__payload-old,
-.viewer__payload-new,
-.viewer__payload-older {
-  padding: var(--m-subunit) var(--m-unit) var(--m-subunit) var(--m-subunit);
-  overflow-wrap: anywhere;
-  word-break: break-all;
-}
-
-.viewer__payload-new,
-.viewer__payload-old,
-.viewer__payload-older {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--m-unit);
-}
-
-.viewer__payload {
-  min-width: 0;
-}
-
-.viewer__payload-new {
-  margin-bottom: var(--m-subunit);
-  padding-block: calc(var(--m-unit) / 2);
-  font-size: 1.25em;
-  background: color-mix(in srgb, var(--m-success) 35%, transparent);
-}
-
-.viewer__payload-old {
-  background: color-mix(in srgb, var(--m-error) 35%, transparent);
-}
-
 .viewer__payload-pane {
   display: flex;
   flex-direction: column;
@@ -594,17 +613,59 @@ onBeforeUnmount(() =>
 }
 
 /* Fills the free height; rows beyond it are clipped and the rest fades out */
-.viewer__older {
+.viewer__rows {
   flex: 1;
   min-height: 0;
-  margin-top: var(--m-subunit);
   overflow: hidden;
   mask-image: linear-gradient(to bottom, #000, transparent);
 }
 
-.viewer__payload-older {
+/* Older value: red tint. The transition morphs it to and from the current look */
+.viewer__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--m-unit);
   margin-bottom: var(--m-subunit);
+  padding: var(--m-subunit) var(--m-unit) var(--m-subunit) var(--m-subunit);
+  overflow-wrap: anywhere;
+  word-break: break-all;
   background: color-mix(in srgb, var(--m-error) 35%, transparent);
+  transition:
+    transform var(--m-duration-normal) var(--m-ease),
+    opacity var(--m-duration-normal) var(--m-ease),
+    font-size var(--m-duration-normal) var(--m-ease),
+    padding var(--m-duration-normal) var(--m-ease),
+    background-color var(--m-duration-normal) var(--m-ease);
+}
+
+.viewer__row--current {
+  padding-block: calc(var(--m-unit) / 2);
+  font-size: 1.25em;
+  background: color-mix(in srgb, var(--m-success) 35%, transparent);
+}
+
+.viewer__payload {
+  min-width: 0;
+}
+
+/* A new row fades in and scales up at the top; the others slide down (FLIP) */
+.m-rows-enter-from {
+  opacity: 0;
+  transform: scale(0.85);
+  transform-origin: left center;
+}
+
+/* No transition to wait for: the row goes away at once */
+.m-rows-leave-active {
+  display: none;
+  transition: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .viewer__row {
+    transition: none;
+  }
 }
 
 /* Sits on the success / error tint: the secondary color would be too faint there */
