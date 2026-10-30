@@ -133,25 +133,31 @@
               >
                 {{ getCountMessage(selectedView.counter, true) }}
               </div>
-              <div
-                v-if="selectedView.old"
-                class="d-flex rounded mb-1 wrap-text"
+              <!-- Keyed by topic: a new selection renders without animation -->
+              <TransitionGroup
+                :key="selectedView.topic"
+                class="messages-list"
+                name="message"
+                tag="div"
               >
-                <div class="bg-error px-2 py-1">
-                  <v-icon icon="mdi-delete" size="small" />
+                <div
+                  v-for="(message, i) in messagesView"
+                  :key="messageKey(message)"
+                  :class="
+                    i === 0 && selectedView.value
+                      ? 'payload-new newest'
+                      : 'payload-old'
+                  "
+                  class="message-row d-flex rounded mb-1 px-4 py-1 wrap-text"
+                >
+                  <span class="flex-fill long-payload">{{
+                    message.payload
+                  }}</span>
+                  <span v-if="message.t" class="message-time ms-4">{{
+                    formatEntryTime(message.t)
+                  }}</span>
                 </div>
-                <div class="px-4 flex-fill py-1 long-payload payload-old">
-                  {{ selectedView.old.payload }}
-                </div>
-              </div>
-              <div v-if="selectedView.value" class="d-flex rounded wrap-text">
-                <div class="bg-success px-2 py-1">
-                  <v-icon icon="mdi-lightning-bolt" size="small" />
-                </div>
-                <div class="px-4 flex-fill py-1 long-payload payload-new">
-                  {{ selectedView.value.payload }}
-                </div>
-              </div>
+              </TransitionGroup>
 
               <div v-if="isV5" class="mt-auto pt-4">
                 <v-divider class="mb-2">Properties</v-divider>
@@ -248,8 +254,12 @@ import SearchEngine from "../../../shared/SearchEngine";
 import { useConnectionsStore } from "../stores/connections";
 import { useNotifyStore } from "../stores/notify";
 import { useSettingsStore } from "../stores/settings";
+import { formatEntryTime, recentMessages } from "../utils/HistoryView";
 
 const SEARCH_DEBOUNCE_MS = 250;
+// ponytail: fixed cap, enough rows to fill a tall window; measure the
+// free height if rows ever look cut short.
+const MAX_SHOWN_MESSAGES = 50;
 
 const STATES = Connection.connectionStates;
 const STATE_VIEWS = {
@@ -330,6 +340,26 @@ const selectedView = computed(() => {
     }
   );
 });
+
+/** Last messages, newest first; built only while the payload tab shows. */
+const messagesView = computed(() => {
+  treeVersion.value; // Dependency only
+  const node = selectedNode.value;
+
+  return node && activeTab.value === "payload"
+    ? recentMessages(node, MAX_SHOWN_MESSAGES)
+    : [];
+});
+
+// Stable list keys: a message keeps its key while it moves down the list.
+const messageKeys = new WeakMap();
+let nextMessageKey = 0;
+
+function messageKey(message) {
+  if (!messageKeys.has(message)) messageKeys.set(message, nextMessageKey++);
+
+  return messageKeys.get(message);
+}
 
 const topicSegments = computed(() => selectedView.value?.topic.split("/"));
 
@@ -539,6 +569,59 @@ onBeforeUnmount(() =>
 
 .long-payload {
   word-break: break-all;
+}
+
+.message-time {
+  align-self: center;
+  flex-shrink: 0;
+  font-size: 0.85em;
+  opacity: 0.7;
+  white-space: nowrap;
+}
+
+.newest {
+  font-size: 1.4em;
+}
+
+/* Takes the free space above the properties; rows fade out downwards. */
+.messages-list {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow: hidden;
+  mask-image: linear-gradient(to bottom, black, transparent);
+}
+
+/* New message: the current one morphs to an older one, the list slides
+   down and the new one fades and scales in, all at the same time. */
+.message-row {
+  transition:
+    background-color 150ms linear,
+    font-size 150ms linear;
+}
+
+.message-move,
+.message-enter-active {
+  transition:
+    transform 150ms linear,
+    opacity 150ms linear;
+}
+
+/* Starts once the slide has made some room. */
+.message-enter-active {
+  transition-delay: 75ms;
+}
+
+.message-enter-from {
+  opacity: 0;
+  transform: scale(0.9);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .message-row,
+  .message-move,
+  .message-enter-active {
+    transition: none;
+  }
 }
 
 .payload-old {
