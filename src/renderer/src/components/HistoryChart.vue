@@ -13,7 +13,9 @@ import {
 import { useTheme } from "vuetify";
 import uPlot from "uplot";
 import "uplot/dist/uPlot.min.css";
-import { CHART_HEIGHT, buildChartOptions } from "../utils/ChartOptions";
+import { buildChartOptions } from "../utils/ChartOptions";
+
+const MIN_CHART_HEIGHT = 100;
 
 const props = defineProps({
   xs: { type: Array, required: true }, // Epoch seconds
@@ -35,11 +37,22 @@ const colors = computed(() => {
   return { primary, text };
 });
 
+/** Height left for the plot once the legend below it is placed. */
+const plotHeight = (containerHeight) => {
+  const legendHeight = plot?.root.querySelector(".u-legend")?.offsetHeight ?? 0;
+
+  return Math.max(MIN_CHART_HEIGHT, containerHeight - legendHeight);
+};
+
 const createPlot = () => {
+  // Measured before destroy: a rebuild keeps the old legend height.
+  const height = plotHeight(container.value.clientHeight);
+
   plot?.destroy();
   plot = new uPlot(
     buildChartOptions({
       width: container.value.clientWidth,
+      height,
       label: props.label,
       isBoolean: props.isBoolean,
       colors: colors.value,
@@ -52,8 +65,11 @@ const createPlot = () => {
 
 onMounted(() => {
   createPlot();
+  // Fires once on observe too: corrects the first height for the legend.
   resizeObserver = new ResizeObserver(([entry]) => {
-    plot.setSize({ width: entry.contentRect.width, height: CHART_HEIGHT });
+    const { width, height } = entry.contentRect;
+
+    plot.setSize({ width, height: plotHeight(height) });
   });
   resizeObserver.observe(container.value);
 });
@@ -77,8 +93,12 @@ watch(() => [colors.value, props.isBoolean, props.label], createPlot, {
 </script>
 
 <style scoped>
+/* Size comes from the parent only, so the plot cannot grow it in a loop. */
 .history-chart {
+  flex: 1 1 0;
   width: 100%;
   min-width: 0;
+  min-height: 0;
+  overflow: hidden;
 }
 </style>

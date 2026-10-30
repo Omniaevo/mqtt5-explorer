@@ -1,16 +1,12 @@
 import { describe, expect, it } from "vitest";
-import {
-  CHART_HEIGHT,
-  buildChartOptions,
-  formatChartTime,
-  withAlpha,
-} from "./ChartOptions";
+import { buildChartOptions, formatChartTime, withAlpha } from "./ChartOptions";
 
 const colors = { primary: "#1976d2", text: "#000000" };
 const steppedPaths = (opts) => ({ stepped: opts });
 const build = (isBoolean) =>
   buildChartOptions({
     width: 300,
+    height: 200,
     label: "temp",
     isBoolean,
     colors,
@@ -24,6 +20,10 @@ describe("withAlpha", () => {
 
   it("pads low alpha values to two digits", () => {
     expect(withAlpha("#000000", 0.02)).toBe("#00000005");
+  });
+
+  it("expands a short hex color before adding the alpha", () => {
+    expect(withAlpha("#FFF", 0.5)).toBe("#FFFFFF80");
   });
 
   it("returns non-hex colors unchanged", () => {
@@ -48,8 +48,8 @@ describe("buildChartOptions", () => {
     expect(build(false).series[1].stroke).toBe(colors.primary);
   });
 
-  it("sets size from width and the fixed height", () => {
-    expect(build(false)).toMatchObject({ width: 300, height: CHART_HEIGHT });
+  it("sets size from width and height", () => {
+    expect(build(false)).toMatchObject({ width: 300, height: 200 });
   });
 
   it("keeps a plain line for numbers", () => {

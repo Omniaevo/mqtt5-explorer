@@ -1,48 +1,45 @@
 <template>
-  <v-expansion-panel v-if="isAvailable" value="history">
-    <v-expansion-panel-title>
-      <span>History</span>
-      <span class="text-caption ms-2 text-grey">
-        ({{ storedCount }} of {{ capacity }} values)
-      </span>
-    </v-expansion-panel-title>
+  <div class="history-panel">
+    <div v-if="!isAvailable" class="text-grey">{{ emptyMessage }}</div>
 
-    <v-expansion-panel-text>
-      <template v-if="expanded">
+    <template v-else-if="active">
+      <div class="d-flex align-center ga-4 mb-2">
         <v-select
           v-if="fields.length > 0"
           v-model="selectedField"
           :items="fields"
           :variant="variant"
-          class="mb-2"
           density="compact"
           hide-details
           label="Field"
         />
-        <HistoryChart
-          v-if="isChartable"
-          :xs="series.xs"
-          :ys="series.ys"
-          :is-boolean="series.isBoolean"
-          :label="selectedField ?? 'Value'"
-        />
-        <v-virtual-scroll
-          v-else
-          :items="rawRows"
-          :height="RAW_LIST_HEIGHT"
-          :item-height="RAW_ROW_HEIGHT"
-          item-key="key"
-        >
-          <template #default="{ item }">
-            <div class="raw-row d-flex" :title="item.payload">
-              <span class="text-grey me-3 flex-shrink-0">{{ item.time }}</span>
-              <span class="raw-payload">{{ item.payload }}</span>
-            </div>
-          </template>
-        </v-virtual-scroll>
-      </template>
-    </v-expansion-panel-text>
-  </v-expansion-panel>
+        <span class="text-caption text-grey ms-auto">
+          ({{ storedCount }} of {{ capacity }} values)
+        </span>
+      </div>
+      <HistoryChart
+        v-if="isChartable"
+        :xs="series.xs"
+        :ys="series.ys"
+        :is-boolean="series.isBoolean"
+        :label="selectedField ?? 'Value'"
+      />
+      <v-virtual-scroll
+        v-else
+        :items="rawRows"
+        :item-height="RAW_ROW_HEIGHT"
+        class="raw-list"
+        item-key="key"
+      >
+        <template #default="{ item }">
+          <div class="raw-row d-flex" :title="item.payload">
+            <span class="text-grey me-3 flex-shrink-0">{{ item.time }}</span>
+            <span class="raw-payload">{{ item.payload }}</span>
+          </div>
+        </template>
+      </v-virtual-scroll>
+    </template>
+  </div>
 </template>
 
 <script setup>
@@ -55,7 +52,6 @@ import {
 import { resolveField, toRawRows } from "../../utils/HistoryView";
 import HistoryChart from "../HistoryChart.vue";
 
-const RAW_LIST_HEIGHT = 240;
 const RAW_ROW_HEIGHT = 28;
 
 const props = defineProps({
@@ -65,8 +61,8 @@ const props = defineProps({
   version: { type: Number, required: true },
   /** `historySize` setting. */
   capacity: { type: Number, required: true },
-  /** Work is done only while the panel is open. */
-  expanded: { type: Boolean, default: false },
+  /** Work is done only while the panel is shown. */
+  active: { type: Boolean, default: false },
   variant: { type: String, default: "underlined" },
 });
 
@@ -79,17 +75,23 @@ const isAvailable = computed(() => {
   return props.capacity > 0 && Boolean(props.node?.value);
 });
 
+const emptyMessage = computed(() =>
+  props.capacity > 0
+    ? "No values received on this topic"
+    : "History is disabled in the settings"
+);
+
 const storedCount = computed(() => {
   props.version; // Dependency only
 
   return props.node?.historyLength ?? 0;
 });
 
-/** Copy of the history; empty while the panel is closed. */
+/** Copy of the history; empty while the panel is hidden. */
 const history = computed(() => {
   props.version; // Dependency only
 
-  return props.expanded && isAvailable.value ? props.node.history : [];
+  return props.active && isAvailable.value ? props.node.history : [];
 });
 
 const fields = computed(() => {
@@ -117,6 +119,17 @@ const rawRows = computed(() =>
 </script>
 
 <style scoped>
+.history-panel {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.raw-list {
+  flex: 1 1 0;
+  min-height: 0;
+}
+
 .raw-row {
   height: 28px;
   line-height: 28px;

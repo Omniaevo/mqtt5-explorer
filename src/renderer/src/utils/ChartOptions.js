@@ -1,10 +1,9 @@
-export const CHART_HEIGHT = 200;
-
-const GRID_ALPHA = 0.12;
+const GRID_ALPHA = 0.05;
 const BOOLEAN_TICKS = [0, 1];
 const BOOLEAN_LABELS = ["false", "true"];
 const BOOLEAN_RANGE_PADDING = 0.1;
 const HEX_COLOR_PATTERN = /^#[0-9a-f]{6}$/i;
+const SHORT_HEX_COLOR_PATTERN = /^#[0-9a-f]{3}$/i;
 
 const pad = (n) => String(n).padStart(2, "0");
 
@@ -18,17 +17,27 @@ export const formatChartTime = (seconds) => {
   return `${date} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
 };
 
+/** `#rgb` to `#rrggbb`; other formats are returned as is. */
+const expandShortHex = (color) =>
+  SHORT_HEX_COLOR_PATTERN.test(color)
+    ? `#${[...color.slice(1)].map((digit) => digit + digit).join("")}`
+    : color;
+
 /**
- * Adds an alpha channel to a `#rrggbb` color. Other formats are returned as is.
+ * Adds an alpha channel to a `#rgb` or `#rrggbb` color (Vuetify gives
+ * `on-*` colors as `#rgb`). Other formats are returned as is.
  * @param {string} color
  * @param {number} alpha Between 0 and 1.
  */
-export const withAlpha = (color, alpha) =>
-  HEX_COLOR_PATTERN.test(color)
-    ? `${color}${Math.round(alpha * 255)
+export const withAlpha = (color, alpha) => {
+  const hex = expandShortHex(color);
+
+  return HEX_COLOR_PATTERN.test(hex)
+    ? `${hex}${Math.round(alpha * 255)
         .toString(16)
         .padStart(2, "0")}`
     : color;
+};
 
 /** y value of a boolean series as `true` / `false`. */
 const formatBoolean = (value) =>
@@ -47,6 +56,7 @@ const yAxisFor = (isBoolean, axisStyle) =>
  * uPlot options for a history chart.
  * @param {object} config
  * @param {number} config.width Chart width in pixels.
+ * @param {number} config.height Chart height in pixels (legend excluded).
  * @param {string} config.label Series name shown in the legend.
  * @param {boolean} config.isBoolean Stepped 0/1 line labelled false/true.
  * @param {{primary: string, text: string}} config.colors Theme colors.
@@ -55,6 +65,7 @@ const yAxisFor = (isBoolean, axisStyle) =>
  */
 export const buildChartOptions = ({
   width,
+  height,
   label,
   isBoolean,
   colors,
@@ -68,7 +79,7 @@ export const buildChartOptions = ({
 
   return {
     width,
-    height: CHART_HEIGHT,
+    height,
     scales: {
       y: isBoolean
         ? { range: [-BOOLEAN_RANGE_PADDING, 1 + BOOLEAN_RANGE_PADDING] }

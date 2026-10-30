@@ -75,54 +75,64 @@
         />
       </v-card>
 
-      <div class="properties-container">
-        <v-expansion-panels v-model="openPanels" multiple>
-          <v-expansion-panel value="topic" title="Topic">
-            <v-expansion-panel-text v-if="selectedView" class="wrap-text">
-              <div class="d-flex align-center">
-                <span class="flex-grow-1">{{ selectedView.topic }}</span>
-                <v-tooltip text="Clear selection" location="bottom">
-                  <template #activator="{ props: tooltipProps }">
-                    <v-btn
-                      v-bind="tooltipProps"
-                      :color="settings.isDark ? 'white' : undefined"
-                      class="ms-2"
-                      icon="mdi-close"
-                      variant="text"
-                      @click="resetSelection"
-                    />
-                  </template>
-                </v-tooltip>
-                <v-tooltip
-                  :text="`Delete &quot;${selectedView.topic}&quot; topic`"
-                  location="bottom"
-                >
-                  <template #activator="{ props: tooltipProps }">
-                    <v-btn
-                      v-bind="tooltipProps"
-                      color="error"
-                      icon="mdi-delete"
-                      variant="text"
-                      @click="deleteDialog = true"
-                    />
-                  </template>
-                </v-tooltip>
-              </div>
-            </v-expansion-panel-text>
-          </v-expansion-panel>
+      <v-card class="properties-container" flat>
+        <div class="d-flex align-center px-4 topic-bar">
+          <div v-if="selectedView" class="flex-grow-1 wrap-text long-payload">
+            <template v-for="(segment, i) in topicSegments" :key="i">
+              <span v-if="i > 0" class="text-primary font-weight-bold mx-1"
+                >/</span
+              ><span>{{ segment }}</span>
+            </template>
+          </div>
+          <div v-else class="flex-grow-1 text-grey">No topic selected</div>
 
-          <v-expansion-panel value="payload">
-            <v-expansion-panel-title>
-              <span>Payload</span>
-              <span
-                v-if="selectedView?.counter > 0"
+          <template v-if="selectedView">
+            <v-tooltip text="Clear selection" location="bottom">
+              <template #activator="{ props: tooltipProps }">
+                <v-btn
+                  v-bind="tooltipProps"
+                  :color="settings.isDark ? 'white' : undefined"
+                  class="ms-2"
+                  icon="mdi-close"
+                  variant="text"
+                  @click="resetSelection"
+                />
+              </template>
+            </v-tooltip>
+            <v-tooltip
+              :text="`Delete &quot;${selectedView.topic}&quot; topic`"
+              location="bottom"
+            >
+              <template #activator="{ props: tooltipProps }">
+                <v-btn
+                  v-bind="tooltipProps"
+                  color="error"
+                  icon="mdi-delete"
+                  variant="text"
+                  @click="deleteDialog = true"
+                />
+              </template>
+            </v-tooltip>
+          </template>
+        </div>
+
+        <v-tabs v-model="activeTab" color="primary">
+          <v-tab value="payload" :disabled="!selectedView">Payload</v-tab>
+          <v-tab value="history" :disabled="!selectedView">History</v-tab>
+          <v-tab value="publish">Publish</v-tab>
+        </v-tabs>
+        <v-divider />
+
+        <v-tabs-window v-model="activeTab" class="tabs-window">
+          <v-tabs-window-item value="payload" class="tab-item payload-tab pa-4">
+            <template v-if="selectedView">
+              <div
+                v-if="selectedView.counter > 0"
                 :title="getCountMessage(selectedView.counter, false)"
-                class="text-caption ms-2 text-grey"
+                class="text-caption text-grey mb-2"
               >
-                ({{ getCountMessage(selectedView.counter, true) }})
-              </span>
-            </v-expansion-panel-title>
-            <v-expansion-panel-text v-if="selectedView">
+                {{ getCountMessage(selectedView.counter, true) }}
+              </div>
               <div
                 v-if="selectedView.old"
                 class="d-flex rounded mb-1 wrap-text"
@@ -142,33 +152,36 @@
                   {{ selectedView.value.payload }}
                 </div>
               </div>
-            </v-expansion-panel-text>
-          </v-expansion-panel>
 
-          <HistoryPanel
-            :node="selectedNode"
-            :version="treeVersion"
-            :capacity="settings.historySize"
-            :expanded="openPanels.includes('history')"
-            :variant="fieldVariant"
-          />
+              <div v-if="isV5" class="mt-auto pt-4">
+                <v-divider class="mb-2">Properties</v-divider>
+                <pre>{{ selectedView.value?.properties || "" }}</pre>
+              </div>
+            </template>
+          </v-tabs-window-item>
 
-          <v-expansion-panel v-if="isV5" value="properties" title="Properties">
-            <v-expansion-panel-text v-if="selectedView">
-              <pre>{{ selectedView.value?.properties || "" }}</pre>
-            </v-expansion-panel-text>
-          </v-expansion-panel>
+          <v-tabs-window-item value="history" class="tab-item pa-4">
+            <HistoryPanel
+              :node="selectedNode"
+              :version="treeVersion"
+              :capacity="settings.historySize"
+              :active="activeTab === 'history'"
+              :variant="fieldVariant"
+            />
+          </v-tabs-window-item>
 
-          <PublishPanel
-            ref="publishPanel"
-            :selected="selectedView"
-            :expanded="openPanels.includes('publish')"
-            :is-v5="isV5"
-            :variant="fieldVariant"
-            @publish="(packet) => connection.publish(packet)"
-          />
-        </v-expansion-panels>
-      </div>
+          <!-- Eager: the tree loads the selected topic into it at any time -->
+          <v-tabs-window-item value="publish" class="tab-item pa-4" eager>
+            <PublishPanel
+              ref="publishPanel"
+              :selected="selectedView"
+              :is-v5="isV5"
+              :variant="fieldVariant"
+              @publish="(packet) => connection.publish(packet)"
+            />
+          </v-tabs-window-item>
+        </v-tabs-window>
+      </v-card>
     </div>
 
     <v-dialog v-model="deleteDialog" max-width="50ch" persistent>
@@ -294,7 +307,7 @@ const stateView = computed(() => STATE_VIEWS[connectionState.value]);
 const selectedNode = shallowRef(undefined);
 const publishPanel = ref(null);
 const treeView = ref(null);
-const openPanels = ref(["publish"]);
+const activeTab = ref("publish");
 const deleteDialog = ref(false);
 const notifyDialog = ref(false);
 const searchInfoDialog = ref(false);
@@ -317,6 +330,8 @@ const selectedView = computed(() => {
     }
   );
 });
+
+const topicSegments = computed(() => selectedView.value?.topic.split("/"));
 
 const {
   notifySwitch,
@@ -356,15 +371,12 @@ function onBatch(packets) {
   requestTreeRefresh(batchTimestamp);
 }
 
+/** Selects a node; the first selection shows its payload. */
 function selectNode(node) {
+  if (!selectedNode.value) activeTab.value = "payload";
+
   selectedNode.value = node;
   publishPanel.value?.load(node);
-  openPanels.value = [
-    "topic",
-    "payload",
-    ...(openPanels.value.includes("history") ? ["history"] : []),
-    ...(isV5 ? ["properties"] : []),
-  ];
 }
 
 /** Selects the topic of a clicked notification and shows it in the tree. */
@@ -380,7 +392,7 @@ function selectTopic(topic) {
 function resetSelection() {
   selectedNode.value = undefined;
   publishPanel.value?.reset();
-  openPanels.value = ["publish"];
+  activeTab.value = "publish";
 }
 
 function toggleSearchField() {
@@ -481,7 +493,7 @@ onBeforeUnmount(() =>
 .explorer-grid-container {
   overflow: hidden;
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 2fr 3fr;
   grid-template-rows: 1fr;
   gap: 1em;
 }
@@ -491,7 +503,34 @@ onBeforeUnmount(() =>
 }
 
 .properties-container {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.topic-bar {
+  min-height: 48px;
+}
+
+/* Fill the card below the tabs; each item scrolls on its own. */
+.tabs-window {
+  flex: 1 1 0;
+  min-height: 0;
+}
+
+.tabs-window :deep(.v-window__container) {
+  height: 100%;
+}
+
+.tab-item {
+  height: 100%;
   overflow: auto;
+}
+
+/* Column so the properties can sit at the bottom (no !important: v-show). */
+.payload-tab {
+  display: flex;
+  flex-direction: column;
 }
 
 .search-bar {
