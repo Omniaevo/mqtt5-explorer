@@ -15,25 +15,32 @@
           title="Primary color"
           description="Accent color of buttons and highlights."
         >
-          <AppSelect
-            v-model="primaryColorName"
-            class="settings-control"
-            label="Primary color"
-            label-hidden
-            :items="COLORS"
-            item-title="text"
-            item-value="text"
-          >
-            <template #item="{ item }">
-              <span class="color-option">
-                <span
-                  class="color-option__swatch"
-                  :style="{ background: item.value[themeMode] }"
-                />
-                {{ item.text }}
-              </span>
-            </template>
-          </AppSelect>
+          <div class="color-picker">
+            <AppSelect
+              v-model="primaryColorName"
+              class="settings-control"
+              label="Primary color"
+              label-hidden
+              :items="COLORS"
+              item-title="text"
+              item-value="text"
+            >
+              <template #item="{ item }">
+                <span class="color-option">
+                  <span
+                    class="color-swatch"
+                    :style="{ background: item.value[themeMode] }"
+                  />
+                  {{ item.text }}
+                </span>
+              </template>
+            </AppSelect>
+            <span
+              class="color-swatch color-swatch--preview"
+              :style="{ background: settings.primaryColor.value[themeMode] }"
+              aria-hidden="true"
+            />
+          </div>
         </SettingsRow>
       </section>
 
@@ -356,12 +363,25 @@ function openBugsUrl() {
   gap: var(--space-4);
 }
 
-.color-option__swatch {
+.color-picker {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+/* Square color chip: in the options and, larger, as the preview next to the select */
+.color-swatch {
   flex: none;
-  inline-size: 0.75rem;
-  block-size: 0.75rem;
+  inline-size: 0.875rem;
+  block-size: 0.875rem;
   border: 1px solid var(--color-border);
-  border-radius: 50%;
+  border-radius: var(--radius-sm);
+}
+
+.color-swatch--preview {
+  inline-size: var(--control-height);
+  block-size: var(--control-height);
+  border-radius: var(--radius-md);
 }
 
 .shortcut-list {
