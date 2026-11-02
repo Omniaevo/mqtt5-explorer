@@ -25,8 +25,8 @@
       </v-tooltip>
 
       <div class="ms-4">
-        <div class="text-h6">Connection: {{ connectionProperties.name }}</div>
-        <div class="text-caption text-grey">{{ connection.url }}</div>
+        <div class="text-h3">{{ connectionProperties.name }}</div>
+        <div class="text-caption text-grey connection-url">{{ connection.url }}</div>
       </div>
 
       <v-tooltip
@@ -514,6 +514,10 @@ onBeforeUnmount(() =>
 </script>
 
 <style scoped>
+.connection-url {
+  font-size: 0.7rem !important;
+}
+
 .page-grid-container {
   height: calc(100vh - var(--v-layout-top, 0px));
   display: grid;
