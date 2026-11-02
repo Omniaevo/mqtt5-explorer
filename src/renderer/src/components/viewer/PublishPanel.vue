@@ -1,19 +1,6 @@
 <template>
   <div class="publish-panel">
-    <AppTextField v-model="form.topic" label="Topic" placeholder="example/topic">
-      <template v-if="canSync" #append-inner>
-        <AppTooltip text="Synchronize with new data">
-          <AppButton
-            variant="icon"
-            size="sm"
-            aria-label="Synchronize with new data"
-            @click="load(selected)"
-          >
-            <RefreshCw :size="16" aria-hidden="true" />
-          </AppButton>
-        </AppTooltip>
-      </template>
-    </AppTextField>
+    <AppTextField v-model="form.topic" label="Topic" placeholder="example/topic" />
     <AppTextarea v-model="form.payload" label="Value" rows="2" />
     <div class="form-row form-row--end form-row--right">
       <AppSwitch v-model="form.retain" label="Retain" />
@@ -75,15 +62,12 @@
       </AppTooltip>
     </template>
 
-    <div class="actions">
-      <AppButton color="primary" @click="emit('publish', toPacket())">Publish</AppButton>
-    </div>
   </div>
 </template>
 
 <script setup>
 import { computed } from "vue";
-import { Plus, RefreshCw, Trash2 } from "@lucide/vue";
+import { Plus, Trash2 } from "@lucide/vue";
 import { usePublishForm } from "../../composables/usePublishForm";
 import AppButton from "../ui/AppButton.vue";
 import AppSelect from "../ui/AppSelect.vue";
@@ -124,7 +108,17 @@ function clear() {
 // The form is always shown: it starts empty.
 loadEmpty();
 
-defineExpose({ load, reset: clear });
+/** Reloads the form from the selected topic. */
+function sync() {
+  load(props.selected);
+}
+
+/** Emits the current form as a packet. Called by the parent's publish button. */
+function submit() {
+  emit("publish", toPacket());
+}
+
+defineExpose({ load, reset: clear, submit, sync, canSync });
 </script>
 
 <style scoped>
@@ -180,10 +174,5 @@ defineExpose({ load, reset: clear });
   margin: 0;
   font-size: var(--font-size-md);
   font-weight: var(--font-weight-regular);
-}
-
-.actions {
-  display: flex;
-  justify-content: flex-end;
 }
 </style>

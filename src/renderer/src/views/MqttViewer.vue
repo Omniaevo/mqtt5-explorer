@@ -115,11 +115,25 @@
           </template>
         </div>
 
-        <v-tabs v-model="activeTab" color="primary">
-          <v-tab value="payload" :disabled="!selectedView">Payload</v-tab>
-          <v-tab value="history" :disabled="!selectedView">History</v-tab>
-          <v-tab value="publish">Publish</v-tab>
-        </v-tabs>
+        <div class="tabs-header">
+          <v-tabs v-model="activeTab" color="primary">
+            <v-tab value="payload" :disabled="!selectedView">Payload</v-tab>
+            <v-tab value="history" :disabled="!selectedView">History</v-tab>
+            <v-tab value="publish">Publish</v-tab>
+          </v-tabs>
+          <div v-if="activeTab === 'publish'" class="tabs-header__actions">
+            <AppTooltip v-if="publishPanel?.canSync" text="Synchronize with new data">
+              <AppButton
+                variant="icon"
+                aria-label="Synchronize with new data"
+                @click="publishPanel.sync()"
+              >
+                <RefreshCw :size="16" aria-hidden="true" />
+              </AppButton>
+            </AppTooltip>
+            <AppButton color="primary" @click="publishPanel?.submit()">Publish</AppButton>
+          </div>
+        </div>
         <v-divider />
 
         <v-tabs-window v-model="activeTab" class="tabs-window">
@@ -240,11 +254,14 @@ import {
   Cloud,
   CloudCheck,
   CloudSync,
+  RefreshCw,
   Trash2,
   X,
 } from "@lucide/vue";
 import NotificationsDialog from "../components/viewer/NotificationsDialog.vue";
 import HistoryPanel from "../components/viewer/HistoryPanel.vue";
+import AppButton from "../components/ui/AppButton.vue";
+import AppTooltip from "../components/ui/AppTooltip.vue";
 import PublishPanel from "../components/viewer/PublishPanel.vue";
 import SearchBar from "../components/viewer/SearchBar.vue";
 import SearchInfoDialog from "../components/viewer/SearchInfoDialog.vue";
@@ -516,6 +533,19 @@ onBeforeUnmount(() =>
 </script>
 
 <style scoped>
+.tabs-header__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.tabs-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-inline-end: var(--space-5);
+}
+
 .connection-url {
   font-size: 0.7rem !important;
 }
