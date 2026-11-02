@@ -42,7 +42,7 @@ The aim of this project is to bring the users a client app capable of making use
 
 ## Project setup
 
-The app uses [Electron](https://www.electronjs.org/), [Vue 3](https://vuejs.org/), [Vuetify 4](https://vuetifyjs.com/), [Pinia](https://pinia.vuejs.org/) and [electron-vite](https://electron-vite.org/). You need [Node.js](https://nodejs.org/) 20 or newer.
+The app uses [Electron](https://www.electronjs.org/), [Vue 3](https://vuejs.org/), [Reka UI](https://reka-ui.com/), [Pinia](https://pinia.vuejs.org/) and [electron-vite](https://electron-vite.org/). You need [Node.js](https://nodejs.org/) 20 or newer.
 
 ```bash
 npm install
@@ -124,12 +124,14 @@ Configuration files:
 - `electron.vite.config.mjs`: build of the main, preload and renderer bundles.
 - `electron-builder.yml`: packaging (AppImage, Flatpak, dmg, portable exe), output dir and publish target.
 - `vitest.config.mjs`, `eslint.config.mjs`, `.prettierrc`: tests, lint and format.
+- `src/renderer/src/assets/css/tokens.css`: design tokens (colors, spacing, typography) for light and dark themes.
+- `src/renderer/src/components/ui/`: shared UI components built on Reka UI.
 
 See:
 
 - [electron-vite Configuration Reference](https://electron-vite.org/config/).
 - [Vite Configuration Reference](https://vite.dev/config/).
-- [Vuetify Configuration Reference](https://vuetifyjs.com/en/introduction/why-vuetify/#feature-guides).
+- [Reka UI Documentation](https://reka-ui.com/docs/overview/getting-started).
 - [Electron Build Configuration Reference](https://www.electron.build/docs/configuration).
 
 ## Get involved
