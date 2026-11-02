@@ -174,6 +174,12 @@ defineExpose({ listElement: computed(() => listRef.value?.$el) });
   flex-direction: column;
 }
 
+/* Vertical list: tint the selected row; primary text on the tint is hard to read */
+.app-tabs[data-orientation="vertical"] .app-tabs__trigger[data-state="active"] {
+  background: var(--color-primary-subtle);
+  color: var(--color-text);
+}
+
 .app-tabs__panel {
   flex: 1 1 auto;
   min-block-size: 0;
