@@ -171,7 +171,6 @@
               :version="treeVersion"
               :capacity="settings.historySize"
               :active="activeTab === 'history'"
-              :variant="fieldVariant"
             />
           </v-tabs-window-item>
 
