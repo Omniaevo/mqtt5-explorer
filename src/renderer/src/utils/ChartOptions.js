@@ -24,8 +24,8 @@ const expandShortHex = (color) =>
     : color;
 
 /**
- * Adds an alpha channel to a `#rgb` or `#rrggbb` color (Vuetify gives
- * `on-*` colors as `#rgb`). Other formats are returned as is.
+ * Adds an alpha channel to a `#rgb` or `#rrggbb` color.
+ * Other formats are returned as is.
  * @param {string} color
  * @param {number} alpha Between 0 and 1.
  */
@@ -59,7 +59,7 @@ const yAxisFor = (isBoolean, axisStyle) =>
  * @param {number} config.height Chart height in pixels (legend excluded).
  * @param {string} config.label Series name shown in the legend.
  * @param {boolean} config.isBoolean Stepped 0/1 line labelled false/true.
- * @param {{primary: string, text: string}} config.colors Theme colors.
+ * @param {{primary: string, text: string}} config.colors Colors read from the CSS tokens.
  * @param {Function} config.steppedPaths uPlot stepped path builder
  * (injected so this module stays free of the DOM-bound library).
  */

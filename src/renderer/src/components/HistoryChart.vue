@@ -4,16 +4,17 @@
 
 <script setup>
 import {
-  computed,
+  nextTick,
   onBeforeUnmount,
   onMounted,
+  shallowRef,
   useTemplateRef,
   watch,
 } from "vue";
-import { useTheme } from "vuetify";
 import uPlot from "uplot";
 import "uplot/dist/uPlot.min.css";
 import { buildChartOptions } from "../utils/ChartOptions";
+import { useSettingsStore } from "../stores/settings";
 
 const MIN_CHART_HEIGHT = 100;
 
@@ -25,17 +26,23 @@ const props = defineProps({
 });
 
 const container = useTemplateRef("container");
-const theme = useTheme();
+const settings = useSettingsStore();
 
 // Plain variable on purpose: uPlot must not be proxied by Vue.
 let plot = null;
 let resizeObserver = null;
 
-const colors = computed(() => {
-  const { primary, "on-surface": text } = theme.current.value.colors;
+/** Chart colors from the CSS tokens currently applied on the root element. */
+const readTokenColors = () => {
+  const style = getComputedStyle(document.documentElement);
 
-  return { primary, text };
-});
+  return {
+    primary: style.getPropertyValue("--color-primary").trim(),
+    text: style.getPropertyValue("--color-text").trim(),
+  };
+};
+
+const colors = shallowRef(readTokenColors());
 
 /** Height left for the plot once the legend below it is placed. */
 const plotHeight = (containerHeight) => {
@@ -84,6 +91,16 @@ onBeforeUnmount(() => {
 watch(
   () => [props.xs, props.ys],
   ([xs, ys]) => plot?.setData([xs, ys])
+);
+
+// Tokens change after the theme sync ran: read them once the DOM is updated.
+watch(
+  () => [settings.theme, settings.primaryColor],
+  async () => {
+    await nextTick();
+    colors.value = readTokenColors();
+  },
+  { deep: true }
 );
 
 // uPlot cannot restyle axes or series after creation: rebuild instead.

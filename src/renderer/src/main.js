@@ -6,6 +6,7 @@ import vuetify from "./plugins/vuetify";
 import Connection from "./utils/Connection";
 
 // Custom CSS
+import "./assets/css/tokens.css";
 import "./assets/css/scrollbar.css";
 
 document.documentElement.style.overflow = "hidden";
