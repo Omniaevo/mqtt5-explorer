@@ -1,119 +1,114 @@
 <template>
   <div class="connection-container">
-    <v-app-bar flat>
-      <div
-        class="title ms-4"
-        style="cursor: pointer"
-        @click="scrollTabs('top')"
-      >
-        MQTT Connections
-      </div>
-      <v-spacer />
-      <v-text-field
+    <AppHeader>
+      <template #start>
+        <button class="title" type="button" @click="scrollTabs('top')">
+          MQTT Connections
+        </button>
+      </template>
+
+      <AppTextField
         v-model="searchConnection"
+        class="search-field"
         label="Search connections"
-        variant="outlined"
-        density="compact"
-        clearable
-        hide-details
-      />
-      <v-spacer />
-      <v-tooltip location="bottom">
-        <template #activator="{ props: tooltipProps }">
-          <v-btn
-            v-bind="tooltipProps"
-            class="me-2"
-            color="primary"
-            :icon="Plus"
-            variant="tonal"
-            size="small"
-            @click="addTmpConnection"
-          />
+        label-hidden
+        placeholder="Search connections"
+      >
+        <template v-if="searchConnection" #append-inner>
+          <AppButton
+            variant="icon"
+            size="sm"
+            aria-label="Clear search"
+            @click="searchConnection = ''"
+          >
+            <X :size="16" aria-hidden="true" />
+          </AppButton>
         </template>
-        <span>New connection</span>
-      </v-tooltip>
-    </v-app-bar>
+      </AppTextField>
+
+      <template #end>
+        <AppTooltip text="New connection">
+          <AppButton
+            variant="tonal"
+            color="primary"
+            aria-label="New connection"
+            @click="addTmpConnection"
+          >
+            <Plus :size="16" aria-hidden="true" />
+          </AppButton>
+        </AppTooltip>
+      </template>
+    </AppHeader>
 
     <SettingsDialog v-model="settingsOpen" />
 
-    <div class="ma-2 connection-area">
-      <v-card ref="tabsList" class="conn-tabs-container" flat>
-        <v-tabs v-model="tabId" direction="vertical">
-          <v-tab
-            v-for="(connection, i) in connections.brokerConnections"
-            v-show="filteredConnectionIds.has(connection.id)"
-            :key="'tab-' + connection.id"
-            :value="i"
-            class="tabs-left"
-          >
-            <div class="tab-truncate" :class="{ 'text-primary': tabId === i }">
-              {{ connection.name }}
-            </div>
-          </v-tab>
-        </v-tabs>
-      </v-card>
+    <AppTabs
+      ref="tabsRef"
+      v-model="tabId"
+      class="connection-area"
+      orientation="vertical"
+      aria-label="Connections"
+      :tabs="connectionTabs"
+    >
+      <template
+        v-for="(connection, i) in connections.brokerConnections"
+        :key="connection.id"
+        #[i]
+      >
+        <ConnectionForm
+          :properties="connection"
+          @connect="connect($event, i)"
+          @delete="confirmDelete(i)"
+          @updated="dataChanged($event, i)"
+        />
+      </template>
+    </AppTabs>
 
-      <v-tabs-window v-model="tabId" class="tab-items-container">
-        <v-tabs-window-item
-          v-for="(connection, i) in connections.brokerConnections"
-          :key="'connection-' + connection.id"
-          :value="i"
-          class="tab-items-container"
-        >
-          <ConnectionForm
-            :properties="connection"
-            @connect="connect($event, i)"
-            @delete="confirmDelete(i)"
-            @updated="dataChanged($event, i)"
-          />
-        </v-tabs-window-item>
-      </v-tabs-window>
-    </div>
-
-    <div class="foot-bar">
-      <div class="text-caption text-grey client-id pa-2">
+    <footer class="foot-bar">
+      <div class="client-id">
         <span>Client ID:</span>
-        <span class="text-primary font-weight-bold">{{
-          settings.clientId
-        }}</span>
+        <span class="client-id__value">{{ settings.clientId }}</span>
       </div>
 
-      <div class="app-version text-grey pa-2">
-        <div class="d-flex align-center">
-          <v-img :src="logo" class="me-1" width="1.4em" />
-          v{{ version }}
-        </div>
+      <div class="app-version">
+        <img class="app-version__logo" :src="logo" alt="" />
+        v{{ version }}
       </div>
-    </div>
+    </footer>
 
     <!-- Connection deletion confirmation -->
-    <v-dialog v-model="deleteDialog" max-width="50ch" persistent>
-      <v-card v-if="connectionToDelete">
-        <v-card-title>Confirm delete</v-card-title>
-        <v-card-text>
-          Are you sure you want to delete
-          <span class="font-weight-black"
-            >"{{ connectionToDelete.name }}"?</span
-          >
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer />
-          <v-btn variant="text" @click="cancelDelete">Cancel</v-btn>
-          <v-btn color="error" variant="text" @click="deleteConnection">
-            Delete
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+    <AppDialog
+      v-model:open="deleteDialog"
+      title="Confirm delete"
+      persistent
+      hide-close
+    >
+      <p v-if="connectionToDelete">
+        Are you sure you want to delete
+        <strong>"{{ connectionToDelete.name }}"?</strong>
+      </p>
+      <template #actions>
+        <AppButton variant="text" @click="cancelDelete">Cancel</AppButton>
+        <AppButton variant="text" color="danger" @click="deleteConnection">
+          Delete
+        </AppButton>
+      </template>
+    </AppDialog>
   </div>
 </template>
 
 <script setup>
 import { computed, nextTick, onBeforeMount, onBeforeUnmount, ref } from "vue";
 import { useRouter } from "vue-router";
-import { Plus } from "@lucide/vue";
+import { Plus, X } from "@lucide/vue";
 import ConnectionForm from "../components/ConnectionForm.vue";
 import SettingsDialog from "../components/SettingsDialog.vue";
+import AppButton from "../components/ui/AppButton.vue";
+import AppDialog from "../components/ui/AppDialog.vue";
+import AppHeader from "../components/ui/AppHeader.vue";
+import AppTabs from "../components/ui/AppTabs.vue";
+import AppTextField from "../components/ui/AppTextField.vue";
+import AppTooltip from "../components/ui/AppTooltip.vue";
 import ConnectionProperties from "../models/ConnectionProperties";
 import { useConnectionsStore } from "../stores/connections";
 import { useNotifyStore } from "../stores/notify";
@@ -132,7 +127,7 @@ const settingsOpen = ref(false);
 const searchConnection = ref("");
 const deleteDialog = ref(false);
 const deleteIndex = ref(-1);
-const tabsList = ref(null);
+const tabsRef = ref(null);
 
 const connectionToDelete = computed(
   () => connections.brokerConnections[deleteIndex.value]
@@ -148,9 +143,17 @@ const filteredConnectionIds = computed(() => {
   );
 });
 
+const connectionTabs = computed(() =>
+  connections.brokerConnections.map((connection, index) => ({
+    value: index,
+    label: connection.name,
+    hidden: !filteredConnectionIds.value.has(connection.id),
+  }))
+);
+
 function scrollTabs(to = "bottom") {
   nextTick(() => {
-    const tabs = tabsList.value?.$el;
+    const tabs = tabsRef.value?.listElement;
 
     tabs?.scroll({
       top: to === "bottom" ? tabs.scrollHeight : 0,
@@ -253,54 +256,72 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .connection-container {
-  height: calc(100vh - var(--v-layout-top, 0px));
-  display: grid;
-  grid-template-columns: 1fr;
-  grid-template-rows: 1fr min-content;
+  display: flex;
+  flex-direction: column;
+  block-size: 100vh;
+}
+
+.title {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.search-field {
+  inline-size: min(100%, 40ch);
+  margin-inline: auto;
 }
 
 .connection-area {
+  --app-tabs-list-size: minmax(0, 2fr);
+  --app-tabs-panel-size: minmax(0, 3fr);
+
+  flex: 1;
+  margin: var(--space-4);
   overflow: hidden;
-  display: grid;
-  grid-template-columns: 1fr 2fr;
-  grid-template-rows: 1fr;
-  gap: 1em;
 }
 
-.conn-tabs-container {
-  overflow: auto;
-}
-
-.tab-items-container {
-  width: 100%;
-  height: 100%;
-  background: transparent !important;
-}
-
-.tabs-left {
-  display: flex;
-  justify-content: left;
-}
-
-.tab-truncate {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+.connection-area :deep(.app-tabs__header) {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
 }
 
 .foot-bar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-}
-
-.app-version {
-  font-size: 0.8rem;
+  padding: var(--space-4);
+  color: var(--color-text-muted);
 }
 
 .client-id {
   display: flex;
-  gap: 0.5em;
+  gap: var(--space-4);
   align-items: center;
+  font-size: var(--font-size-sm);
+}
+
+.client-id__value {
+  color: var(--color-primary);
+  font-weight: var(--font-weight-bold);
+}
+
+.app-version {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+  font-size: var(--font-size-sm);
+}
+
+.app-version__logo {
+  inline-size: 1.4em;
+  block-size: 1.4em;
 }
 </style>
