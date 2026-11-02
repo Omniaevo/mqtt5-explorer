@@ -1,52 +1,51 @@
 <template>
-  <v-expansion-panel v-if="isAvailable" value="history">
-    <v-expansion-panel-title>
-      <span>History</span>
-      <span class="text-caption ms-2 text-grey">
-        ({{ storedCount }} of {{ capacity }} values)
-      </span>
-    </v-expansion-panel-title>
+  <div class="history-panel">
+    <div v-if="!isAvailable" class="history-panel__empty">{{ emptyMessage }}</div>
 
-    <v-expansion-panel-text>
-      <template v-if="expanded">
-        <v-select
+    <template v-else-if="active">
+      <div class="history-panel__toolbar">
+        <AppSelect
           v-if="fields.length > 0"
           v-model="selectedField"
           :items="fields"
-          :variant="variant"
-          class="mb-2"
-          density="compact"
-          hide-details
+          class="history-panel__field"
           label="Field"
         />
-        <HistoryChart
-          v-if="isChartable"
-          :xs="series.xs"
-          :ys="series.ys"
-          :is-boolean="series.isBoolean"
-          :label="selectedField ?? 'Value'"
-        />
-        <v-virtual-scroll
-          v-else
-          :items="rawRows"
-          :height="RAW_LIST_HEIGHT"
-          :item-height="RAW_ROW_HEIGHT"
-          item-key="key"
-        >
-          <template #default="{ item }">
-            <div class="raw-row d-flex" :title="item.payload">
-              <span class="text-grey me-3 flex-shrink-0">{{ item.time }}</span>
-              <span class="raw-payload">{{ item.payload }}</span>
-            </div>
-          </template>
-        </v-virtual-scroll>
-      </template>
-    </v-expansion-panel-text>
-  </v-expansion-panel>
+        <span class="history-panel__count">
+          ({{ storedCount }} of {{ capacity }} values)
+        </span>
+      </div>
+      <HistoryChart
+        v-if="isChartable"
+        :xs="series.xs"
+        :ys="series.ys"
+        :is-boolean="series.isBoolean"
+        :label="selectedField ?? 'Value'"
+      />
+      <div v-else ref="scrollEl" class="raw-list">
+        <div class="raw-canvas" :style="{ height: `${totalSize}px` }">
+          <div
+            v-for="item in virtualItems"
+            :key="item.key"
+            class="raw-row"
+            :style="{
+              height: `${RAW_ROW_HEIGHT}px`,
+              transform: `translateY(${item.start}px)`,
+            }"
+            :title="rawRows[item.index].payload"
+          >
+            <span class="raw-time">{{ rawRows[item.index].time }}</span>
+            <span class="raw-payload">{{ rawRows[item.index].payload }}</span>
+          </div>
+        </div>
+      </div>
+    </template>
+  </div>
 </template>
 
 <script setup>
-import { computed, reactive } from "vue";
+import { computed, reactive, ref } from "vue";
+import { useVirtualizer } from "@tanstack/vue-virtual";
 import {
   chartableFields,
   extractSeries,
@@ -54,9 +53,10 @@ import {
 } from "../../utils/ValueExtractor";
 import { resolveField, toRawRows } from "../../utils/HistoryView";
 import HistoryChart from "../HistoryChart.vue";
+import AppSelect from "../ui/AppSelect.vue";
 
-const RAW_LIST_HEIGHT = 240;
 const RAW_ROW_HEIGHT = 28;
+const OVERSCAN_ROWS = 10;
 
 const props = defineProps({
   /** Selected topic node; the tree is not reactive, see `version`. */
@@ -65,9 +65,8 @@ const props = defineProps({
   version: { type: Number, required: true },
   /** `historySize` setting. */
   capacity: { type: Number, required: true },
-  /** Work is done only while the panel is open. */
-  expanded: { type: Boolean, default: false },
-  variant: { type: String, default: "underlined" },
+  /** Work is done only while the panel is shown. */
+  active: { type: Boolean, default: false },
 });
 
 // Field picked per topic, for the life of this view.
@@ -79,17 +78,23 @@ const isAvailable = computed(() => {
   return props.capacity > 0 && Boolean(props.node?.value);
 });
 
+const emptyMessage = computed(() =>
+  props.capacity > 0
+    ? "No values received on this topic"
+    : "History is disabled in the settings"
+);
+
 const storedCount = computed(() => {
   props.version; // Dependency only
 
   return props.node?.historyLength ?? 0;
 });
 
-/** Copy of the history; empty while the panel is closed. */
+/** Copy of the history; empty while the panel is hidden. */
 const history = computed(() => {
   props.version; // Dependency only
 
-  return props.expanded && isAvailable.value ? props.node.history : [];
+  return props.active && isAvailable.value ? props.node.history : [];
 });
 
 const fields = computed(() => {
@@ -114,14 +119,77 @@ const series = computed(() =>
 const rawRows = computed(() =>
   isChartable.value ? [] : toRawRows(history.value)
 );
+
+const scrollEl = ref(null);
+
+const virtualizer = useVirtualizer(
+  computed(() => ({
+    count: rawRows.value.length,
+    getScrollElement: () => scrollEl.value,
+    estimateSize: () => RAW_ROW_HEIGHT,
+    getItemKey: (index) => rawRows.value[index].key,
+    overscan: OVERSCAN_ROWS,
+  }))
+);
+
+const virtualItems = computed(() => virtualizer.value.getVirtualItems());
+const totalSize = computed(() => virtualizer.value.getTotalSize());
 </script>
 
 <style scoped>
+.history-panel {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.history-panel__empty,
+.history-panel__count {
+  color: var(--color-text-muted);
+}
+
+.history-panel__toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-6);
+  margin-block-end: var(--space-4);
+}
+
+.history-panel__field {
+  min-inline-size: 16ch;
+}
+
+.history-panel__count {
+  margin-inline-start: auto;
+  font-size: var(--font-size-sm);
+}
+
+.raw-list {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.raw-canvas {
+  position: relative;
+  width: 100%;
+}
+
 .raw-row {
-  height: 28px;
-  line-height: 28px;
-  font-family: monospace;
-  font-size: 0.85em;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: var(--font-size-sm);
+}
+
+.raw-time {
+  flex: none;
+  margin-inline-end: var(--space-5);
+  color: var(--color-text-muted);
 }
 
 .raw-payload {

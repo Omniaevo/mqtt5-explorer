@@ -177,7 +177,7 @@ let menuTemplate = (page = pages.HOME) => [
         label: "Paste",
         role: "paste",
       },
-      ...(page === pages.HOME && !isMac
+      ...(!isMac
         ? [
             {
               type: "separator",

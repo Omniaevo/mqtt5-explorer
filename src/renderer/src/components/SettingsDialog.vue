@@ -1,279 +1,269 @@
 <template>
-  <v-dialog v-model="open" max-width="900" :fullscreen="xs" scrollable>
-    <v-card>
-      <v-card-title class="d-flex align-center">
-        <span>Settings</span>
-        <v-spacer />
-        <v-btn
-          icon="mdi-close"
-          variant="text"
-          size="small"
-          aria-label="Close settings"
-          @click="open = false"
-        />
-      </v-card-title>
-      <v-divider />
-
-      <v-card-text class="px-4 py-2">
-        <div class="settings-section text-medium-emphasis">Appearance</div>
+  <AppDialog
+    v-model:open="open"
+    title="Settings"
+    max-width="900px"
+    fullscreen-on-small
+  >
+    <div class="settings-body">
+      <section class="settings-group">
+        <h3 class="settings-section">Appearance</h3>
         <SettingsRow title="Theme" description="Colors of the whole app.">
-          <v-btn-toggle
-            v-model="settings.theme"
-            color="primary"
-            density="comfortable"
-            variant="outlined"
-            mandatory
-            divided
-          >
-            <v-btn
-              v-for="theme in THEMES"
-              :key="theme.value"
-              :value="theme.value"
-            >
-              {{ theme.title }}
-            </v-btn>
-          </v-btn-toggle>
+          <AppToggleGroup v-model="theme" :items="THEME_ITEMS" aria-label="Theme" />
+        </SettingsRow>
+        <SettingsRow
+          title="Font size"
+          description="Size of all text and controls."
+        >
+          <AppSelect
+            v-model="settings.fontScale"
+            class="settings-control"
+            label="Font size"
+            label-hidden
+            :items="FONT_SIZE_ITEMS"
+            item-title="text"
+            item-value="value"
+          />
         </SettingsRow>
         <SettingsRow
           title="Primary color"
           description="Accent color of buttons and highlights."
         >
-          <v-select
-            v-model="settings.primaryColor"
-            class="settings-control"
-            :items="COLORS"
-            :variant="fieldVariant"
-            item-title="text"
-            item-value="value"
-            hide-details
-            return-object
-          >
-            <template #item="{ props: itemProps, item }">
-              <v-list-item v-bind="itemProps">
-                <template #append>
-                  <v-icon :color="item.value[themeMode]">
-                    {{
-                      settings.isDark
-                        ? "mdi-moon-waning-crescent"
-                        : "mdi-white-balance-sunny"
-                    }}
-                  </v-icon>
-                </template>
-              </v-list-item>
-            </template>
-          </v-select>
+          <div class="color-picker">
+            <AppSelect
+              v-model="primaryColorName"
+              class="settings-control"
+              label="Primary color"
+              label-hidden
+              :items="COLORS"
+              item-title="text"
+              item-value="text"
+            >
+              <template #item="{ item }">
+                <span class="color-option">
+                  <span
+                    class="color-swatch"
+                    :style="{ background: item.value[themeMode] }"
+                  />
+                  {{ item.text }}
+                </span>
+              </template>
+            </AppSelect>
+            <span
+              class="color-swatch color-swatch--preview"
+              :style="{ background: settings.primaryColor.value[themeMode] }"
+              aria-hidden="true"
+            />
+          </div>
         </SettingsRow>
-        <SettingsRow
-          title="Outlined fields"
-          description="Use boxed inputs instead of underlined inputs."
-        >
-          <v-switch
-            v-model="settings.outline"
-            color="primary"
-            hide-details
-            inset
-          />
-        </SettingsRow>
+      </section>
 
-        <div class="settings-section text-medium-emphasis mt-4">Topic tree</div>
+      <section class="settings-group">
+        <h3 class="settings-section">Topic tree</h3>
         <SettingsRow
           title="Dense tree"
           description="Smaller rows. More topics fit on the screen."
         >
-          <v-switch
-            v-model="settings.denseTree"
-            color="primary"
-            hide-details
-            inset
-          />
+          <AppSwitch v-model="settings.denseTree" :label="switchLabel(settings.denseTree)" />
         </SettingsRow>
+      </section>
 
-        <div class="settings-section text-medium-emphasis mt-4">
-          Application
-        </div>
+      <section class="settings-group">
+        <h3 class="settings-section">Application</h3>
         <SettingsRow
           title="Close to system tray"
           description="Keep the app running when the window closes."
         >
-          <v-switch
-            v-model="settings.closeTray"
-            color="primary"
-            hide-details
-            inset
-          />
+          <AppSwitch v-model="settings.closeTray" :label="switchLabel(settings.closeTray)" />
         </SettingsRow>
-
         <SettingsRow
           title="Values kept per topic (0 to disable)"
           description="History size for each topic. From 0 to 500."
         >
-          <v-text-field
+          <AppTextField
             :model-value="settings.historySize"
             class="settings-control"
-            :variant="fieldVariant"
+            label="Values kept per topic"
+            label-hidden
             type="number"
             min="0"
             max="500"
             step="1"
-            hide-details
-            @update:model-value="
-              settings.historySize = clampHistorySize($event)
-            "
+            @update:model-value="settings.historySize = clampHistorySize($event)"
           />
         </SettingsRow>
+      </section>
 
-        <v-expansion-panels class="mt-4" variant="accordion">
-          <v-expansion-panel title="MQTT client (advanced)">
-            <v-expansion-panel-text>
-              <SettingsRow
-                title="Client ID"
-                description="Name of this client on the broker."
-              >
-                <v-text-field
-                  v-model="settings.clientId"
-                  class="settings-control settings-control-id"
-                  :variant="fieldVariant"
-                  clearable
-                  hide-details
-                />
-                <v-btn
-                  class="ms-2"
-                  icon
-                  variant="text"
-                  size="small"
-                  aria-label="New random ID"
-                  @click="settings.regenerateClientId()"
+      <AppAccordion v-model="openPanel" :items="PANELS" type="single">
+        <template #item-mqtt>
+          <SettingsRow
+            title="Client ID"
+            description="Name of this client on the broker."
+          >
+            <AppTextField
+              v-model="settings.clientId"
+              mono
+              class="settings-control settings-control-id"
+              label="Client ID"
+              label-hidden
+            >
+              <template #append-inner>
+                <AppButton
+                  v-if="settings.clientId"
+                  variant="icon"
+                  size="sm"
+                  aria-label="Clear client ID"
+                  @click="settings.clientId = ''"
                 >
-                  <v-icon>mdi-refresh</v-icon>
-                  <v-tooltip activator="parent" location="top">
-                    New random ID
-                  </v-tooltip>
-                </v-btn>
-              </SettingsRow>
-              <SettingsRow
-                title="Keepalive"
-                description="Time between pings to the broker, in seconds."
+                  <X :size="14" aria-hidden="true" />
+                </AppButton>
+              </template>
+            </AppTextField>
+            <AppTooltip text="New random ID" side="top">
+              <AppButton
+                variant="icon"
+                aria-label="New random ID"
+                @click="settings.regenerateClientId()"
               >
-                <v-select
-                  v-model="settings.keepalive"
-                  class="settings-control settings-control-wide"
-                  :items="KEEPALIVE_OPTIONS"
-                  :variant="fieldVariant"
-                  hide-details
-                />
-              </SettingsRow>
-              <SettingsRow
-                title="Connection timeout"
-                description="Time to wait for the broker, in seconds."
-              >
-                <v-select
-                  v-model="settings.connectTimeout"
-                  class="settings-control settings-control-wide"
-                  :items="CONNECT_TIMEOUT_OPTIONS"
-                  :variant="fieldVariant"
-                  hide-details
-                />
-              </SettingsRow>
-              <SettingsRow
-                title="Reconnect period"
-                description="Time between reconnect attempts, in seconds."
-              >
-                <v-select
-                  v-model="settings.reconnectPeriod"
-                  class="settings-control settings-control-wide"
-                  :items="RECONNECT_PERIOD_OPTIONS"
-                  :variant="fieldVariant"
-                  hide-details
-                />
-              </SettingsRow>
-              <SettingsRow
-                title="Max reconnects"
-                description="Number of reconnect attempts. 0 turns it off."
-              >
-                <v-select
-                  v-model="settings.maxReconnects"
-                  class="settings-control settings-control-wide"
-                  :items="MAX_RECONNECTS_OPTIONS"
-                  :variant="fieldVariant"
-                  hide-details
-                />
-              </SettingsRow>
-            </v-expansion-panel-text>
-          </v-expansion-panel>
+                <RotateCw :size="16" aria-hidden="true" />
+              </AppButton>
+            </AppTooltip>
+          </SettingsRow>
+          <SettingsRow
+            title="Keepalive"
+            description="Time between pings to the broker, in seconds."
+          >
+            <AppSelect
+              v-model="settings.keepalive"
+              class="settings-control settings-control-wide"
+              label="Keepalive"
+              label-hidden
+              :items="KEEPALIVE_OPTIONS"
+            />
+          </SettingsRow>
+          <SettingsRow
+            title="Connection timeout"
+            description="Time to wait for the broker, in seconds."
+          >
+            <AppSelect
+              v-model="settings.connectTimeout"
+              class="settings-control settings-control-wide"
+              label="Connection timeout"
+              label-hidden
+              :items="CONNECT_TIMEOUT_OPTIONS"
+            />
+          </SettingsRow>
+          <SettingsRow
+            title="Reconnect period"
+            description="Time between reconnect attempts, in seconds."
+          >
+            <AppSelect
+              v-model="settings.reconnectPeriod"
+              class="settings-control settings-control-wide"
+              label="Reconnect period"
+              label-hidden
+              :items="RECONNECT_PERIOD_OPTIONS"
+            />
+          </SettingsRow>
+          <SettingsRow
+            title="Max reconnects"
+            description="Number of reconnect attempts. 0 turns it off."
+          >
+            <AppSelect
+              v-model="settings.maxReconnects"
+              class="settings-control settings-control-wide"
+              label="Max reconnects"
+              label-hidden
+              :items="MAX_RECONNECTS_OPTIONS"
+            />
+          </SettingsRow>
+        </template>
 
-          <v-expansion-panel title="Keyboard shortcuts">
-            <v-expansion-panel-text>
-              <v-list density="compact">
-                <v-list-item
-                  v-for="shortcut in SHORTCUTS"
-                  :key="shortcut.label"
-                  :title="shortcut.label"
-                >
-                  <template #append>
-                    <span class="text-caption"
-                      >{{ modifierKey }} + {{ shortcut.keys }}</span
-                    >
-                  </template>
-                </v-list-item>
-              </v-list>
-            </v-expansion-panel-text>
-          </v-expansion-panel>
-        </v-expansion-panels>
-      </v-card-text>
+        <template #item-shortcuts>
+          <ul class="shortcut-list">
+            <li
+              v-for="shortcut in SHORTCUTS"
+              :key="shortcut.label"
+              class="shortcut-list__item"
+            >
+              <span>{{ shortcut.label }}</span>
+              <span class="shortcut-list__keys">
+                {{ modifierKey }} + {{ shortcut.keys }}
+              </span>
+            </li>
+          </ul>
+        </template>
+      </AppAccordion>
+    </div>
 
-      <v-divider />
-      <v-card-actions class="px-4">
-        <span class="text-caption text-medium-emphasis">v{{ version }}</span>
-        <v-btn
-          color="error"
-          prepend-icon="mdi-restore"
-          size="x-small"
+    <template #actions>
+      <div class="settings-footer">
+        <span class="settings-footer__version">v{{ version }}</span>
+        <AppButton
           variant="text"
+          color="danger"
+          size="sm"
           @click="resetDialog = true"
         >
+          <RotateCcw :size="14" aria-hidden="true" />
           Reset to defaults
-        </v-btn>
-        <v-spacer />
-        <v-btn
-          color="primary"
-          prepend-icon="mdi-bug"
-          size="x-small"
+        </AppButton>
+        <span class="settings-footer__spacer" />
+        <AppButton
           variant="text"
+          color="primary"
+          size="sm"
           @click="openBugsUrl"
         >
+          <Bug :size="14" aria-hidden="true" />
           Report a bug
-        </v-btn>
-      </v-card-actions>
-    </v-card>
+        </AppButton>
+      </div>
+    </template>
+  </AppDialog>
 
-    <v-dialog v-model="resetDialog" max-width="50ch" persistent>
-      <v-card>
-        <v-card-title>Confirm reset</v-card-title>
-        <v-card-text>
-          Reset all settings to their defaults? The client ID stays the same.
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer />
-          <v-btn variant="text" @click="resetDialog = false">Cancel</v-btn>
-          <v-btn color="error" variant="text" @click="confirmReset">
-            Reset
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-  </v-dialog>
+  <AppDialog
+    v-model:open="resetDialog"
+    title="Confirm reset"
+    persistent
+    hide-close
+  >
+    Reset all settings to their defaults? The client ID stays the same.
+    <template #actions>
+      <AppButton variant="text" @click="resetDialog = false">Cancel</AppButton>
+      <AppButton variant="text" color="danger" @click="confirmReset">
+        Reset
+      </AppButton>
+    </template>
+  </AppDialog>
 </template>
 
 <script setup>
 import { computed, ref } from "vue";
-import { useDisplay } from "vuetify";
-import { clampHistorySize, useSettingsStore } from "../stores/settings";
+import { Bug, Moon, RotateCcw, RotateCw, Sun, X } from "@lucide/vue";
+import { clampHistorySize, FONT_SCALES, useSettingsStore } from "../stores/settings";
 import { isMacOs } from "../utils/platform";
 import SettingsRow from "./SettingsRow.vue";
+import AppAccordion from "./ui/AppAccordion.vue";
+import AppButton from "./ui/AppButton.vue";
+import AppDialog from "./ui/AppDialog.vue";
+import AppSelect from "./ui/AppSelect.vue";
+import AppSwitch from "./ui/AppSwitch.vue";
+import AppTextField from "./ui/AppTextField.vue";
+import AppToggleGroup from "./ui/AppToggleGroup.vue";
+import AppTooltip from "./ui/AppTooltip.vue";
 
-const THEMES = [
-  { title: "Light", value: "light" },
-  { title: "Dark", value: "dark" },
+const THEME_ITEMS = [
+  { value: "light", label: "Light", icon: Sun, showLabel: true },
+  { value: "dark", label: "Dark", icon: Moon, showLabel: true },
+];
+const FONT_SIZE_ITEMS = FONT_SCALES.map((value) => ({
+  value,
+  text: `${value}%`,
+}));
+const PANELS = [
+  { value: "mqtt", title: "MQTT client (advanced)" },
+  { value: "shortcuts", title: "Keyboard shortcuts" },
 ];
 const KEEPALIVE_OPTIONS = [60, 120, 180, 240, 300];
 const RECONNECT_PERIOD_OPTIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
@@ -310,16 +300,33 @@ const SHORTCUTS = [
 const open = defineModel({ type: Boolean, default: false });
 
 const settings = useSettingsStore();
-const { xs } = useDisplay();
 const resetDialog = ref(false);
+const openPanel = ref("");
 
 const version = import.meta.env.VITE_APP_VERSION;
 const modifierKey = isMacOs ? "Cmd" : "Ctrl";
 
-const fieldVariant = computed(() =>
-  settings.outline ? "outlined" : "underlined"
-);
 const themeMode = computed(() => (settings.isDark ? "dark" : "light"));
+
+// The toggle group clears its value when the selected item is clicked again: ignore that
+const theme = computed({
+  get: () => settings.theme,
+  set: (value) => {
+    if (value) settings.theme = value;
+  },
+});
+
+// The store keeps the whole color object; the select works with its name
+const primaryColorName = computed({
+  get: () => settings.primaryColor.text,
+  set: (name) => {
+    settings.primaryColor = COLORS.find((color) => color.text === name);
+  },
+});
+
+function switchLabel(isOn) {
+  return isOn ? "Enabled" : "Disabled";
+}
 
 function confirmReset() {
   settings.resetToDefaults();
@@ -332,33 +339,103 @@ function openBugsUrl() {
 </script>
 
 <style scoped>
+.settings-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
 .settings-control {
-  width: 220px;
-  max-width: 100%;
+  inline-size: 220px;
+  max-inline-size: 100%;
 }
 
 .settings-control-wide {
-  width: 360px;
+  inline-size: 360px;
 }
 
-/* Fits "m5-" plus a GUID (40 characters), the clear icon and the padding */
+/* Fits "m5-" plus a GUID (40 characters), the clear button and the padding */
 .settings-control-id {
-  width: calc(40ch + 80px);
+  inline-size: calc(40ch + var(--space-8) * 2);
 }
 
 .settings-section {
   display: flex;
   align-items: center;
-  gap: 12px;
-  font-size: 0.65rem;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
+  gap: var(--space-5);
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
 }
 
-.settings-section::before,
+/* Title, then a divider line filling the rest of the row */
 .settings-section::after {
   content: "";
   flex: 1;
-  border-top: thin solid rgba(var(--v-border-color), var(--v-border-opacity));
+  border-block-start: 1px solid var(--color-border);
+}
+
+.color-option {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.color-picker {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+/* Square color chip: in the options and, larger, as the preview next to the select */
+.color-swatch {
+  flex: none;
+  inline-size: 0.875rem;
+  block-size: 0.875rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+}
+
+.color-swatch--preview {
+  inline-size: var(--control-height);
+  block-size: var(--control-height);
+  border-radius: var(--radius-md);
+}
+
+.shortcut-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.shortcut-list__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-5);
+  min-block-size: var(--row-height);
+}
+
+.shortcut-list__keys {
+  color: var(--color-text-muted);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-sm);
+}
+
+.settings-footer {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.settings-footer__version {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+}
+
+.settings-footer__spacer {
+  flex: 1;
 }
 </style>

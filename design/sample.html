@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MQTT5 Explorer - design tokens sample</title>
+  <style>
+    @layer tokens, base, components, sample;
+
+    /* ===== Tokens: shared (theme independent) ===== */
+    @layer tokens {
+      :root {
+        --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans", "Helvetica Neue", Arial, sans-serif;
+        --font-mono: ui-monospace, "SF Mono", "Cascadia Mono", "JetBrains Mono", Menlo, Consolas, "DejaVu Sans Mono", monospace;
+
+        --font-size-xs: 0.6875rem; /* 11px: badges, hints */
+        --font-size-sm: 0.75rem;   /* 12px: secondary text, tree rows */
+        --font-size-md: 0.8125rem; /* 13px: body, controls */
+        --font-size-lg: 0.9375rem; /* 15px: dialog and section titles */
+        --font-weight-regular: 400;
+        --font-weight-medium: 500;
+        --font-weight-bold: 600;
+        --line-height-tight: 1.25;
+        --line-height-normal: 1.45;
+
+        --space-1: 0.125rem; /* 2px */
+        --space-2: 0.25rem;  /* 4px */
+        --space-3: 0.375rem; /* 6px */
+        --space-4: 0.5rem;   /* 8px */
+        --space-5: 0.75rem;  /* 12px */
+        --space-6: 1rem;     /* 16px */
+        --space-7: 1.5rem;   /* 24px */
+        --space-8: 2rem;     /* 32px */
+
+        --radius-sm: 2px;
+        --radius-md: 3px;
+        --radius-lg: 4px;
+
+        --duration-fast: 100ms;
+        --duration-normal: 180ms;
+        --easing: cubic-bezier(0.2, 0, 0, 1);
+
+        --control-height: 1.75rem; /* 28px */
+        --header-height: 2.5rem;   /* 40px */
+        --row-height: 1.5rem;      /* 24px: tree and list rows */
+
+        /* Share of the primary color mixed into neutral surfaces */
+        --tint: 5%;
+      }
+
+      /* ===== Tokens: light ===== */
+      [data-theme="light"] {
+        color-scheme: light;
+        --color-primary: #3f51b5;
+        --color-on-primary: #ffffff;
+        --color-bg: color-mix(in oklab, #eff1f4, var(--color-primary) var(--tint));
+        --color-surface: color-mix(in oklab, #fafbfc, var(--color-primary) var(--tint));
+        --color-surface-raised: #ffffff;
+        --color-border: color-mix(in oklab, #d3d7de, var(--color-primary) var(--tint));
+        --color-text: #1b1e23;
+        --color-text-muted: #5b6270;
+        --color-danger: #cf222e;
+        --color-success: #1a7f37;
+        --color-warning: #9a6700;
+        --color-focus-ring: color-mix(in oklab, var(--color-primary) 70%, transparent);
+        --color-hover: color-mix(in oklab, var(--color-text) 6%, transparent);
+        --color-primary-subtle: color-mix(in oklab, var(--color-primary) 14%, var(--color-surface));
+        --shadow-1: 0 1px 2px rgb(20 24 31 / 0.10);
+        --shadow-2: 0 8px 24px rgb(20 24 31 / 0.16), 0 0 0 1px var(--color-border);
+      }
+
+      /* ===== Tokens: dark ===== */
+      [data-theme="dark"] {
+        color-scheme: dark;
+        --color-primary: #5c6bc0;
+        --color-on-primary: #ffffff;
+        --color-bg: color-mix(in oklab, #0e0f12, var(--color-primary) var(--tint));
+        --color-surface: color-mix(in oklab, #16181c, var(--color-primary) var(--tint));
+        --color-surface-raised: color-mix(in oklab, #1e2025, var(--color-primary) var(--tint));
+        --color-border: color-mix(in oklab, #2b2e35, var(--color-primary) var(--tint));
+        --color-text: #e6e8ec;
+        --color-text-muted: #9097a3;
+        --color-danger: #ff6b6b;
+        --color-success: #3fb950;
+        --color-warning: #d29922;
+        --color-focus-ring: color-mix(in oklab, var(--color-primary) 80%, white 10%);
+        --color-hover: color-mix(in oklab, var(--color-text) 8%, transparent);
+        --color-primary-subtle: color-mix(in oklab, var(--color-primary) 28%, var(--color-surface));
+        --shadow-1: 0 1px 2px rgb(0 0 0 / 0.40);
+        --shadow-2: 0 8px 24px rgb(0 0 0 / 0.50), 0 0 0 1px var(--color-border);
+      }
+    }
+
+    /* ===== Base ===== */
+    @layer base {
+      *, *::before, *::after { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: var(--font-sans);
+        font-size: var(--font-size-md);
+        line-height: var(--line-height-normal);
+        background: #888;
+      }
+      h1, h2, h3, p, ul { margin: 0; padding: 0; }
+      ul { list-style: none; }
+      button, input, select { font: inherit; color: inherit; }
+      svg { flex: none; }
+      :focus-visible {
+        outline: 2px solid var(--color-focus-ring);
+        outline-offset: 1px;
+      }
+    }
+
+    /* ===== Components ===== */
+    @layer components {
+      .icon { inline-size: 1rem; block-size: 1rem; stroke: currentcolor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+      /* Buttons */
+      .btn {
+        display: inline-flex; align-items: center; justify-content: center; gap: var(--space-3);
+        block-size: var(--control-height);
+        padding-inline: var(--space-5);
+        border: 1px solid transparent;
+        border-radius: var(--radius-md);
+        background: transparent;
+        color: var(--color-text);
+        font-weight: var(--font-weight-medium);
+        cursor: pointer;
+        transition: background-color var(--duration-fast) var(--easing), border-color var(--duration-fast) var(--easing);
+      }
+      .btn:hover { background: var(--color-hover); }
+      .btn--filled { background: var(--color-primary); color: var(--color-on-primary); }
+      .btn--filled:hover { background: color-mix(in oklab, var(--color-primary) 88%, var(--color-text)); }
+      .btn--outline { border-color: var(--color-border); }
+      .btn--text { color: var(--color-primary); }
+      .btn--danger { color: var(--color-danger); }
+      .btn--icon { inline-size: var(--control-height); padding: 0; color: var(--color-text-muted); }
+      .btn--icon:hover { color: var(--color-text); }
+      .btn[disabled] { opacity: 0.45; cursor: not-allowed; }
+
+      /* Text field */
+      .field { display: grid; gap: var(--space-2); }
+      .field__label { font-size: var(--font-size-sm); color: var(--color-text-muted); font-weight: var(--font-weight-medium); }
+      .field__input {
+        block-size: var(--control-height);
+        padding-inline: var(--space-4);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-md);
+        background: var(--color-surface-raised);
+        transition: border-color var(--duration-fast) var(--easing);
+      }
+      .field__input:hover { border-color: var(--color-text-muted); }
+      .field__input:focus-visible, .field__input--focus {
+        border-color: var(--color-primary);
+        outline: 2px solid var(--color-focus-ring);
+        outline-offset: -1px;
+      }
+      .field__input--error { border-color: var(--color-danger); }
+      .field__hint { font-size: var(--font-size-xs); color: var(--color-text-muted); }
+      .field__hint--error { color: var(--color-danger); }
+
+      /* Select (closed) */
+      .select {
+        display: flex; align-items: center; justify-content: space-between; gap: var(--space-4);
+        inline-size: 100%;
+        block-size: var(--control-height);
+        padding-inline: var(--space-4);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-md);
+        background: var(--color-surface-raised);
+        cursor: pointer;
+        text-align: start;
+      }
+      .select:hover { border-color: var(--color-text-muted); }
+      .select .icon { color: var(--color-text-muted); }
+
+      /* Switch */
+      .switch { display: inline-flex; align-items: center; gap: var(--space-4); cursor: pointer; }
+      .switch__input { position: absolute; opacity: 0; }
+      .switch__track {
+        position: relative;
+        inline-size: 1.75rem; block-size: 1rem;
+        border-radius: var(--radius-lg);
+        background: var(--color-border);
+        transition: background-color var(--duration-normal) var(--easing);
+      }
+      .switch__thumb {
+        position: absolute; inset-block: 2px; inset-inline-start: 2px;
+        inline-size: 0.75rem;
+        border-radius: var(--radius-sm);
+        background: var(--color-surface-raised);
+        box-shadow: var(--shadow-1);
+        transition: transform var(--duration-normal) var(--easing);
+      }
+      .switch__input:checked + .switch__track { background: var(--color-primary); }
+      .switch__input:checked + .switch__track .switch__thumb { transform: translateX(0.75rem); background: var(--color-on-primary); }
+      .switch__input:focus-visible + .switch__track { outline: 2px solid var(--color-focus-ring); outline-offset: 2px; }
+
+      /* Tabs */
+      .tabs { display: flex; gap: var(--space-2); border-block-end: 1px solid var(--color-border); }
+      .tabs__tab {
+        padding: var(--space-3) var(--space-5);
+        border: 0; border-block-end: 2px solid transparent;
+        background: none;
+        color: var(--color-text-muted);
+        font-weight: var(--font-weight-medium);
+        cursor: pointer;
+      }
+      .tabs__tab:hover { color: var(--color-text); }
+      .tabs__tab[aria-selected="true"] { color: var(--color-text); border-block-end-color: var(--color-primary); }
+      .tabs__count { margin-inline-start: var(--space-2); font-size: var(--font-size-xs); color: var(--color-text-muted); }
+
+      /* Chip */
+      .chip {
+        display: inline-flex; align-items: center; gap: var(--space-2);
+        padding: 0 var(--space-3);
+        block-size: 1.125rem;
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-sm);
+        font-size: var(--font-size-xs);
+        color: var(--color-text-muted);
+      }
+      .chip--primary { border-color: transparent; background: var(--color-primary-subtle); color: var(--color-text); }
+      .chip--success { color: var(--color-success); border-color: currentcolor; }
+      .chip--danger { color: var(--color-danger); border-color: currentcolor; }
+      .chip--warning { color: var(--color-warning); border-color: currentcolor; }
+
+      /* Dialog */
+      .dialog {
+        inline-size: 100%;
+        border-radius: var(--radius-lg);
+        background: var(--color-surface-raised);
+        box-shadow: var(--shadow-2);
+      }
+      .dialog__header { display: flex; align-items: center; justify-content: space-between; padding: var(--space-4) var(--space-5) var(--space-4) var(--space-6); border-block-end: 1px solid var(--color-border); }
+      .dialog__title { font-size: var(--font-size-lg); font-weight: var(--font-weight-bold); line-height: var(--line-height-tight); }
+      .dialog__body { display: grid; gap: var(--space-5); padding: var(--space-6); }
+      .dialog__actions { display: flex; justify-content: flex-end; gap: var(--space-3); padding: var(--space-4) var(--space-5); border-block-start: 1px solid var(--color-border); }
+
+      /* Toast */
+      .toast {
+        display: flex; align-items: center; gap: var(--space-4);
+        padding: var(--space-4) var(--space-5);
+        border-inline-start: 3px solid var(--toast-accent, var(--color-primary));
+        border-radius: var(--radius-md);
+        background: var(--color-surface-raised);
+        box-shadow: var(--shadow-2);
+      }
+      .toast__text { flex: 1; }
+      .toast--danger { --toast-accent: var(--color-danger); }
+      .toast--success { --toast-accent: var(--color-success); }
+
+      /* List rows */
+      .list { border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-surface); }
+      .list__row {
+        display: flex; align-items: center; gap: var(--space-4);
+        min-block-size: var(--row-height);
+        padding-inline: var(--space-4);
+        border-block-end: 1px solid var(--color-border);
+      }
+      .list__row:last-child { border-block-end: 0; }
+      .list__row:hover { background: var(--color-hover); }
+      .list__row--selected { background: var(--color-primary-subtle); }
+      .list__grow { flex: 1; min-inline-size: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .list__meta { font-size: var(--font-size-xs); color: var(--color-text-muted); }
+
+      /* Topic tree row */
+      .tree-row {
+        display: flex; align-items: center; gap: var(--space-2);
+        block-size: var(--row-height);
+        padding-inline-end: var(--space-4);
+        padding-inline-start: calc(var(--space-2) + var(--depth, 0) * 1rem);
+        font-size: var(--font-size-sm);
+        border-inline-start: 2px solid transparent;
+      }
+      .tree-row:hover { background: var(--color-hover); }
+      .tree-row--selected { background: var(--color-primary-subtle); border-inline-start-color: var(--color-primary); }
+      .tree-row--match .tree-row__name { background: color-mix(in oklab, var(--color-warning) 35%, transparent); border-radius: var(--radius-sm); }
+      .tree-row__chevron { inline-size: 1rem; color: var(--color-text-muted); }
+      .tree-row__chevron--open { transform: rotate(90deg); }
+      .tree-row__value { margin-inline-start: var(--space-2); font-family: var(--font-mono); color: var(--color-text-muted); }
+      .tree-row__value strong { color: var(--color-text); font-weight: var(--font-weight-bold); }
+      .tree-row__count { margin-inline-start: auto; font-size: var(--font-size-xs); color: var(--color-text-muted); }
+
+      /* Payload block (mono) */
+      .code {
+        margin: 0;
+        padding: var(--space-4) var(--space-5);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-md);
+        background: var(--color-bg);
+        font-family: var(--font-mono);
+        font-size: var(--font-size-sm);
+        line-height: var(--line-height-normal);
+        overflow-x: auto;
+      }
+      .msg { display: flex; align-items: center; gap: var(--space-4); padding: 0 var(--space-4); block-size: var(--row-height); border-radius: var(--radius-sm); font-family: var(--font-mono); font-size: var(--font-size-sm); }
+      .msg--in { background: color-mix(in oklab, var(--color-success) 16%, transparent); }
+      .msg--del { background: color-mix(in oklab, var(--color-danger) 16%, transparent); }
+    }
+
+    /* ===== Sample page only ===== */
+    @layer sample {
+      .stage { display: grid; grid-template-columns: repeat(auto-fit, minmax(30rem, 1fr)); }
+      .pane {
+        padding: var(--space-6);
+        background: var(--color-bg);
+        color: var(--color-text);
+        display: grid; gap: var(--space-6);
+        align-content: start;
+      }
+      .pane__title { font-size: var(--font-size-lg); font-weight: var(--font-weight-bold); }
+      .group { display: grid; gap: var(--space-4); padding: var(--space-5); border: 1px solid var(--color-border); border-radius: var(--radius-lg); background: var(--color-surface); box-shadow: var(--shadow-1); }
+      .group__title { font-size: var(--font-size-xs); font-weight: var(--font-weight-bold); letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-text-muted); }
+      .row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-4); }
+      .cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr)); gap: var(--space-5); }
+      .appbar { display: flex; align-items: center; gap: var(--space-4); block-size: var(--header-height); padding-inline: var(--space-4); border: 1px solid var(--color-border); border-radius: var(--radius-lg); background: var(--color-surface); }
+      .appbar__name { font-weight: var(--font-weight-bold); }
+      .appbar__url { font-size: var(--font-size-xs); color: var(--color-text-muted); font-family: var(--font-mono); }
+      .backdrop { padding: var(--space-6); border-radius: var(--radius-lg); background: color-mix(in oklab, #000 45%, transparent); }
+      .picker { display: flex; align-items: center; gap: var(--space-4); padding: var(--space-4) var(--space-6); background: #222; color: #fff; font-family: var(--font-sans); font-size: var(--font-size-md); }
+    </style>
+</head>
+<body>
+  <div class="picker">
+    <label for="primary">Primary color (simulates the user setting):</label>
+    <input id="primary" type="color" value="#3f51b5">
+    <span id="primary-info">on-primary computed from luminance</span>
+  </div>
+
+  <main class="stage">
+    <!-- Both panes use the same markup. Only data-theme differs. -->
+    <section class="pane" data-theme="light" aria-label="Light theme">
+      <h1 class="pane__title">Light</h1>
+      <!-- PANE_CONTENT -->
+    </section>
+    <section class="pane" data-theme="dark" aria-label="Dark theme">
+      <h1 class="pane__title">Dark</h1>
+      <!-- PANE_CONTENT -->
+    </section>
+  </main>
+
+  <!-- Inline icon set (Lucide style, 24px grid) -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></symbol>
+      <symbol id="i-plus" viewBox="0 0 24 24"><path d="M5 12h14M12 5v14"/></symbol>
+      <symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></symbol>
+      <symbol id="i-chev-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+      <symbol id="i-chev-right" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></symbol>
+      <symbol id="i-back" viewBox="0 0 24 24"><path d="m12 19-7-7 7-7M19 12H5"/></symbol>
+      <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></symbol>
+      <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></symbol>
+    </defs>
+  </svg>
+
+  <script>
+    // Fill both panes from one template, so the markup exists only once.
+    const template = document.createElement("template");
+    template.innerHTML = `
+      <!-- Header -->
+      <div class="appbar">
+        <button class="btn btn--icon" type="button" aria-label="Back"><svg class="icon"><use href="#i-back"/></svg></button>
+        <div>
+          <div class="appbar__name">Connection: AM3 TCP</div>
+          <div class="appbar__url">mqtt://broker.local:1883</div>
+        </div>
+        <div style="flex:1"></div>
+        <label class="field" style="inline-size:14rem">
+          <input class="field__input" type="search" placeholder="Search topics" aria-label="Search topics">
+        </label>
+        <button class="btn btn--icon" type="button" aria-label="Info"><svg class="icon"><use href="#i-info"/></svg></button>
+        <button class="btn btn--icon btn--danger" type="button" aria-label="Disconnect"><svg class="icon"><use href="#i-x"/></svg></button>
+      </div>
+
+      <div class="cols">
+        <!-- Buttons -->
+        <section class="group">
+          <h2 class="group__title">Buttons</h2>
+          <div class="row">
+            <button class="btn btn--filled" type="button"><svg class="icon"><use href="#i-plus"/></svg>Connect</button>
+            <button class="btn btn--outline" type="button">Cancel</button>
+            <button class="btn btn--text" type="button">Reset</button>
+          </div>
+          <div class="row">
+            <button class="btn btn--filled" type="button" disabled>Disabled</button>
+            <button class="btn btn--text btn--danger" type="button">Delete</button>
+            <button class="btn btn--icon" type="button" aria-label="Delete"><svg class="icon"><use href="#i-trash"/></svg></button>
+            <button class="btn btn--icon" type="button" aria-label="Add"><svg class="icon"><use href="#i-plus"/></svg></button>
+          </div>
+        </section>
+
+        <!-- Fields -->
+        <section class="group">
+          <h2 class="group__title">Text field</h2>
+          <label class="field"><span class="field__label">Host</span><input class="field__input" type="text" value="broker.local"></label>
+          <label class="field"><span class="field__label">Port (focus)</span><input class="field__input field__input--focus" type="text" value="1883"></label>
+          <label class="field"><span class="field__label">Client ID</span><input class="field__input field__input--error" type="text" value="a b"><span class="field__hint field__hint--error">No spaces allowed</span></label>
+        </section>
+      </div>
+
+      <div class="cols">
+        <!-- Switch, select, chips -->
+        <section class="group">
+          <h2 class="group__title">Switch, select, chip</h2>
+          <label class="switch"><input class="switch__input" type="checkbox" checked><span class="switch__track"><span class="switch__thumb"></span></span>Auto reconnect</label>
+          <label class="switch"><input class="switch__input" type="checkbox"><span class="switch__track"><span class="switch__thumb"></span></span>Clean session</label>
+          <div class="field"><span class="field__label">Protocol</span>
+            <button class="select" type="button"><span>mqtt://</span><svg class="icon"><use href="#i-chev-down"/></svg></button>
+          </div>
+          <div class="row">
+            <span class="chip">QoS 1</span>
+            <span class="chip chip--primary">retained</span>
+            <span class="chip chip--success">connected</span>
+            <span class="chip chip--warning">pending</span>
+            <span class="chip chip--danger">error</span>
+          </div>
+        </section>
+
+        <!-- Tabs + payload -->
+        <section class="group">
+          <h2 class="group__title">Tabs and payload</h2>
+          <div class="tabs" role="tablist">
+            <button class="tabs__tab" role="tab" aria-selected="true" type="button">Payload<span class="tabs__count">5</span></button>
+            <button class="tabs__tab" role="tab" aria-selected="false" type="button">Properties</button>
+            <button class="tabs__tab" role="tab" aria-selected="false" type="button">Publish</button>
+          </div>
+          <div class="msg msg--del"><span>16573</span></div>
+          <div class="msg msg--in"><span>16593</span></div>
+          <pre class="code">{
+  "contentType": "numeric",
+  "userProperties": { "unit": "s" }
+}</pre>
+        </section>
+      </div>
+
+      <!-- Topic tree + list -->
+      <div class="cols">
+        <section class="group">
+          <h2 class="group__title">Topic tree</h2>
+          <div class="list" role="tree" aria-label="Topics">
+            <div class="tree-row" role="treeitem" aria-expanded="true" style="--depth:0"><svg class="icon tree-row__chevron tree-row__chevron--open"><use href="#i-chev-right"/></svg><span class="tree-row__name">measures</span><span class="tree-row__count">1.2k</span></div>
+            <div class="tree-row" role="treeitem" aria-expanded="false" style="--depth:1"><svg class="icon tree-row__chevron"><use href="#i-chev-right"/></svg><span class="tree-row__name">e213be261960</span><span class="tree-row__count">42</span></div>
+            <div class="tree-row tree-row--match" role="treeitem" aria-expanded="false" style="--depth:1"><svg class="icon tree-row__chevron"><use href="#i-chev-right"/></svg><span class="tree-row__name">GPS</span><span class="tree-row__count">8</span></div>
+            <div class="tree-row" role="treeitem" aria-expanded="true" style="--depth:1"><svg class="icon tree-row__chevron tree-row__chevron--open"><use href="#i-chev-right"/></svg><span class="tree-row__name">System</span></div>
+            <div class="tree-row tree-row--selected" role="treeitem" aria-selected="true" style="--depth:2"><span class="tree-row__chevron"></span><span class="tree-row__name">uptime</span><span class="tree-row__value">= <strong>16593</strong></span></div>
+          </div>
+        </section>
+
+        <section class="group">
+          <h2 class="group__title">List rows</h2>
+          <ul class="list">
+            <li class="list__row list__row--selected"><span class="list__grow">AM3 TCP</span><span class="list__meta">mqtt://broker.local:1883</span></li>
+            <li class="list__row"><span class="list__grow">Lab WebSocket</span><span class="list__meta">ws://lab:9001</span></li>
+            <li class="list__row"><span class="list__grow">Cloud TLS</span><span class="list__meta">mqtts://cloud:8883</span></li>
+          </ul>
+        </section>
+      </div>
+
+      <!-- Dialog on backdrop -->
+      <section class="group">
+        <h2 class="group__title">Dialog and toast</h2>
+        <div class="backdrop">
+          <div class="dialog" role="dialog" aria-label="Delete connection">
+            <div class="dialog__header">
+              <h3 class="dialog__title">Delete connection</h3>
+              <button class="btn btn--icon" type="button" aria-label="Close"><svg class="icon"><use href="#i-x"/></svg></button>
+            </div>
+            <div class="dialog__body">
+              <p>Delete "AM3 TCP"? This action cannot be undone.</p>
+              <label class="field"><span class="field__label">Type the name to confirm</span><input class="field__input" type="text"></label>
+            </div>
+            <div class="dialog__actions">
+              <button class="btn btn--outline" type="button">Cancel</button>
+              <button class="btn btn--filled" type="button">Delete</button>
+            </div>
+          </div>
+        </div>
+        <div class="toast toast--success" role="status"><span class="toast__text">Connected to broker.local</span><button class="btn btn--icon" type="button" aria-label="Dismiss"><svg class="icon"><use href="#i-x"/></svg></button></div>
+        <div class="toast toast--danger" role="alert"><span class="toast__text">Connection refused</span><button class="btn btn--icon" type="button" aria-label="Dismiss"><svg class="icon"><use href="#i-x"/></svg></button></div>
+      </section>`;
+    document.querySelectorAll(".pane").forEach((pane) => {
+      const marker = [...pane.childNodes].find((n) => n.nodeType === 8 && n.data.trim() === "PANE_CONTENT");
+      marker.replaceWith(template.content.cloneNode(true));
+    });
+
+    // Primary picker: shows how --color-on-primary is computed (WCAG contrast).
+    const channel = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; };
+    const luminance = (hex) => {
+      const [r, g, b] = [1, 3, 5].map((i) => channel(parseInt(hex.slice(i, i + 2), 16)));
+      return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+    };
+    const onPrimary = (hex) => ((1.05) / (luminance(hex) + 0.05) >= (luminance(hex) + 0.05) / 0.05 ? "#ffffff" : "#111111");
+    document.getElementById("primary").addEventListener("input", (event) => {
+      const hex = event.target.value;
+      document.querySelectorAll(".pane").forEach((pane) => {
+        pane.style.setProperty("--color-primary", hex);
+        pane.style.setProperty("--color-on-primary", onPrimary(hex));
+      });
+      document.getElementById("primary-info").textContent = `on-primary = ${onPrimary(hex)}`;
+    });
+  </script>
+</body>
+</html>

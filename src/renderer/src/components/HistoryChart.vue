@@ -4,16 +4,19 @@
 
 <script setup>
 import {
-  computed,
+  nextTick,
   onBeforeUnmount,
   onMounted,
+  shallowRef,
   useTemplateRef,
   watch,
 } from "vue";
-import { useTheme } from "vuetify";
 import uPlot from "uplot";
 import "uplot/dist/uPlot.min.css";
-import { CHART_HEIGHT, buildChartOptions } from "../utils/ChartOptions";
+import { buildChartOptions } from "../utils/ChartOptions";
+import { useSettingsStore } from "../stores/settings";
+
+const MIN_CHART_HEIGHT = 100;
 
 const props = defineProps({
   xs: { type: Array, required: true }, // Epoch seconds
@@ -23,23 +26,40 @@ const props = defineProps({
 });
 
 const container = useTemplateRef("container");
-const theme = useTheme();
+const settings = useSettingsStore();
 
 // Plain variable on purpose: uPlot must not be proxied by Vue.
 let plot = null;
 let resizeObserver = null;
 
-const colors = computed(() => {
-  const { primary, "on-surface": text } = theme.current.value.colors;
+/** Chart colors from the CSS tokens currently applied on the root element. */
+const readTokenColors = () => {
+  const style = getComputedStyle(document.documentElement);
 
-  return { primary, text };
-});
+  return {
+    primary: style.getPropertyValue("--color-primary").trim(),
+    text: style.getPropertyValue("--color-text").trim(),
+  };
+};
+
+const colors = shallowRef(readTokenColors());
+
+/** Height left for the plot once the legend below it is placed. */
+const plotHeight = (containerHeight) => {
+  const legendHeight = plot?.root.querySelector(".u-legend")?.offsetHeight ?? 0;
+
+  return Math.max(MIN_CHART_HEIGHT, containerHeight - legendHeight);
+};
 
 const createPlot = () => {
+  // Measured before destroy: a rebuild keeps the old legend height.
+  const height = plotHeight(container.value.clientHeight);
+
   plot?.destroy();
   plot = new uPlot(
     buildChartOptions({
       width: container.value.clientWidth,
+      height,
       label: props.label,
       isBoolean: props.isBoolean,
       colors: colors.value,
@@ -52,8 +72,11 @@ const createPlot = () => {
 
 onMounted(() => {
   createPlot();
+  // Fires once on observe too: corrects the first height for the legend.
   resizeObserver = new ResizeObserver(([entry]) => {
-    plot.setSize({ width: entry.contentRect.width, height: CHART_HEIGHT });
+    const { width, height } = entry.contentRect;
+
+    plot.setSize({ width, height: plotHeight(height) });
   });
   resizeObserver.observe(container.value);
 });
@@ -70,6 +93,16 @@ watch(
   ([xs, ys]) => plot?.setData([xs, ys])
 );
 
+// Tokens change after the theme sync ran: read them once the DOM is updated.
+watch(
+  () => [settings.theme, settings.primaryColor],
+  async () => {
+    await nextTick();
+    colors.value = readTokenColors();
+  },
+  { deep: true }
+);
+
 // uPlot cannot restyle axes or series after creation: rebuild instead.
 watch(() => [colors.value, props.isBoolean, props.label], createPlot, {
   deep: true,
@@ -77,8 +110,12 @@ watch(() => [colors.value, props.isBoolean, props.label], createPlot, {
 </script>
 
 <style scoped>
+/* Size comes from the parent only, so the plot cannot grow it in a loop. */
 .history-chart {
+  flex: 1 1 0;
   width: 100%;
   min-width: 0;
+  min-height: 0;
+  overflow: hidden;
 }
 </style>

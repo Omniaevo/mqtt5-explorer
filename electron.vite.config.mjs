@@ -1,7 +1,6 @@
 import { readFileSync } from "node:fs";
 import { defineConfig, externalizeDepsPlugin } from "electron-vite";
 import vue from "@vitejs/plugin-vue";
-import vuetify from "vite-plugin-vuetify";
 
 const pkg = JSON.parse(readFileSync("./package.json", "utf8"));
 
@@ -27,7 +26,7 @@ export default defineConfig({
     plugins: [externalizeDepsPlugin()],
   },
   renderer: {
-    plugins: [vue(), vuetify({ autoImport: true })],
+    plugins: [vue()],
     define: envConstants("VITE", {
       APP_VERSION: pkg.version || "0.0.0",
       GITHUB_BUGS: pkg.bugs.url || "",

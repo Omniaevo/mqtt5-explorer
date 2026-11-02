@@ -24,6 +24,38 @@ export const toRawRows = (history) =>
     }))
     .reverse();
 
+const messageEntries = new WeakMap();
+
+/** History entry of a message; the same object for the same message. */
+const toEntry = (message) => {
+  if (!messageEntries.has(message)) {
+    messageEntries.set(message, {
+      t: message.receivedAt,
+      payload: message.payload,
+    });
+  }
+
+  return messageEntries.get(message);
+};
+
+/**
+ * Last received messages, newest first. When the node has a value, the first
+ * entry is that value. Entries keep their identity across calls, so they can
+ * key an animated list.
+ * @param {{value?: object, old?: object, history: {t: number, payload: string}[]}} node
+ * Topic node; without history (disabled) only `value` and `old` are known.
+ * @param {number} limit Maximum entries returned.
+ * @returns {{t: number, payload: string}[]}
+ */
+export const recentMessages = (node, limit) => {
+  const entries =
+    node.history.length > 0
+      ? node.history
+      : [node.old, node.value].filter(Boolean).map(toEntry);
+
+  return entries.slice(-limit).reverse();
+};
+
 /**
  * Field to plot: the remembered one when still available, else the first.
  * @param {string[]} fields Chartable fields of the latest payload.
@@ -32,3 +64,26 @@ export const toRawRows = (history) =>
  */
 export const resolveField = (fields, remembered) =>
   fields.includes(remembered) ? remembered : (fields[0] ?? null);
+
+const messageKeys = new WeakMap();
+let nextMessageKey = 0;
+
+/** Stable list key: a message keeps its key while it moves down the list. */
+export const messageKey = (message) => {
+  if (!messageKeys.has(message)) messageKeys.set(message, nextMessageKey++);
+
+  return messageKeys.get(message);
+};
+
+const MAX_SHOWN_COUNT = 1000000;
+
+/**
+ * Text for the received-messages counter.
+ * @param {number} count Messages received on the topic.
+ * @param {boolean} truncate Show huge counts as `1000000+`.
+ */
+export const formatMessageCount = (count, truncate) => {
+  const shown = truncate && count > MAX_SHOWN_COUNT ? `${MAX_SHOWN_COUNT}+` : count;
+
+  return `${shown} message${count > 1 ? "s" : ""} received`;
+};

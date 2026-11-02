@@ -1,28 +1,21 @@
 <template>
-  <v-text-field
-    v-model="term"
-    variant="outlined"
-    label="Search"
-    density="compact"
-    append-icon="mdi-information-outline"
-    autofocus
-    hide-details
-    @click:append="emit('showInfo')"
-  >
+  <AppTextField v-model="term" label="Search" label-hidden autofocus>
     <template #append-inner>
       <SearchModeToggle v-model="mode" />
-      <v-btn
-        class="ms-2"
-        icon="mdi-close"
-        size="x-small"
-        variant="text"
-        @click="emit('close')"
-      />
+      <AppButton variant="icon" size="sm" aria-label="Close search" @click="emit('close')">
+        <X :size="16" aria-hidden="true" />
+      </AppButton>
+      <AppButton variant="icon" size="sm" aria-label="Search help" @click="emit('showInfo')">
+        <Info :size="16" aria-hidden="true" />
+      </AppButton>
     </template>
-  </v-text-field>
+  </AppTextField>
 </template>
 
 <script setup>
+import { Info, X } from "@lucide/vue";
+import AppButton from "../ui/AppButton.vue";
+import AppTextField from "../ui/AppTextField.vue";
 import SearchModeToggle from "./SearchModeToggle.vue";
 
 const emit = defineEmits(["close", "showInfo"]);
