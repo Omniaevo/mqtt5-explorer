@@ -74,7 +74,8 @@ const model = defineModel({ type: [String, Array], default: undefined });
   background: var(--color-hover);
 }
 
-.app-toggle-group__item[data-state="on"] {
+/* aria-pressed, not data-state: AppTooltip overrides data-state on its trigger */
+.app-toggle-group__item[aria-pressed="true"] {
   background: var(--color-primary-subtle);
   color: var(--color-primary);
 }

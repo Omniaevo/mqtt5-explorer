@@ -212,7 +212,6 @@
       v-model:notify-switch="notifySwitch"
       v-model:file-logging-switch="fileLoggingSwitch"
       :logs-folder="logsFolder"
-      :variant="fieldVariant"
       @show-info="searchInfoDialog = true"
       @open-logs-folder="openLogsFolder"
       @reset="resetNotifyAndLogging"
@@ -304,9 +303,6 @@ const connectionProperties = new ConnectionProperties();
 connectionProperties.init(connections.getByIndex(route.params.index));
 
 const isV5 = connectionProperties.version > 4;
-const fieldVariant = computed(() =>
-  settings.outline ? "outlined" : "underlined"
-);
 
 // The topic tree is not reactive (can be large): it is plain data plus a
 // version counter that is bumped, throttled, after every change.
