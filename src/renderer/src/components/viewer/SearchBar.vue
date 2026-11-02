@@ -4,7 +4,7 @@
     variant="outlined"
     label="Search"
     density="compact"
-    append-icon="mdi-information-outline"
+    :append-icon="Info"
     autofocus
     hide-details
     @click:append="emit('showInfo')"
@@ -13,7 +13,7 @@
       <SearchModeToggle v-model="mode" />
       <v-btn
         class="ms-2"
-        icon="mdi-close"
+        :icon="X"
         size="x-small"
         variant="text"
         @click="emit('close')"
@@ -23,6 +23,7 @@
 </template>
 
 <script setup>
+import { Info, X } from "@lucide/vue";
 import SearchModeToggle from "./SearchModeToggle.vue";
 
 const emit = defineEmits(["close", "showInfo"]);

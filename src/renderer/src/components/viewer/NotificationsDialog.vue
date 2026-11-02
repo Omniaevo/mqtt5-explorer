@@ -8,7 +8,7 @@
             v-model="newEntry"
             :variant="variant"
             label="Add condition"
-            clear-icon="mdi-close"
+            :clear-icon="X"
             clearable
             density="compact"
             hide-details
@@ -20,7 +20,7 @@
                 <v-btn
                   :disabled="!newEntry"
                   class="ms-2"
-                  icon="mdi-plus"
+                  :icon="Plus"
                   size="x-small"
                   variant="text"
                   @click="addEntry"
@@ -33,7 +33,7 @@
               <v-btn
                 v-bind="tooltipProps"
                 class="ms-4"
-                icon="mdi-information-outline"
+                :icon="Info"
                 variant="text"
                 @click="emit('showInfo')"
               />
@@ -68,7 +68,7 @@
             <template v-for="(entry, i) in entries" :key="entry.notifyEntry">
               <v-list-item>
                 <template #prepend>
-                  <v-icon color="primary" icon="mdi-pin-outline" size="small" />
+                  <v-icon color="primary" :icon="Pin" size="small" />
                 </template>
                 <v-list-item-title class="entry-title">
                   {{ entry.notifyEntry }}
@@ -92,7 +92,7 @@
                   </v-tooltip>
                   <v-btn
                     color="error"
-                    icon="mdi-delete-outline"
+                    :icon="Trash2"
                     size="x-small"
                     variant="text"
                     @click="deleteEntry(entry)"
@@ -128,7 +128,7 @@
             <v-text-field
               :model-value="logsFolder"
               :variant="variant"
-              append-icon="mdi-folder-open-outline"
+              :append-icon="FolderOpen"
               label="Logs folder location"
               readonly
               @click:append="emit('openLogsFolder')"
@@ -147,6 +147,7 @@
 
 <script setup>
 import { ref } from "vue";
+import { FolderOpen, Info, Pin, Plus, Trash2, X } from "@lucide/vue";
 import SearchEngine from "../../../../shared/SearchEngine";
 import { searchModeIcon } from "../../utils/searchModes";
 import { JOIN_MODES } from "../../composables/useNotifyAndLogging";

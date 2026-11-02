@@ -25,7 +25,7 @@
           class="blink"
         />
         <v-icon
-          :icon="row.expanded ? 'mdi-chevron-down' : 'mdi-chevron-right'"
+          :icon="row.expanded ? ChevronDown : ChevronRight"
           :class="{ invisible: !row.hasChildren }"
           class="me-2"
           size="small"
@@ -50,6 +50,7 @@
 
 <script setup>
 import { computed, nextTick, ref, shallowRef, watch } from "vue";
+import { ChevronDown, ChevronRight } from "@lucide/vue";
 import { anchorShift, flattenVisible } from "../../utils/flattenTree";
 
 const INDENT_PX = 16;

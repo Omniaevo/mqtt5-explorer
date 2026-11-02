@@ -24,7 +24,7 @@
             v-bind="tooltipProps"
             class="me-2"
             color="primary"
-            icon="mdi-plus"
+            :icon="Plus"
             variant="tonal"
             size="small"
             @click="addTmpConnection"
@@ -111,6 +111,7 @@
 <script setup>
 import { computed, nextTick, onBeforeMount, onBeforeUnmount, ref } from "vue";
 import { useRouter } from "vue-router";
+import { Plus } from "@lucide/vue";
 import ConnectionForm from "../components/ConnectionForm.vue";
 import SettingsDialog from "../components/SettingsDialog.vue";
 import ConnectionProperties from "../models/ConnectionProperties";

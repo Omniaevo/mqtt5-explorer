@@ -11,7 +11,7 @@
           <template #activator="{ props: tooltipProps }">
             <v-btn
               v-bind="tooltipProps"
-              icon="mdi-sync"
+              :icon="RefreshCw"
               size="small"
               variant="text"
               @click="load(selected)"
@@ -109,7 +109,7 @@
           hide-details
         />
         <v-btn
-          icon="mdi-delete"
+          :icon="Trash2"
           variant="text"
           @click="userProperties.splice(i, 1)"
         />
@@ -119,7 +119,7 @@
           <v-btn
             v-bind="tooltipProps"
             color="primary"
-            icon="mdi-plus"
+            :icon="Plus"
             rounded="lg"
             variant="tonal"
             block
@@ -139,6 +139,7 @@
 
 <script setup>
 import { computed } from "vue";
+import { Plus, RefreshCw, Trash2 } from "@lucide/vue";
 import { usePublishForm } from "../../composables/usePublishForm";
 
 const QOS_LEVELS = [0, 1, 2];

@@ -52,7 +52,7 @@
           />
           <v-text-field
             v-model="connectionData.password"
-            :append-inner-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
+            :append-inner-icon="showPassword ? Eye : EyeOff"
             :variant="fieldVariant"
             :type="showPassword ? 'text' : 'password'"
             label="Password"
@@ -63,7 +63,7 @@
         <v-expansion-panels class="mt-6" style="border: 1px solid grey">
           <v-expansion-panel elevation="0">
             <v-expansion-panel-title>
-              <v-icon size="small">mdi-tune-variant</v-icon>
+              <v-icon size="small" :icon="SlidersHorizontal" />
               <span class="ms-4">Advanced connection settings</span>
             </v-expansion-panel-title>
             <v-expansion-panel-text>
@@ -87,7 +87,7 @@
                     readonly
                   />
                   <v-btn
-                    icon="mdi-close"
+                    :icon="X"
                     variant="text"
                     @click.stop="deselectFile('caCert')"
                   />
@@ -106,7 +106,7 @@
                     readonly
                   />
                   <v-btn
-                    icon="mdi-close"
+                    :icon="X"
                     variant="text"
                     @click.stop="deselectFile('clientCert')"
                   />
@@ -123,7 +123,7 @@
                     readonly
                   />
                   <v-btn
-                    icon="mdi-close"
+                    :icon="X"
                     variant="text"
                     @click.stop="deselectFile('clientKey')"
                   />
@@ -190,6 +190,7 @@
 
 <script setup>
 import { computed, reactive, ref } from "vue";
+import { Eye, EyeOff, SlidersHorizontal, X } from "@lucide/vue";
 import ConnectionProperties from "../models/ConnectionProperties";
 import { useSettingsStore } from "../stores/settings";
 

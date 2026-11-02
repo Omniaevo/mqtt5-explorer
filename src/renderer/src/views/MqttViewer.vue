@@ -5,7 +5,7 @@
         <template #activator="{ props: tooltipProps }">
           <v-btn
             v-bind="tooltipProps"
-            icon="mdi-arrow-left"
+            :icon="ArrowLeft"
             variant="text"
             @click="disconnectFromMqtt()"
           />
@@ -43,7 +43,7 @@
             icon
             @click="toggleNotificationsDialog"
           >
-            <v-icon class="rec-icon" icon="mdi-record-rec" />
+            <v-icon class="rec-icon" :icon="CircleDot" />
           </v-btn>
         </template>
       </v-tooltip>
@@ -93,7 +93,7 @@
                   v-bind="tooltipProps"
                   :color="settings.isDark ? 'white' : undefined"
                   class="ms-2"
-                  icon="mdi-close"
+                  :icon="X"
                   variant="text"
                   @click="resetSelection"
                 />
@@ -107,7 +107,7 @@
                 <v-btn
                   v-bind="tooltipProps"
                   color="error"
-                  icon="mdi-delete"
+                  :icon="Trash2"
                   variant="text"
                   @click="deleteDialog = true"
                 />
@@ -238,6 +238,15 @@ import {
   watch,
 } from "vue";
 import { useRoute, useRouter } from "vue-router";
+import {
+  ArrowLeft,
+  CircleDot,
+  Cloud,
+  CloudCheck,
+  CloudSync,
+  Trash2,
+  X,
+} from "@lucide/vue";
 import NotificationsDialog from "../components/viewer/NotificationsDialog.vue";
 import HistoryPanel from "../components/viewer/HistoryPanel.vue";
 import PublishPanel from "../components/viewer/PublishPanel.vue";
@@ -264,24 +273,24 @@ const MAX_SHOWN_MESSAGES = 50;
 const STATES = Connection.connectionStates;
 const STATE_VIEWS = {
   [STATES.CONNECTED]: {
-    icon: "mdi-lan-connect",
+    icon: Cloud,
     color: "primary",
     text: "Connected",
   },
   [STATES.PENDING]: {
-    icon: "mdi-lan-pending",
+    icon: CloudSync,
     color: "primary",
     text: "Connection pending ...",
     class: "pending",
   },
   [STATES.DISCONNECTED]: {
-    icon: "mdi-lan-pending",
+    icon: CloudCheck,
     color: "primary",
     text: "Disconnected",
     class: "grayscale",
   },
   [STATES.ERROR]: {
-    icon: "mdi-lan-disconnect",
+    icon: CloudCheck,
     color: "error",
     text: "An error occurred",
   },

@@ -15,7 +15,7 @@
 
       <template #actions>
         <v-btn
-          icon="mdi-close"
+          :icon="X"
           variant="text"
           @click="notify.visible = false"
         />
@@ -26,6 +26,7 @@
 
 <script setup>
 import { watch } from "vue";
+import { setLucideProps, X } from "@lucide/vue";
 import { useSettingsStore } from "./stores/settings";
 import { useConnectionsStore } from "./stores/connections";
 import { useNotifyStore } from "./stores/notify";
@@ -35,6 +36,9 @@ const settings = useSettingsStore();
 const connections = useConnectionsStore();
 const notify = useNotifyStore();
 const { applyAll } = useThemeSync();
+
+// Fixed 2px stroke on every icon, whatever its rendered size
+setLucideProps({ strokeWidth: 2, absoluteStrokeWidth: true });
 
 settings.load();
 connections.load();

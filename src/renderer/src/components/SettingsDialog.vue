@@ -5,7 +5,7 @@
         <span>Settings</span>
         <v-spacer />
         <v-btn
-          icon="mdi-close"
+          :icon="X"
           variant="text"
           size="small"
           aria-label="Close settings"
@@ -51,13 +51,10 @@
             <template #item="{ props: itemProps, item }">
               <v-list-item v-bind="itemProps">
                 <template #append>
-                  <v-icon :color="item.value[themeMode]">
-                    {{
-                      settings.isDark
-                        ? "mdi-moon-waning-crescent"
-                        : "mdi-white-balance-sunny"
-                    }}
-                  </v-icon>
+                  <v-icon
+                    :color="item.value[themeMode]"
+                    :icon="settings.isDark ? Moon : Sun"
+                  />
                 </template>
               </v-list-item>
             </template>
@@ -144,7 +141,7 @@
                   aria-label="New random ID"
                   @click="settings.regenerateClientId()"
                 >
-                  <v-icon>mdi-refresh</v-icon>
+                  <v-icon :icon="RotateCw" />
                   <v-tooltip activator="parent" location="top">
                     New random ID
                   </v-tooltip>
@@ -226,7 +223,7 @@
         <span class="text-caption text-medium-emphasis">v{{ version }}</span>
         <v-btn
           color="error"
-          prepend-icon="mdi-restore"
+          :prepend-icon="RotateCcw"
           size="x-small"
           variant="text"
           @click="resetDialog = true"
@@ -236,7 +233,7 @@
         <v-spacer />
         <v-btn
           color="primary"
-          prepend-icon="mdi-bug"
+          :prepend-icon="Bug"
           size="x-small"
           variant="text"
           @click="openBugsUrl"
@@ -266,6 +263,7 @@
 
 <script setup>
 import { computed, ref } from "vue";
+import { Bug, Moon, RotateCcw, RotateCw, Sun, X } from "@lucide/vue";
 import { useDisplay } from "vuetify";
 import { clampHistorySize, useSettingsStore } from "../stores/settings";
 import { isMacOs } from "../utils/platform";

@@ -1,0 +1,5 @@
+/* Lucide icons are fixed-size SVGs. Let Vuetify size classes (font-size) scale them. Remove with Vuetify (T16). */
+.v-icon > svg {
+  width: 1em;
+  height: 1em;
+}

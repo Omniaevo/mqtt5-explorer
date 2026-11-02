@@ -8,6 +8,7 @@ import Connection from "./utils/Connection";
 // Custom CSS
 import "./assets/css/tokens.css";
 import "./assets/css/scrollbar.css";
+import "./assets/css/icons.css";
 
 document.documentElement.style.overflow = "hidden";
 
