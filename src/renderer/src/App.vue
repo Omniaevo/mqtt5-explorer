@@ -47,8 +47,8 @@ const connections = useConnectionsStore();
 const notify = useNotifyStore();
 const { applyAll } = useThemeSync();
 
-// Fixed 2px stroke on every icon, whatever its rendered size
-setLucideProps({ strokeWidth: 2, absoluteStrokeWidth: true });
+// Fixed stroke on every icon
+setLucideProps({ strokeWidth: 2 });
 
 settings.load();
 connections.load();
