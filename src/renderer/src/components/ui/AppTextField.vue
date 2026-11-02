@@ -10,6 +10,7 @@
         ref="input"
         v-model="model"
         class="app-text-field__input"
+        :class="{ 'app-text-field__input--mono': mono }"
         v-bind="inputAttrs"
         :aria-invalid="error ? 'true' : undefined"
         :aria-describedby="messageId"
@@ -51,6 +52,8 @@ const props = defineProps({
   labelHidden: { type: Boolean, default: false },
   /** Show a clear button while the field has a value (hidden when readonly or disabled). */
   clearable: { type: Boolean, default: false },
+  /** Use the monospace font for the value (topics, IDs, paths). */
+  mono: { type: Boolean, default: false },
 });
 
 const model = defineModel({ type: [String, Number], default: undefined });
@@ -126,6 +129,10 @@ const inputAttrs = computed(() =>
   color: var(--color-text);
   font: inherit;
   font-size: var(--font-size-md);
+}
+
+.app-text-field__input--mono {
+  font-family: var(--font-mono);
 }
 
 .app-text-field__input::placeholder {

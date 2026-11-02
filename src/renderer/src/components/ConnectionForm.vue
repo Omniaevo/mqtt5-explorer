@@ -27,6 +27,7 @@
         />
         <AppTextField
           v-model="connectionData.host"
+          mono
           :error="errorOf('host')"
           label="Host"
           required
@@ -35,6 +36,7 @@
         />
         <AppTextField
           v-model="connectionData.port"
+          mono
           :error="errorOf('port')"
           class="conn-form__port"
           label="Port"
@@ -76,7 +78,7 @@
               @click="selectFile(file.field)"
               @keydown.enter="selectFile(file.field)"
             >
-              <AppTextField v-model="connectionData[file.field]" :label="file.label" readonly />
+              <AppTextField v-model="connectionData[file.field]" mono :label="file.label" readonly />
               <AppButton
                 :aria-label="`Clear ${file.label}`"
                 variant="icon"
@@ -95,7 +97,7 @@
               @click="selectFile(file.field)"
               @keydown.enter="selectFile(file.field)"
             >
-              <AppTextField v-model="connectionData[file.field]" :label="file.label" readonly />
+              <AppTextField v-model="connectionData[file.field]" mono :label="file.label" readonly />
               <AppButton
                 :aria-label="`Clear ${file.label}`"
                 variant="icon"
@@ -109,12 +111,13 @@
           <div class="conn-form__row">
             <AppTextField
               :model-value="settings.clientId"
+              mono
               class="conn-form__current-client-id"
               label="Current client ID"
               readonly
               disabled
             />
-            <AppTextField v-model="connectionData.clientId" label="Override client ID">
+            <AppTextField v-model="connectionData.clientId" mono label="Override client ID">
               <template #append-inner>
                 <AppButton
                   v-if="connectionData.clientId"
@@ -376,6 +379,7 @@ function deselectFile(destination) {
   border-radius: var(--radius-md);
   background: var(--color-primary-subtle);
   color: var(--color-text);
+  font-family: var(--font-mono);
   font-size: var(--font-size-sm);
 }
 
@@ -399,6 +403,7 @@ function deselectFile(destination) {
 }
 
 .conn-form__tags-input {
+  font-family: var(--font-mono);
   flex: 1;
   min-inline-size: 8ch;
   padding: 0;

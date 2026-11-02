@@ -205,6 +205,7 @@ watch(rows, (newRows, oldRows) => {
 
 .label {
   overflow: hidden;
+  font-family: var(--font-mono);
   text-overflow: ellipsis;
 }
 

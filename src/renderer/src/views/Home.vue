@@ -318,6 +318,7 @@ onBeforeUnmount(() => {
 }
 
 .client-id__value {
+  font-family: var(--font-mono);
   color: var(--color-primary);
   font-weight: var(--font-weight-bold);
 }

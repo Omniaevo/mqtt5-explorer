@@ -41,6 +41,8 @@
     "format": "prettier --write ."
   },
   "dependencies": {
+    "@fontsource/ibm-plex-mono": "^5.3.0",
+    "@fontsource/ibm-plex-sans": "^5.3.0",
     "electron-store": "^11.0.2",
     "electron-updater": "^6.8.9",
     "mqtt": "^5.16.0",

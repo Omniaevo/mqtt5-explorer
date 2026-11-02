@@ -456,6 +456,7 @@ onBeforeUnmount(() =>
 .connection__url {
   overflow: hidden;
   color: var(--color-text-muted);
+  font-family: var(--font-mono);
   font-size: var(--font-size-xs);
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -533,6 +534,7 @@ onBeforeUnmount(() =>
 .topic-bar__topic {
   flex: 1;
   min-inline-size: 0;
+  font-family: var(--font-mono);
 }
 
 .topic-bar__topic--empty {
@@ -656,10 +658,12 @@ onBeforeUnmount(() =>
 .message-text {
   flex: 1;
   min-inline-size: 0;
+  font-family: var(--font-mono);
 }
 
 .message-time {
   align-self: center;
+  font-family: var(--font-mono);
   flex-shrink: 0;
   margin-inline-start: var(--space-6);
   font-size: 0.85em;

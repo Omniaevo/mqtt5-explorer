@@ -1,6 +1,6 @@
 <template>
   <div class="publish-panel">
-    <AppTextField v-model="form.topic" label="Topic" placeholder="example/topic" clearable />
+    <AppTextField v-model="form.topic" mono label="Topic" placeholder="example/topic" clearable />
     <AppTextarea v-model="form.payload" label="Value" rows="2" />
     <div class="form-row form-row--end form-row--right">
       <AppSwitch v-model="form.retain" label="Retain" />
@@ -9,7 +9,7 @@
 
     <template v-if="isV5">
       <h3 class="section-title">Properties</h3>
-      <AppTextField v-model="form.properties.contentType" label="Content type" clearable />
+      <AppTextField v-model="form.properties.contentType" mono label="Content type" clearable />
       <AppAccordion v-model="openPanels" :items="PANELS">
         <template #item-advanced>
           <div class="panel-body">
@@ -30,8 +30,8 @@
               />
             </div>
             <div class="form-row">
-              <AppTextField v-model="form.properties.responseTopic" label="Response topic" clearable />
-              <AppTextField v-model="form.properties.correlationData" label="Correlation data" clearable />
+              <AppTextField v-model="form.properties.responseTopic" mono label="Response topic" clearable />
+              <AppTextField v-model="form.properties.correlationData" mono label="Correlation data" clearable />
             </div>
           </div>
         </template>
@@ -43,8 +43,8 @@
         :key="`user-property-${i}`"
         class="form-row form-row--end"
       >
-        <AppTextField v-model="prop.key" label="Key" class="grow" clearable />
-        <AppTextField v-model="prop.value" label="Value" class="grow" clearable />
+        <AppTextField v-model="prop.key" mono label="Key" class="grow" clearable />
+        <AppTextField v-model="prop.value" mono label="Value" class="grow" clearable />
         <AppButton
           variant="icon"
           class="fixed"

@@ -3,8 +3,8 @@ import { useSettingsStore } from "../stores/settings";
 import { onPrimaryColor } from "../utils/onPrimaryColor";
 
 /**
- * Keeps the `data-theme` attribute and the primary color CSS variables
- * in line with the settings store.
+ * Keeps the `data-theme` attribute, the primary color CSS variables
+ * and the root font size in line with the settings store.
  */
 export function useThemeSync() {
   const settings = useSettingsStore();
@@ -22,13 +22,19 @@ export function useThemeSync() {
     style.setProperty("--color-on-primary", onPrimaryColor(primary));
   };
 
+  const applyFontScale = () => {
+    document.documentElement.style.fontSize = `${settings.fontScale}%`;
+  };
+
   const applyAll = () => {
     applyThemeAttribute();
     applyPrimaryVars();
+    applyFontScale();
   };
 
   watch(() => settings.theme, applyAll);
   watch(() => settings.primaryColor, applyAll, { deep: true });
+  watch(() => settings.fontScale, applyFontScale);
 
   return { applyAll };
 }

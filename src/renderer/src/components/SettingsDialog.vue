@@ -12,6 +12,20 @@
           <AppToggleGroup v-model="theme" :items="THEME_ITEMS" aria-label="Theme" />
         </SettingsRow>
         <SettingsRow
+          title="Font size"
+          description="Size of all text and controls."
+        >
+          <AppSelect
+            v-model="settings.fontScale"
+            class="settings-control"
+            label="Font size"
+            label-hidden
+            :items="FONT_SIZE_ITEMS"
+            item-title="text"
+            item-value="value"
+          />
+        </SettingsRow>
+        <SettingsRow
           title="Primary color"
           description="Accent color of buttons and highlights."
         >
@@ -88,6 +102,7 @@
           >
             <AppTextField
               v-model="settings.clientId"
+              mono
               class="settings-control settings-control-id"
               label="Client ID"
               label-hidden
@@ -226,7 +241,7 @@
 <script setup>
 import { computed, ref } from "vue";
 import { Bug, Moon, RotateCcw, RotateCw, Sun, X } from "@lucide/vue";
-import { clampHistorySize, useSettingsStore } from "../stores/settings";
+import { clampHistorySize, FONT_SCALES, useSettingsStore } from "../stores/settings";
 import { isMacOs } from "../utils/platform";
 import SettingsRow from "./SettingsRow.vue";
 import AppAccordion from "./ui/AppAccordion.vue";
@@ -242,6 +257,10 @@ const THEME_ITEMS = [
   { value: "light", label: "Light", icon: Sun, showLabel: true },
   { value: "dark", label: "Dark", icon: Moon, showLabel: true },
 ];
+const FONT_SIZE_ITEMS = FONT_SCALES.map((value) => ({
+  value,
+  text: `${value}%`,
+}));
 const PANELS = [
   { value: "mqtt", title: "MQTT client (advanced)" },
   { value: "shortcuts", title: "Keyboard shortcuts" },
