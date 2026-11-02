@@ -7,12 +7,22 @@
       <slot name="prepend-inner" />
       <input
         :id="inputId"
+        ref="input"
         v-model="model"
         class="app-text-field__input"
         v-bind="inputAttrs"
         :aria-invalid="error ? 'true' : undefined"
         :aria-describedby="messageId"
       />
+      <AppButton
+        v-if="canClear"
+        variant="icon"
+        size="sm"
+        :aria-label="`Clear ${label}`"
+        @click="clear"
+      >
+        <X :size="16" aria-hidden="true" />
+      </AppButton>
       <slot name="append-inner" />
     </div>
     <p v-if="error || hint" :id="messageId" class="app-text-field__message">
@@ -27,7 +37,9 @@
  * every other attr (type, readonly, disabled, autofocus, placeholder...) goes to the <input>.
  * Validation is owned by the parent: pass the message in `error`.
  */
-import { computed, useAttrs, useId } from "vue";
+import { computed, useAttrs, useId, useTemplateRef } from "vue";
+import { X } from "@lucide/vue";
+import AppButton from "./AppButton.vue";
 
 defineOptions({ inheritAttrs: false });
 
@@ -37,6 +49,8 @@ const props = defineProps({
   error: { type: String, default: undefined },
   /** Keep the label for screen readers only (compact layouts). */
   labelHidden: { type: Boolean, default: false },
+  /** Show a clear button while the field has a value (hidden when readonly or disabled). */
+  clearable: { type: Boolean, default: false },
 });
 
 const model = defineModel({ type: [String, Number], default: undefined });
@@ -44,6 +58,18 @@ const attrs = useAttrs();
 
 const inputId = useId();
 const messageId = computed(() => (props.error || props.hint ? `${inputId}-message` : undefined));
+const input = useTemplateRef("input");
+
+const hasValue = computed(() => model.value !== undefined && model.value !== null && model.value !== "");
+const isEditable = computed(() => !("readonly" in attrs) && !("disabled" in attrs));
+const canClear = computed(() => props.clearable && hasValue.value && isEditable.value);
+
+/** Empties the field and keeps the focus in it, ready to type. */
+function clear() {
+  model.value = "";
+  input.value.focus();
+}
+
 const ROOT_ATTRS = ["class", "style"];
 const inputAttrs = computed(() =>
   Object.fromEntries(Object.entries(attrs).filter(([name]) => !ROOT_ATTRS.includes(name))),

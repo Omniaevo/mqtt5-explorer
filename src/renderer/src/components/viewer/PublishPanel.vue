@@ -1,6 +1,6 @@
 <template>
   <div class="publish-panel">
-    <AppTextField v-model="form.topic" label="Topic" placeholder="example/topic" />
+    <AppTextField v-model="form.topic" label="Topic" placeholder="example/topic" clearable />
     <AppTextarea v-model="form.payload" label="Value" rows="2" />
     <div class="form-row form-row--end form-row--right">
       <AppSwitch v-model="form.retain" label="Retain" />
@@ -8,30 +8,34 @@
     </div>
 
     <template v-if="isV5">
-      <hr class="separator" />
       <h3 class="section-title">Properties</h3>
-      <AppTextField v-model="form.properties.contentType" label="Content type" />
-      <AppSwitch v-model="advancedProperties" label="Advanced properties" />
-      <template v-if="advancedProperties">
-        <div class="form-row">
-          <AppTextField
-            v-model="form.properties.topicAlias"
-            label="Topic alias"
-            min="1"
-            type="number"
-          />
-          <AppTextField
-            v-model="form.properties.messageExpiryInterval"
-            label="Expiring interval (s)"
-            min="1"
-            type="number"
-          />
-        </div>
-        <div class="form-row">
-          <AppTextField v-model="form.properties.responseTopic" label="Response topic" />
-          <AppTextField v-model="form.properties.correlationData" label="Correlation data" />
-        </div>
-      </template>
+      <AppTextField v-model="form.properties.contentType" label="Content type" clearable />
+      <AppAccordion v-model="openPanels" :items="PANELS">
+        <template #item-advanced>
+          <div class="panel-body">
+            <div class="form-row">
+              <AppTextField
+                v-model="form.properties.topicAlias"
+                label="Topic alias"
+                min="1"
+                type="number"
+                clearable
+              />
+              <AppTextField
+                v-model="form.properties.messageExpiryInterval"
+                label="Expiring interval (s)"
+                min="1"
+                type="number"
+                clearable
+              />
+            </div>
+            <div class="form-row">
+              <AppTextField v-model="form.properties.responseTopic" label="Response topic" clearable />
+              <AppTextField v-model="form.properties.correlationData" label="Correlation data" clearable />
+            </div>
+          </div>
+        </template>
+      </AppAccordion>
 
       <h4 class="subsection-title">User properties</h4>
       <div
@@ -39,8 +43,8 @@
         :key="`user-property-${i}`"
         class="form-row form-row--end"
       >
-        <AppTextField v-model="prop.key" label="Key" class="grow" />
-        <AppTextField v-model="prop.value" label="Value" class="grow" />
+        <AppTextField v-model="prop.key" label="Key" class="grow" clearable />
+        <AppTextField v-model="prop.value" label="Value" class="grow" clearable />
         <AppButton
           variant="icon"
           class="fixed"
@@ -67,8 +71,9 @@
 
 <script setup>
 import { computed } from "vue";
-import { Plus, Trash2 } from "@lucide/vue";
+import { Plus, SlidersHorizontal, Trash2 } from "@lucide/vue";
 import { usePublishForm } from "../../composables/usePublishForm";
+import AppAccordion from "../ui/AppAccordion.vue";
 import AppButton from "../ui/AppButton.vue";
 import AppSelect from "../ui/AppSelect.vue";
 import AppSwitch from "../ui/AppSwitch.vue";
@@ -77,6 +82,8 @@ import AppTextField from "../ui/AppTextField.vue";
 import AppTooltip from "../ui/AppTooltip.vue";
 
 const QOS_LEVELS = [0, 1, 2];
+const ADVANCED_PANEL = "advanced";
+const PANELS = [{ value: ADVANCED_PANEL, title: "Advanced properties", icon: SlidersHorizontal }];
 
 const props = defineProps({
   /** Selected topic (`{ topic, value }`), source of the sync button. */
@@ -96,6 +103,14 @@ const {
   reset,
   toPacket,
 } = usePublishForm(() => props.isV5);
+
+// The accordion model is a list of open panels; the form keeps a single flag
+const openPanels = computed({
+  get: () => (advancedProperties.value ? [ADVANCED_PANEL] : []),
+  set: (open) => {
+    advancedProperties.value = open.includes(ADVANCED_PANEL);
+  },
+});
 
 const canSync = computed(() => props.selected?.value?.payload !== undefined);
 
@@ -157,22 +172,28 @@ defineExpose({ load, reset: clear, submit, sync, canSync });
   max-inline-size: 12ch;
 }
 
-.separator {
-  inline-size: 100%;
-  margin-block: var(--space-4) 0;
-  border: 0;
-  border-block-start: 1px solid var(--color-border);
+.panel-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
 }
 
-.section-title {
+/* Title, then a divider line filling the rest of the row (same as the payload tab) */
+.section-title,
+.subsection-title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
   margin: 0;
-  font-size: var(--font-size-lg);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
   font-weight: var(--font-weight-medium);
 }
 
-.subsection-title {
-  margin: 0;
-  font-size: var(--font-size-md);
-  font-weight: var(--font-weight-regular);
+.section-title::after,
+.subsection-title::after {
+  content: "";
+  flex: 1;
+  border-block-start: 1px solid var(--color-border);
 }
 </style>

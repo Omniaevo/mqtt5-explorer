@@ -593,6 +593,9 @@ onBeforeUnmount(() =>
 }
 
 .properties {
+  /* Cap so long properties do not push the messages out of the tab */
+  --properties-max-height: 30vh;
+
   margin-block-start: auto;
   padding-block-start: var(--space-6);
 }
@@ -615,7 +618,9 @@ onBeforeUnmount(() =>
 }
 
 .properties__value {
+  max-block-size: var(--properties-max-height);
   margin: 0;
+  overflow: auto;
   font-family: var(--font-mono);
   font-size: var(--font-size-sm);
 }
