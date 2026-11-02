@@ -68,7 +68,6 @@
           :tree="tree"
           :version="treeVersion"
           :selected="selectedNode"
-          :dense="settings.denseTree"
           :is-blinking="isBlinking"
           :matches="nodeMatcher"
           @select="selectNode"
