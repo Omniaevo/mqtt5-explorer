@@ -24,6 +24,7 @@ describe("settings store load()", () => {
     expect(s.denseTree).toBe(false);
     expect(s.outline).toBe(false);
     expect(s.closeTray).toBe(true);
+    expect(s.fontScale).toBe(100);
     expect(s.primaryColor.text).toBe("Indie Indigo");
     expect(s.clientId).toMatch(/^m5-/);
     expect(s.keepalive).toBe(120);
@@ -154,6 +155,7 @@ describe("settings store resetToDefaults()", () => {
         denseTree: true,
         outline: true,
         closeTray: false,
+        fontScale: 125,
         keepalive: 300,
         maxReconnects: 10,
         primaryColor: { text: "Usual Blue", value: {} },
@@ -167,9 +169,15 @@ describe("settings store resetToDefaults()", () => {
     expect(s.denseTree).toBe(false);
     expect(s.outline).toBe(false);
     expect(s.closeTray).toBe(true);
+    expect(s.fontScale).toBe(100);
     expect(s.primaryColor.text).toBe("Indie Indigo");
     expect(s.keepalive).toBe(120);
     expect(s.maxReconnects).toBe(0);
     expect(s.clientId).toBe("my-client");
+  });
+
+  it("keeps a known font scale and falls back for an unknown one", () => {
+    expect(loadSettings(JSON.stringify({ fontScale: 125 })).fontScale).toBe(125);
+    expect(loadSettings(JSON.stringify({ fontScale: 333 })).fontScale).toBe(100);
   });
 });

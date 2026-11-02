@@ -1,0 +1,129 @@
+/* Design tokens. Values come from design/tokens.md. Runtime primary color is set by useThemeSync. */
+
+:root {
+  --font-sans: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans", "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", "Cascadia Mono", "JetBrains Mono", Menlo, Consolas, "DejaVu Sans Mono", monospace;
+
+  --font-size-xs: 0.6875rem; /* 11px: badges, hints */
+  --font-size-sm: 0.75rem;   /* 12px: secondary text, tree rows */
+  --font-size-md: 0.8125rem; /* 13px: body, controls */
+  --font-size-lg: 0.9375rem; /* 15px: dialog and section titles */
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-bold: 600;
+  --line-height-tight: 1.25;
+  --line-height-normal: 1.45;
+
+  --space-1: 0.125rem; /* 2px */
+  --space-2: 0.25rem;  /* 4px */
+  --space-3: 0.375rem; /* 6px */
+  --space-4: 0.5rem;   /* 8px */
+  --space-5: 0.75rem;  /* 12px */
+  --space-6: 1rem;     /* 16px */
+  --space-7: 1.5rem;   /* 24px */
+  --space-8: 2rem;     /* 32px */
+
+  --radius-sm: 2px;
+  --radius-md: 3px;
+  --radius-lg: 4px;
+
+  --duration-fast: 100ms;
+  --duration-normal: 180ms;
+  --easing: cubic-bezier(0.2, 0, 0, 1);
+
+  --control-height: 1.75rem; /* 28px */
+  --header-height: 2.5rem;   /* 40px */
+  --row-height: 1.5rem;      /* 24px: tree and list rows */
+
+  /* Share of the primary color mixed into neutral surfaces */
+  --tint: 5%;
+}
+
+/* Light theme */
+:root,
+[data-theme="light"] {
+  color-scheme: light;
+  --color-primary: #3f51b5;
+  --color-on-primary: #ffffff;
+  --color-bg: color-mix(in oklab, #eff1f4, var(--color-primary) var(--tint));
+  --color-surface: color-mix(in oklab, #fafbfc, var(--color-primary) var(--tint));
+  --color-surface-raised: #ffffff;
+  --color-border: color-mix(in oklab, #d3d7de, var(--color-primary) var(--tint));
+  --color-text: #1b1e23;
+  --color-text-muted: #5b6270;
+  --color-danger: #cf222e;
+  --color-success: #1a7f37;
+  --color-warning: #9a6700;
+  --color-focus-ring: color-mix(in oklab, var(--color-primary) 70%, transparent);
+  --color-hover: color-mix(in oklab, var(--color-text) 6%, transparent);
+  --color-primary-subtle: color-mix(in oklab, var(--color-primary) 14%, var(--color-surface));
+  --shadow-1: 0 1px 2px rgb(20 24 31 / 0.10);
+  --shadow-2: 0 8px 24px rgb(20 24 31 / 0.16), 0 0 0 1px var(--color-border);
+}
+
+/* Dark theme */
+[data-theme="dark"] {
+  color-scheme: dark;
+  --color-primary: #5c6bc0;
+  --color-on-primary: #ffffff;
+  --color-bg: color-mix(in oklab, #0e0f12, var(--color-primary) var(--tint));
+  --color-surface: color-mix(in oklab, #16181c, var(--color-primary) var(--tint));
+  --color-surface-raised: color-mix(in oklab, #1e2025, var(--color-primary) var(--tint));
+  --color-border: color-mix(in oklab, #2b2e35, var(--color-primary) var(--tint));
+  --color-text: #e6e8ec;
+  --color-text-muted: #9097a3;
+  --color-danger: #ff6b6b;
+  --color-success: #3fb950;
+  --color-warning: #d29922;
+  --color-focus-ring: color-mix(in oklab, var(--color-primary) 80%, white 10%);
+  --color-hover: color-mix(in oklab, var(--color-text) 8%, transparent);
+  --color-primary-subtle: color-mix(in oklab, var(--color-primary) 28%, var(--color-surface));
+  --shadow-1: 0 1px 2px rgb(0 0 0 / 0.40);
+  --shadow-2: 0 8px 24px rgb(0 0 0 / 0.50), 0 0 0 1px var(--color-border);
+}
+/* Base layer: minimal reset */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: var(--font-size-md);
+  line-height: var(--line-height-normal);
+  color: var(--color-text);
+  background: var(--color-bg);
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: default;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: 1px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-fast: 0ms;
+    --duration-normal: 0ms;
+  }
+}

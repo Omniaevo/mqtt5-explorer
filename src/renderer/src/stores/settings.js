@@ -19,6 +19,14 @@ export const clampHistorySize = (value) => {
     : 0;
 };
 
+// Root font size in percent. Tokens use rem, so the whole UI scales with it.
+export const FONT_SCALES = [90, 100, 110, 125, 150];
+const DEFAULT_FONT_SCALE = 100;
+
+/** Returns the stored scale when it is a known option, else the default. */
+const normalizeFontScale = (value) =>
+  FONT_SCALES.includes(Number(value)) ? Number(value) : DEFAULT_FONT_SCALE;
+
 const defaultPrimaryColor = () => ({
   text: "Indie Indigo",
   value: { light: "#3F51B5", dark: "#5C6BC0" },
@@ -30,6 +38,7 @@ export const useSettingsStore = defineStore("settings", {
     denseTree: false,
     outline: false,
     closeTray: true,
+    fontScale: DEFAULT_FONT_SCALE,
     primaryColor: defaultPrimaryColor(),
     clientId: undefined,
     keepalive: MIN_KEEPALIVE,
@@ -57,6 +66,7 @@ export const useSettingsStore = defineStore("settings", {
       this.denseTree = data.denseTree ?? false;
       this.outline = data.outline ?? false;
       this.closeTray = data.closeTray ?? true;
+      this.fontScale = normalizeFontScale(data.fontScale);
       this.primaryColor = data.primaryColor || defaultPrimaryColor();
       this.clientId = data.clientId || `m5-${crypto.randomUUID()}`;
       this.keepalive = Math.max(Number(data.keepalive || 0), MIN_KEEPALIVE);

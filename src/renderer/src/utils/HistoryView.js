@@ -64,3 +64,26 @@ export const recentMessages = (node, limit) => {
  */
 export const resolveField = (fields, remembered) =>
   fields.includes(remembered) ? remembered : (fields[0] ?? null);
+
+const messageKeys = new WeakMap();
+let nextMessageKey = 0;
+
+/** Stable list key: a message keeps its key while it moves down the list. */
+export const messageKey = (message) => {
+  if (!messageKeys.has(message)) messageKeys.set(message, nextMessageKey++);
+
+  return messageKeys.get(message);
+};
+
+const MAX_SHOWN_COUNT = 1000000;
+
+/**
+ * Text for the received-messages counter.
+ * @param {number} count Messages received on the topic.
+ * @param {boolean} truncate Show huge counts as `1000000+`.
+ */
+export const formatMessageCount = (count, truncate) => {
+  const shown = truncate && count > MAX_SHOWN_COUNT ? `${MAX_SHOWN_COUNT}+` : count;
+
+  return `${shown} message${count > 1 ? "s" : ""} received`;
+};
