@@ -1,7 +1,9 @@
 <template>
   <v-app>
     <v-main :class="{ 'bg-blue-grey-lighten-5': !settings.isDark }">
-      <router-view />
+      <TooltipProvider :delay-duration="TOOLTIP_DELAY_MS">
+        <router-view />
+      </TooltipProvider>
     </v-main>
 
     <v-snackbar
@@ -27,10 +29,13 @@
 <script setup>
 import { watch } from "vue";
 import { setLucideProps, X } from "@lucide/vue";
+import { TooltipProvider } from "reka-ui";
 import { useSettingsStore } from "./stores/settings";
 import { useConnectionsStore } from "./stores/connections";
 import { useNotifyStore } from "./stores/notify";
 import { useThemeSync } from "./composables/useThemeSync";
+
+const TOOLTIP_DELAY_MS = 400;
 
 const settings = useSettingsStore();
 const connections = useConnectionsStore();

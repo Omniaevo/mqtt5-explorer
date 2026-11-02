@@ -1,16 +1,20 @@
 <template>
   <ToggleGroupRoot v-model="model" class="app-toggle-group" :type="type">
-    <ToggleGroupItem
+    <component
+      :is="item.tooltip ? AppTooltip : Fragment"
       v-for="item in items"
       :key="item.value"
-      class="app-toggle-group__item"
-      :value="item.value"
-      :title="item.tooltip"
-      :aria-label="item.icon ? item.label : undefined"
+      v-bind="item.tooltip ? { text: item.tooltip } : {}"
     >
-      <component :is="item.icon" v-if="item.icon" :size="16" aria-hidden="true" />
-      <template v-else>{{ item.label }}</template>
-    </ToggleGroupItem>
+      <ToggleGroupItem
+        class="app-toggle-group__item"
+        :value="item.value"
+        :aria-label="item.icon ? item.label : undefined"
+      >
+        <component :is="item.icon" v-if="item.icon" :size="16" aria-hidden="true" />
+        <template v-else>{{ item.label }}</template>
+      </ToggleGroupItem>
+    </component>
   </ToggleGroupRoot>
 </template>
 
@@ -19,9 +23,11 @@
  * Group of toggle buttons. Extra attrs (class, events) fall through to the root element.
  * Single mode: clicking the selected item clears the model (`undefined`).
  * `items`: `{ value, label, icon?, tooltip? }[]`. An item with an `icon` is icon-only,
- * and its `label` becomes the accessible name. `tooltip` is shown as native `title` (AppTooltip: T09).
+ * and its `label` becomes the accessible name. `tooltip` is shown with AppTooltip.
  */
+import { Fragment } from "vue";
 import { ToggleGroupItem, ToggleGroupRoot } from "reka-ui";
+import AppTooltip from "./AppTooltip.vue";
 
 defineProps({
   items: { type: Array, required: true },

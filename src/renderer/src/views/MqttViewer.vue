@@ -180,7 +180,6 @@
               ref="publishPanel"
               :selected="selectedView"
               :is-v5="isV5"
-              :variant="fieldVariant"
               @publish="(packet) => connection.publish(packet)"
             />
           </v-tabs-window-item>

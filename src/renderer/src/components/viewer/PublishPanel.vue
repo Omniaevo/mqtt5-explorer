@@ -1,138 +1,82 @@
 <template>
-  <div>
-    <v-text-field
-      v-model="form.topic"
-      :variant="variant"
-      label="Topic"
-      placeholder="example/topic"
-    >
-      <template v-if="canSync" #append>
-        <v-tooltip text="Synchronize with new data" location="bottom">
-          <template #activator="{ props: tooltipProps }">
-            <v-btn
-              v-bind="tooltipProps"
-              :icon="RefreshCw"
-              size="small"
-              variant="text"
-              @click="load(selected)"
-            />
-          </template>
-        </v-tooltip>
+  <div class="publish-panel">
+    <AppTextField v-model="form.topic" label="Topic" placeholder="example/topic">
+      <template v-if="canSync" #append-inner>
+        <AppTooltip text="Synchronize with new data">
+          <AppButton
+            variant="icon"
+            size="sm"
+            aria-label="Synchronize with new data"
+            @click="load(selected)"
+          >
+            <RefreshCw :size="16" aria-hidden="true" />
+          </AppButton>
+        </AppTooltip>
       </template>
-    </v-text-field>
-    <v-textarea
-      v-model="form.payload"
-      :variant="variant"
-      label="Value"
-      rows="2"
-    />
-    <div class="form-row justify-end align-center">
-      <v-switch
-        v-model="form.retain"
-        class="me-4"
-        label="Retain"
-        hide-details
-        inset
-      />
-      <v-select
-        v-model="form.qos"
-        :items="QOS_LEVELS"
-        :variant="variant"
-        class="qos-input"
-        label="QoS"
-        hide-details
-      />
+    </AppTextField>
+    <AppTextarea v-model="form.payload" label="Value" rows="2" />
+    <div class="form-row form-row--end form-row--right">
+      <AppSwitch v-model="form.retain" label="Retain" />
+      <AppSelect v-model="form.qos" :items="QOS_LEVELS" label="QoS" class="qos-input" />
     </div>
 
     <template v-if="isV5">
-      <v-divider class="mt-4" />
-      <div class="text-h6 my-2">Properties</div>
-      <v-text-field
-        v-model="form.properties.contentType"
-        :variant="variant"
-        label="Content type"
-        hide-details
-      />
-      <v-switch
-        v-model="advancedProperties"
-        label="Advanced properties"
-        hide-details
-        inset
-      />
+      <hr class="separator" />
+      <h3 class="section-title">Properties</h3>
+      <AppTextField v-model="form.properties.contentType" label="Content type" />
+      <AppSwitch v-model="advancedProperties" label="Advanced properties" />
       <template v-if="advancedProperties">
         <div class="form-row">
-          <v-text-field
+          <AppTextField
             v-model="form.properties.topicAlias"
-            :variant="variant"
             label="Topic alias"
             min="1"
             type="number"
           />
-          <v-text-field
+          <AppTextField
             v-model="form.properties.messageExpiryInterval"
-            :variant="variant"
             label="Expiring interval (s)"
             min="1"
             type="number"
           />
         </div>
         <div class="form-row">
-          <v-text-field
-            v-model="form.properties.responseTopic"
-            :variant="variant"
-            label="Response topic"
-          />
-          <v-text-field
-            v-model="form.properties.correlationData"
-            :variant="variant"
-            label="Correlation data"
-          />
+          <AppTextField v-model="form.properties.responseTopic" label="Response topic" />
+          <AppTextField v-model="form.properties.correlationData" label="Correlation data" />
         </div>
       </template>
 
-      <div class="my-2">User properties</div>
+      <h4 class="subsection-title">User properties</h4>
       <div
         v-for="(prop, i) in userProperties"
         :key="`user-property-${i}`"
-        class="form-row align-center mb-5"
+        class="form-row form-row--end"
       >
-        <v-text-field
-          v-model="prop.key"
-          :variant="variant"
-          label="Key"
-          hide-details
-        />
-        <v-text-field
-          v-model="prop.value"
-          :variant="variant"
-          label="Value"
-          hide-details
-        />
-        <v-btn
-          :icon="Trash2"
-          variant="text"
+        <AppTextField v-model="prop.key" label="Key" class="grow" />
+        <AppTextField v-model="prop.value" label="Value" class="grow" />
+        <AppButton
+          variant="icon"
+          class="fixed"
+          aria-label="Delete property"
           @click="userProperties.splice(i, 1)"
-        />
+        >
+          <Trash2 :size="16" aria-hidden="true" />
+        </AppButton>
       </div>
-      <v-tooltip text="Add new property" location="bottom">
-        <template #activator="{ props: tooltipProps }">
-          <v-btn
-            v-bind="tooltipProps"
-            color="primary"
-            :icon="Plus"
-            rounded="lg"
-            variant="tonal"
-            block
-            @click="userProperties.push({ key: 'key', value: 'value' })"
-          />
-        </template>
-      </v-tooltip>
+      <AppTooltip text="Add new property">
+        <AppButton
+          variant="tonal"
+          color="primary"
+          aria-label="Add new property"
+          @click="userProperties.push({ key: 'key', value: 'value' })"
+        >
+          <Plus :size="16" aria-hidden="true" />
+        </AppButton>
+      </AppTooltip>
     </template>
 
-    <div class="d-flex justify-end pt-4">
-      <v-btn color="primary" @click="emit('publish', toPacket())"
-        >Publish</v-btn
-      >
+    <div class="actions">
+      <AppButton color="primary" @click="emit('publish', toPacket())">Publish</AppButton>
     </div>
   </div>
 </template>
@@ -141,6 +85,12 @@
 import { computed } from "vue";
 import { Plus, RefreshCw, Trash2 } from "@lucide/vue";
 import { usePublishForm } from "../../composables/usePublishForm";
+import AppButton from "../ui/AppButton.vue";
+import AppSelect from "../ui/AppSelect.vue";
+import AppSwitch from "../ui/AppSwitch.vue";
+import AppTextarea from "../ui/AppTextarea.vue";
+import AppTextField from "../ui/AppTextField.vue";
+import AppTooltip from "../ui/AppTooltip.vue";
 
 const QOS_LEVELS = [0, 1, 2];
 
@@ -149,7 +99,6 @@ const props = defineProps({
   selected: { type: Object, default: undefined },
   /** True when MQTT 5 properties are supported. */
   isV5: { type: Boolean, default: false },
-  variant: { type: String, default: "outlined" },
 });
 
 const emit = defineEmits(["publish"]);
@@ -179,13 +128,62 @@ defineExpose({ load, reset: clear });
 </script>
 
 <style scoped>
+.publish-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
 .form-row {
   display: flex;
   flex-direction: row;
-  gap: 1.5em;
+  align-items: flex-start;
+  gap: var(--space-6);
+}
+
+.form-row > * {
+  flex: 1;
+}
+
+/* Rows of compact controls: aligned to the bottom, natural width */
+.form-row--end {
+  align-items: flex-end;
+}
+
+.form-row--right {
+  justify-content: flex-end;
+}
+
+.form-row > .fixed {
+  flex: none;
 }
 
 .qos-input {
-  max-width: 12ch;
+  flex: none;
+  max-inline-size: 12ch;
+}
+
+.separator {
+  inline-size: 100%;
+  margin-block: var(--space-4) 0;
+  border: 0;
+  border-block-start: 1px solid var(--color-border);
+}
+
+.section-title {
+  margin: 0;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-medium);
+}
+
+.subsection-title {
+  margin: 0;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-regular);
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
 }
 </style>
