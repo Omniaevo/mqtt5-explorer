@@ -136,8 +136,7 @@ const options = computed(() =>
 .app-select__trigger:focus-visible,
 .app-select__trigger[data-state="open"] {
   border-color: var(--color-primary);
-  outline: 2px solid var(--color-focus-ring);
-  outline-offset: 1px;
+  outline: 0;
 }
 
 .app-select__trigger--invalid {

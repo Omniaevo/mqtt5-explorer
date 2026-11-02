@@ -75,8 +75,7 @@ const inputAttrs = computed(() =>
 
 .app-textarea__input:focus {
   border-color: var(--color-primary);
-  outline: 2px solid var(--color-focus-ring);
-  outline-offset: 1px;
+  outline: 0;
 }
 
 .app-textarea--invalid .app-textarea__input {

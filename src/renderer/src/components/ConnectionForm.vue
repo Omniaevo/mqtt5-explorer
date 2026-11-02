@@ -365,8 +365,7 @@ function deselectFile(destination) {
 
 .conn-form__tags:focus-within {
   border-color: var(--color-primary);
-  outline: 2px solid var(--color-focus-ring);
-  outline-offset: 1px;
+  outline: 0;
 }
 
 .conn-form__tag {

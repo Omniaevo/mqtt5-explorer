@@ -80,11 +80,10 @@ const inputAttrs = computed(() =>
   border-color: var(--color-text-muted);
 }
 
-/* The wrapper shows the focus ring, not the bare input */
+/* The wrapper shows the focus border, not the bare input */
 .app-text-field__control:focus-within {
   border-color: var(--color-primary);
-  outline: 2px solid var(--color-focus-ring);
-  outline-offset: 1px;
+  outline: 0;
 }
 
 .app-text-field--invalid .app-text-field__control {
