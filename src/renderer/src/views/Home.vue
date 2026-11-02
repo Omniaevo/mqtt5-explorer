@@ -287,6 +287,15 @@ onBeforeUnmount(() => {
   overflow: hidden;
 }
 
+/* Taller than wide: connection list on top, form below.
+   Doubled class beats the wrapper's vertical-orientation rule. */
+@media (orientation: portrait) {
+  .connection-area.connection-area[data-orientation="vertical"] {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(0, 2fr) minmax(0, 3fr);
+  }
+}
+
 .connection-area :deep(.app-tabs__header) {
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);

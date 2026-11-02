@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
   formatEntryTime,
+  formatMessageCount,
+  messageKey,
   recentMessages,
   resolveField,
   toRawRows,
@@ -85,5 +87,31 @@ describe("recentMessages", () => {
     const node = { value, history: [] };
 
     expect(recentMessages(node, 10)[0]).toBe(recentMessages(node, 10)[0]);
+  });
+});
+
+describe("messageKey", () => {
+  it("should return the same key for the same message", () => {
+    const message = {};
+
+    expect(messageKey(message)).toBe(messageKey(message));
+  });
+
+  it("should return different keys for different messages", () => {
+    expect(messageKey({})).not.toBe(messageKey({}));
+  });
+});
+
+describe("formatMessageCount", () => {
+  it("should use the singular for one message", () => {
+    expect(formatMessageCount(1, true)).toBe("1 message received");
+  });
+
+  it("should truncate huge counts on request", () => {
+    expect(formatMessageCount(2000000, true)).toBe("1000000+ messages received");
+  });
+
+  it("should keep huge counts when not truncating", () => {
+    expect(formatMessageCount(2000000, false)).toBe("2000000 messages received");
   });
 });

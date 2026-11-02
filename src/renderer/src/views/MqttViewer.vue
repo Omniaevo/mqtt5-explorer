@@ -1,68 +1,66 @@
 <template>
-  <div class="page-grid-container">
-    <v-app-bar :color="settings.isDark ? 'surface' : 'white'" flat>
-      <v-tooltip text="Disconnect" location="bottom">
-        <template #activator="{ props: tooltipProps }">
-          <v-btn
-            v-bind="tooltipProps"
-            :icon="ArrowLeft"
-            variant="text"
+  <div class="viewer">
+    <AppHeader>
+      <template #start>
+        <AppTooltip text="Disconnect">
+          <AppButton
+            variant="icon"
+            aria-label="Disconnect"
             @click="disconnectFromMqtt()"
-          />
-        </template>
-      </v-tooltip>
+          >
+            <ArrowLeft :size="18" aria-hidden="true" />
+          </AppButton>
+        </AppTooltip>
 
-      <v-tooltip :text="stateView.text" location="bottom">
-        <template #activator="{ props: tooltipProps }">
-          <v-icon
-            v-bind="tooltipProps"
-            :class="stateView.class"
-            :color="stateView.color"
-            :icon="stateView.icon"
-            class="ms-4"
-          />
-        </template>
-      </v-tooltip>
+        <AppTooltip :text="stateView.text">
+          <span
+            class="state-icon"
+            role="img"
+            tabindex="0"
+            :aria-label="stateView.text"
+          >
+            <component
+              :is="stateView.icon"
+              :size="18"
+              :class="[`state-icon--${stateView.color}`, stateView.class]"
+              aria-hidden="true"
+            />
+          </span>
+        </AppTooltip>
+      </template>
 
-      <div class="ms-4">
-        <div class="text-h3">{{ connectionProperties.name }}</div>
-        <div class="text-caption text-grey connection-url">{{ connection.url }}</div>
+      <div class="connection">
+        <h1 class="connection__name">{{ connectionProperties.name }}</h1>
+        <div class="connection__url">{{ connection.url }}</div>
       </div>
 
-      <v-tooltip
-        v-if="fileLoggingSwitch"
-        text="Logging is active"
-        location="bottom"
-      >
-        <template #activator="{ props: tooltipProps }">
-          <v-btn
-            v-bind="tooltipProps"
-            class="ms-2"
-            color="error"
-            variant="text"
-            icon
-            @click="toggleNotificationsDialog"
-          >
-            <v-icon class="rec-icon" :icon="CircleDot" />
-          </v-btn>
-        </template>
-      </v-tooltip>
+      <AppTooltip v-if="fileLoggingSwitch" text="Logging is active">
+        <AppButton
+          variant="icon"
+          color="danger"
+          aria-label="Logging is active"
+          @click="toggleNotificationsDialog"
+        >
+          <CircleDot class="rec-icon" :size="18" aria-hidden="true" />
+        </AppButton>
+      </AppTooltip>
 
-      <v-spacer />
-      <v-slide-y-transition>
-        <SearchBar
-          v-if="searchVisible"
-          v-model:term="searchTerm"
-          v-model:mode="searchMode"
-          class="search-bar me-4"
-          @close="toggleSearchField"
-          @show-info="searchInfoDialog = true"
-        />
-      </v-slide-y-transition>
-    </v-app-bar>
+      <template #end>
+        <Transition name="search-slide">
+          <SearchBar
+            v-if="searchVisible"
+            v-model:term="searchTerm"
+            v-model:mode="searchMode"
+            class="search-bar"
+            @close="toggleSearchField"
+            @show-info="searchInfoDialog = true"
+          />
+        </Transition>
+      </template>
+    </AppHeader>
 
-    <div class="ma-2 explorer-grid-container">
-      <v-card class="treeview-container pa-2" flat>
+    <main class="explorer">
+      <section class="treeview-panel" aria-label="Topics">
         <TopicTreeView
           ref="treeView"
           :tree="tree"
@@ -72,79 +70,77 @@
           :matches="nodeMatcher"
           @select="selectNode"
         />
-      </v-card>
+      </section>
 
-      <v-card class="properties-container" flat>
-        <div class="d-flex align-center px-4 topic-bar">
-          <div v-if="selectedView" class="flex-grow-1 wrap-text long-payload">
+      <section class="properties-panel" aria-label="Topic details">
+        <div class="topic-bar">
+          <div v-if="selectedView" class="topic-bar__topic long-payload">
             <template v-for="(segment, i) in topicSegments" :key="i">
-              <span v-if="i > 0" class="text-primary font-weight-bold mx-1"
-                >/</span
+              <span v-if="i > 0" class="topic-bar__separator">/</span
               ><span>{{ segment }}</span>
             </template>
           </div>
-          <div v-else class="flex-grow-1 text-grey">No topic selected</div>
+          <div v-else class="topic-bar__topic topic-bar__topic--empty">
+            No topic selected
+          </div>
 
           <template v-if="selectedView">
-            <v-tooltip text="Clear selection" location="bottom">
-              <template #activator="{ props: tooltipProps }">
-                <v-btn
-                  v-bind="tooltipProps"
-                  :color="settings.isDark ? 'white' : undefined"
-                  class="ms-2"
-                  :icon="X"
-                  variant="text"
-                  @click="resetSelection"
-                />
-              </template>
-            </v-tooltip>
-            <v-tooltip
-              :text="`Delete &quot;${selectedView.topic}&quot; topic`"
-              location="bottom"
-            >
-              <template #activator="{ props: tooltipProps }">
-                <v-btn
-                  v-bind="tooltipProps"
-                  color="error"
-                  :icon="Trash2"
-                  variant="text"
-                  @click="deleteDialog = true"
-                />
-              </template>
-            </v-tooltip>
+            <AppTooltip text="Clear selection">
+              <AppButton
+                variant="icon"
+                aria-label="Clear selection"
+                @click="resetSelection"
+              >
+                <X :size="18" aria-hidden="true" />
+              </AppButton>
+            </AppTooltip>
+            <AppTooltip :text="`Delete &quot;${selectedView.topic}&quot; topic`">
+              <AppButton
+                variant="icon"
+                color="danger"
+                aria-label="Delete topic"
+                @click="deleteDialog = true"
+              >
+                <Trash2 :size="18" aria-hidden="true" />
+              </AppButton>
+            </AppTooltip>
           </template>
         </div>
 
-        <div class="tabs-header">
-          <v-tabs v-model="activeTab" color="primary">
-            <v-tab value="payload" :disabled="!selectedView">Payload</v-tab>
-            <v-tab value="history" :disabled="!selectedView">History</v-tab>
-            <v-tab value="publish">Publish</v-tab>
-          </v-tabs>
-          <div v-if="activeTab === 'publish'" class="tabs-header__actions">
-            <AppTooltip v-if="publishPanel?.canSync" text="Synchronize with new data">
-              <AppButton
-                variant="icon"
-                aria-label="Synchronize with new data"
-                @click="publishPanel.sync()"
+        <AppTabs
+          v-model="activeTab"
+          class="details-tabs"
+          aria-label="Topic details"
+          :tabs="viewerTabs"
+        >
+          <template #list-end>
+            <div v-if="activeTab === 'publish'" class="tabs-actions">
+              <AppTooltip
+                v-if="publishPanel?.canSync"
+                text="Synchronize with new data"
               >
-                <RefreshCw :size="16" aria-hidden="true" />
+                <AppButton
+                  variant="icon"
+                  aria-label="Synchronize with new data"
+                  @click="publishPanel.sync()"
+                >
+                  <RefreshCw :size="16" aria-hidden="true" />
+                </AppButton>
+              </AppTooltip>
+              <AppButton color="primary" @click="publishPanel?.submit()">
+                Publish
               </AppButton>
-            </AppTooltip>
-            <AppButton color="primary" @click="publishPanel?.submit()">Publish</AppButton>
-          </div>
-        </div>
-        <v-divider />
+            </div>
+          </template>
 
-        <v-tabs-window v-model="activeTab" class="tabs-window">
-          <v-tabs-window-item value="payload" class="tab-item payload-tab pa-4">
-            <template v-if="selectedView">
+          <template #payload>
+            <div v-if="selectedView" class="payload-tab">
               <div
                 v-if="selectedView.counter > 0"
-                :title="getCountMessage(selectedView.counter, false)"
-                class="text-caption text-grey mb-2"
+                :title="formatMessageCount(selectedView.counter, false)"
+                class="message-count"
               >
-                {{ getCountMessage(selectedView.counter, true) }}
+                {{ formatMessageCount(selectedView.counter, true) }}
               </div>
               <!-- Keyed by topic: a new selection renders without animation -->
               <TransitionGroup
@@ -161,63 +157,67 @@
                       ? 'payload-new newest'
                       : 'payload-old'
                   "
-                  class="message-row d-flex rounded mb-1 px-4 py-1 wrap-text"
+                  class="message-row"
                 >
-                  <span class="flex-fill long-payload">{{
+                  <span class="message-text long-payload">{{
                     message.payload
                   }}</span>
-                  <span v-if="message.t" class="message-time ms-4">{{
+                  <span v-if="message.t" class="message-time">{{
                     formatEntryTime(message.t)
                   }}</span>
                 </div>
               </TransitionGroup>
 
-              <div v-if="isV5" class="mt-auto pt-4">
-                <v-divider class="mb-2">Properties</v-divider>
-                <pre>{{ selectedView.value?.properties || "" }}</pre>
-              </div>
-            </template>
-          </v-tabs-window-item>
+              <section v-if="isV5" class="properties">
+                <h2 class="properties__title">Properties</h2>
+                <pre class="properties__value">{{
+                  selectedView.value?.properties || ""
+                }}</pre>
+              </section>
+            </div>
+          </template>
 
-          <v-tabs-window-item value="history" class="tab-item pa-4">
+          <template #history>
             <HistoryPanel
               :node="selectedNode"
               :version="treeVersion"
               :capacity="settings.historySize"
               :active="activeTab === 'history'"
             />
-          </v-tabs-window-item>
+          </template>
 
-          <!-- Eager: the tree loads the selected topic into it at any time -->
-          <v-tabs-window-item value="publish" class="tab-item pa-4" eager>
+          <template #publish>
             <PublishPanel
               ref="publishPanel"
               :selected="selectedView"
               :is-v5="isV5"
               @publish="(packet) => connection.publish(packet)"
             />
-          </v-tabs-window-item>
-        </v-tabs-window>
-      </v-card>
-    </div>
+          </template>
+        </AppTabs>
+      </section>
+    </main>
 
-    <v-dialog v-model="deleteDialog" max-width="50ch" persistent>
-      <v-card>
-        <v-card-title>Confirm delete</v-card-title>
-        <v-card-text>
-          Are you sure you want to delete
-          <span class="font-weight-black">"{{ selectedView?.topic }}"</span>
-          topic and its children?
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer />
-          <v-btn variant="text" @click="deleteDialog = false">Cancel</v-btn>
-          <v-btn color="error" variant="text" @click="confirmDelete"
-            >Delete</v-btn
-          >
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+    <AppDialog
+      v-model:open="deleteDialog"
+      title="Confirm delete"
+      persistent
+      hide-close
+    >
+      <p>
+        Are you sure you want to delete
+        <strong>"{{ selectedView?.topic }}"</strong>
+        topic and its children?
+      </p>
+      <template #actions>
+        <AppButton variant="text" @click="deleteDialog = false">
+          Cancel
+        </AppButton>
+        <AppButton variant="text" color="danger" @click="confirmDelete">
+          Delete
+        </AppButton>
+      </template>
+    </AppDialog>
 
     <NotificationsDialog
       v-model="notifyDialog"
@@ -232,6 +232,8 @@
     />
 
     <SearchInfoDialog v-model="searchInfoDialog" />
+
+    <SettingsDialog v-model="settingsOpen" />
   </div>
 </template>
 
@@ -244,76 +246,48 @@ import {
   onBeforeUnmount,
   onMounted,
   ref,
-  shallowRef,
   watch,
 } from "vue";
-import { useRoute, useRouter } from "vue-router";
-import {
-  ArrowLeft,
-  CircleDot,
-  Cloud,
-  CloudCheck,
-  CloudSync,
-  RefreshCw,
-  Trash2,
-  X,
-} from "@lucide/vue";
+import { useRoute } from "vue-router";
+import { ArrowLeft, CircleDot, RefreshCw, Trash2, X } from "@lucide/vue";
 import NotificationsDialog from "../components/viewer/NotificationsDialog.vue";
 import HistoryPanel from "../components/viewer/HistoryPanel.vue";
 import AppButton from "../components/ui/AppButton.vue";
+import AppDialog from "../components/ui/AppDialog.vue";
+import AppHeader from "../components/ui/AppHeader.vue";
+import AppTabs from "../components/ui/AppTabs.vue";
 import AppTooltip from "../components/ui/AppTooltip.vue";
 import PublishPanel from "../components/viewer/PublishPanel.vue";
+import SettingsDialog from "../components/SettingsDialog.vue";
 import SearchBar from "../components/viewer/SearchBar.vue";
 import SearchInfoDialog from "../components/viewer/SearchInfoDialog.vue";
 import TopicTreeView from "../components/viewer/TopicTreeView.vue";
+import { useConnectionSession } from "../composables/useConnectionSession";
 import { useDebouncedRef } from "../composables/useDebouncedRef";
 import { useNotifyAndLogging } from "../composables/useNotifyAndLogging";
+import { useTopicSelection } from "../composables/useTopicSelection";
 import { useTreeRefresh } from "../composables/useTreeRefresh";
-import Connection from "../utils/Connection";
 import TopicTree from "../models/TopicTree";
 import ConnectionProperties from "../models/ConnectionProperties";
 import SearchEngine from "../../../shared/SearchEngine";
 import { useConnectionsStore } from "../stores/connections";
-import { useNotifyStore } from "../stores/notify";
 import { useSettingsStore } from "../stores/settings";
-import { formatEntryTime, recentMessages } from "../utils/HistoryView";
+import {
+  formatEntryTime,
+  formatMessageCount,
+  messageKey,
+  recentMessages,
+} from "../utils/HistoryView";
+import { retainedClearPackets } from "../utils/retainedClear";
 
 const SEARCH_DEBOUNCE_MS = 250;
 // ponytail: fixed cap, enough rows to fill a tall window; measure the
 // free height if rows ever look cut short.
 const MAX_SHOWN_MESSAGES = 50;
 
-const STATES = Connection.connectionStates;
-const STATE_VIEWS = {
-  [STATES.CONNECTED]: {
-    icon: Cloud,
-    color: "primary",
-    text: "Connected",
-  },
-  [STATES.PENDING]: {
-    icon: CloudSync,
-    color: "primary",
-    text: "Connection pending ...",
-    class: "pending",
-  },
-  [STATES.DISCONNECTED]: {
-    icon: CloudCheck,
-    color: "primary",
-    text: "Disconnected",
-    class: "grayscale",
-  },
-  [STATES.ERROR]: {
-    icon: CloudCheck,
-    color: "error",
-    text: "An error occurred",
-  },
-};
-
 const route = useRoute();
-const router = useRouter();
 const settings = useSettingsStore();
 const connections = useConnectionsStore();
-const notify = useNotifyStore();
 const connection = inject("connection");
 
 const connectionProperties = new ConnectionProperties();
@@ -330,35 +304,28 @@ const {
   wasUpdatedInLastBatch: isBlinking,
 } = useTreeRefresh();
 
-const connectionState = ref(STATES.PENDING);
-const stateView = computed(() => STATE_VIEWS[connectionState.value]);
-
-const selectedNode = shallowRef(undefined);
 const publishPanel = ref(null);
 const treeView = ref(null);
 const activeTab = ref("publish");
 const deleteDialog = ref(false);
 const notifyDialog = ref(false);
+const settingsOpen = ref(false);
 const searchInfoDialog = ref(false);
 const searchVisible = ref(false);
 const searchTerm = ref(undefined);
 const searchMode = ref(undefined);
 const debouncedSearchTerm = useDebouncedRef(searchTerm, SEARCH_DEBOUNCE_MS);
 
-/** Plain copy of the selected node that follows tree updates. */
-const selectedView = computed(() => {
-  treeVersion.value; // Dependency only
-  const node = selectedNode.value;
-
-  return (
-    node && {
-      topic: node.topic,
-      value: node.value,
-      old: node.old,
-      counter: node.counter,
-    }
-  );
-});
+const { stateView, connect, disconnect: disconnectFromMqtt } =
+  useConnectionSession(connection);
+const {
+  selectedNode,
+  selectedView,
+  topicSegments,
+  selectNode,
+  selectTopic,
+  resetSelection,
+} = useTopicSelection({ tree, treeVersion, activeTab, publishPanel, treeView });
 
 /** Last messages, newest first; built only while the payload tab shows. */
 const messagesView = computed(() => {
@@ -370,17 +337,12 @@ const messagesView = computed(() => {
     : [];
 });
 
-// Stable list keys: a message keeps its key while it moves down the list.
-const messageKeys = new WeakMap();
-let nextMessageKey = 0;
-
-function messageKey(message) {
-  if (!messageKeys.has(message)) messageKeys.set(message, nextMessageKey++);
-
-  return messageKeys.get(message);
-}
-
-const topicSegments = computed(() => selectedView.value?.topic.split("/"));
+const viewerTabs = computed(() => [
+  { value: "payload", label: "Payload", disabled: !selectedView.value },
+  { value: "history", label: "History", disabled: !selectedView.value },
+  // Eager: the tree loads the selected topic into it at any time
+  { value: "publish", label: "Publish", eager: true },
+]);
 
 const {
   notifySwitch,
@@ -420,30 +382,6 @@ function onBatch(packets) {
   requestTreeRefresh(batchTimestamp);
 }
 
-/** Selects a node; the first selection shows its payload. */
-function selectNode(node) {
-  if (!selectedNode.value) activeTab.value = "payload";
-
-  selectedNode.value = node;
-  publishPanel.value?.load(node);
-}
-
-/** Selects the topic of a clicked notification and shows it in the tree. */
-function selectTopic(topic) {
-  const path = tree.path(topic);
-
-  if (path.length === 0) return;
-
-  selectNode(path.at(-1));
-  treeView.value?.reveal(path);
-}
-
-function resetSelection() {
-  selectedNode.value = undefined;
-  publishPanel.value?.reset();
-  activeTab.value = "publish";
-}
-
 function toggleSearchField() {
   searchVisible.value = !searchVisible.value;
 
@@ -454,50 +392,19 @@ function toggleNotificationsDialog() {
   notifyDialog.value = !notifyDialog.value;
 }
 
+function toggleSettings() {
+  settingsOpen.value = !settingsOpen.value;
+}
+
 function openLogsFolder() {
   window.api.app.openFolder(window.api.logger.logsFolder());
 }
 
-function disconnectFromMqtt(errorMessage = undefined) {
-  connection.disconnect(() => {
-    connectionState.value =
-      errorMessage !== undefined ? STATES.ERROR : STATES.DISCONNECTED;
-
-    router.replace({ name: "Home" }).then(() => {
-      // A manual disconnect (no message) needs no toast
-      if (errorMessage !== undefined) {
-        notify.error(errorMessage || "The broker is unreachable");
-      }
-    });
-  });
-}
-
-function getCountMessage(count, truncate) {
-  const truncatedNum = truncate && count > 1000000 ? "1000000+" : count;
-
-  return `${truncatedNum} message${count > 1 ? "s" : ""} received`;
-}
-
-/** @returns {object[]} The node and all its descendants that hold a value. */
-function collectValueNodes(node) {
-  const own = node.value ? [node] : [];
-
-  return node.children.reduce(
-    (all, child) => all.concat(collectValueNodes(child)),
-    own
-  );
-}
-
-/** Clears the retained message of the selected topic and its children. */
+/** Clears the retained messages of the selected topic and its children. */
 function confirmDelete() {
-  collectValueNodes(selectedNode.value).forEach((node) => {
-    connection.publish({
-      ...node.value,
-      topic: node.topic,
-      payload: "",
-      retain: true,
-    });
-  });
+  retainedClearPackets(selectedNode.value).forEach((packet) =>
+    connection.publish(packet)
+  );
 
   deleteDialog.value = false;
   resetSelection();
@@ -512,20 +419,12 @@ onBeforeMount(() => {
   unsubscribeMenuEvents = [
     window.api.app.on("searchPressed", toggleSearchField),
     window.api.app.on("notificationPressed", toggleNotificationsDialog),
+    window.api.app.on("settingsPressed", toggleSettings),
     window.api.notify.onSelectTopic(selectTopic),
   ];
 });
 
-onMounted(() => {
-  connection.connect(
-    settings.mqttClientSettings,
-    () => {
-      connectionState.value = STATES.CONNECTED;
-      pushNotifyConfig();
-    },
-    (err) => disconnectFromMqtt(err)
-  );
-});
+onMounted(() => connect(settings.mqttClientSettings, pushNotifyConfig));
 
 onBeforeUnmount(() =>
   unsubscribeMenuEvents.forEach((unsubscribe) => unsubscribe())
@@ -533,83 +432,231 @@ onBeforeUnmount(() =>
 </script>
 
 <style scoped>
-.tabs-header__actions {
+.viewer {
+  display: flex;
+  flex-direction: column;
+  block-size: 100vh;
+}
+
+/* Header */
+.connection {
+  min-inline-size: 0;
+  line-height: var(--line-height-tight);
+}
+
+.connection__name {
+  margin: 0;
+  overflow: hidden;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.connection__url {
+  overflow: hidden;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-xs);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.state-icon {
+  display: inline-flex;
+  margin-inline: var(--space-3);
+}
+
+.state-icon--primary {
+  color: var(--color-primary);
+}
+
+.state-icon--danger {
+  color: var(--color-danger);
+}
+
+.search-bar {
+  inline-size: 60ch;
+  max-inline-size: 100%;
+}
+
+/* Search bar slides in from the top edge of the header */
+.search-slide-enter-active,
+.search-slide-leave-active {
+  transition:
+    transform var(--duration-normal) var(--easing),
+    opacity var(--duration-normal) var(--easing);
+}
+
+.search-slide-enter-from,
+.search-slide-leave-to {
+  opacity: 0;
+  transform: translateY(-50%);
+}
+
+/* Layout */
+.explorer {
+  display: grid;
+  flex: 1;
+  grid-template-columns: 2fr 3fr;
+  grid-template-rows: minmax(0, 1fr);
+  gap: var(--space-5);
+  min-block-size: 0;
+  margin: var(--space-4);
+}
+
+.treeview-panel {
+  min-inline-size: 0;
+  padding: var(--space-4);
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+}
+
+/* Flat on the page background, like the connection form in Home */
+.properties-panel {
+  display: flex;
+  min-inline-size: 0;
+  overflow: hidden;
+  flex-direction: column;
+}
+
+.topic-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex: none;
+  min-block-size: var(--header-height);
+  padding-inline: var(--space-6) var(--space-4);
+}
+
+.topic-bar__topic {
+  flex: 1;
+  min-inline-size: 0;
+}
+
+.topic-bar__topic--empty {
+  color: var(--color-text-muted);
+}
+
+.topic-bar__separator {
+  margin-inline: var(--space-2);
+  color: var(--color-primary);
+  font-weight: var(--font-weight-bold);
+}
+
+/* Taller than wide: tree on top, details below */
+@media (orientation: portrait) {
+  .explorer {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(0, 2fr) minmax(0, 3fr);
+  }
+}
+
+/* Tabs fill the panel below the topic bar; each panel scrolls on its own */
+.details-tabs {
+  flex: 1 1 0;
+}
+
+.details-tabs :deep(.app-tabs__header) {
+  padding-inline-end: var(--space-5);
+  border-block-end: 1px solid var(--color-border);
+}
+
+.details-tabs :deep(.app-tabs__panel) {
+  overflow: auto;
+  padding: var(--space-6);
+}
+
+.tabs-actions {
   display: flex;
   align-items: center;
   gap: var(--space-4);
 }
 
-.tabs-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding-inline-end: var(--space-5);
-}
-
-.connection-url {
-  font-size: 0.7rem !important;
-}
-
-.page-grid-container {
-  height: calc(100vh - var(--v-layout-top, 0px));
-  display: grid;
-  grid-template-rows: 1fr;
-}
-
-.explorer-grid-container {
-  overflow: hidden;
-  display: grid;
-  grid-template-columns: 2fr 3fr;
-  grid-template-rows: 1fr;
-  gap: 1em;
-}
-
-.treeview-container {
-  overflow: hidden;
-}
-
-.properties-container {
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-}
-
-.topic-bar {
-  min-height: 48px;
-}
-
-/* Fill the card below the tabs; each item scrolls on its own. */
-.tabs-window {
-  flex: 1 1 0;
-  min-height: 0;
-}
-
-.tabs-window :deep(.v-window__container) {
-  height: 100%;
-}
-
-.tab-item {
-  height: 100%;
-  overflow: auto;
-}
-
-/* Column so the properties can sit at the bottom (no !important: v-show). */
+/* Payload tab: column so the properties can sit at the bottom */
 .payload-tab {
   display: flex;
   flex-direction: column;
+  min-block-size: 100%;
 }
 
-.search-bar {
-  max-width: 60ch;
+.message-count {
+  margin-block-end: var(--space-4);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-xs);
 }
 
 .long-payload {
+  overflow-wrap: break-word;
   word-break: break-all;
+}
+
+.properties {
+  margin-block-start: auto;
+  padding-block-start: var(--space-6);
+}
+
+/* Title, then a divider line filling the rest of the row */
+.properties__title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  margin: 0 0 var(--space-4);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+}
+
+.properties__title::after {
+  content: "";
+  flex: 1;
+  border-block-start: 1px solid var(--color-border);
+}
+
+.properties__value {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--font-size-sm);
+}
+
+/* Takes the free space above the properties; rows fade out downwards. */
+.messages-list {
+  /* Room for two single-line rows (current 1.4em, previous 1em), each with
+     its padding and margin, so the tab stays usable in a very short window.
+     The tab scrolls when the window is shorter than this. */
+  --min-rows-height: calc(
+    var(--font-size-md) * var(--line-height-normal) * 2.4 + var(--space-2) * 6
+  );
+
+  flex: 1 1 0;
+  min-block-size: var(--min-rows-height);
+  overflow: hidden;
+  mask-image: linear-gradient(to bottom, black, transparent);
+}
+
+/* New message: the current one morphs to an older one, the list slides
+   down and the new one fades and scales in, all at the same time. */
+.message-row {
+  display: flex;
+  margin-block-end: var(--space-2);
+  padding: var(--space-2) var(--space-6);
+  border-radius: var(--radius-md);
+  overflow-wrap: break-word;
+  transition:
+    background-color 150ms linear,
+    font-size 150ms linear;
+}
+
+.message-text {
+  flex: 1;
+  min-inline-size: 0;
 }
 
 .message-time {
   align-self: center;
   flex-shrink: 0;
+  margin-inline-start: var(--space-6);
   font-size: 0.85em;
   opacity: 0.7;
   white-space: nowrap;
@@ -619,20 +666,12 @@ onBeforeUnmount(() =>
   font-size: 1.4em;
 }
 
-/* Takes the free space above the properties; rows fade out downwards. */
-.messages-list {
-  flex: 1 1 0;
-  min-height: 0;
-  overflow: hidden;
-  mask-image: linear-gradient(to bottom, black, transparent);
+.payload-old {
+  background: color-mix(in oklab, var(--color-danger) 33%, transparent);
 }
 
-/* New message: the current one morphs to an older one, the list slides
-   down and the new one fades and scales in, all at the same time. */
-.message-row {
-  transition:
-    background-color 150ms linear,
-    font-size 150ms linear;
+.payload-new {
+  background: color-mix(in oklab, var(--color-success) 33%, transparent);
 }
 
 .message-move,
@@ -652,26 +691,7 @@ onBeforeUnmount(() =>
   transform: scale(0.9);
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .message-row,
-  .message-move,
-  .message-enter-active {
-    transition: none;
-  }
-}
-
-.payload-old {
-  background: #ff535655;
-}
-
-.payload-new {
-  background: #41b05655;
-}
-
-.wrap-text {
-  overflow-wrap: break-word;
-}
-
+/* State icons */
 .grayscale {
   filter: grayscale(100%);
 }
@@ -700,6 +720,21 @@ onBeforeUnmount(() =>
   }
   to {
     opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .message-row,
+  .message-move,
+  .message-enter-active,
+  .search-slide-enter-active,
+  .search-slide-leave-active {
+    transition: none;
+  }
+
+  .pending,
+  .rec-icon {
+    animation: none;
   }
 }
 </style>

@@ -339,13 +339,11 @@ function openBugsUrl() {
   gap: var(--space-5);
   margin: 0;
   color: var(--color-text-muted);
-  font-size: var(--font-size-xs);
-  font-weight: var(--font-weight-regular);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
 }
 
-.settings-section::before,
+/* Title, then a divider line filling the rest of the row */
 .settings-section::after {
   content: "";
   flex: 1;
