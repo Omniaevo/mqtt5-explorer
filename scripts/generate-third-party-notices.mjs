@@ -14,13 +14,11 @@ const OUTPUT_FILE = path.join(ROOT, "THIRD-PARTY-NOTICES.txt");
 // Dev dependencies that Vite bundles into the renderer, so they ship in the app.
 const BUNDLED_DEV_DEPENDENCIES = [
   "@lucide/vue",
-  "@mdi/font",
   "@tanstack/vue-virtual",
   "pinia",
   "reka-ui",
   "vue",
   "vue-router",
-  "vuetify",
 ];
 
 // SPDX ids that are compatible with GPL-3.0-only.

@@ -1,16 +1,13 @@
 import { watch } from "vue";
-import { useTheme } from "vuetify";
 import { useSettingsStore } from "../stores/settings";
 import { onPrimaryColor } from "../utils/onPrimaryColor";
 
 /**
- * Keeps the `data-theme` attribute, the primary color CSS variables and
- * the Vuetify theme in line with the settings store.
- * The Vuetify part goes away with Vuetify (T16).
+ * Keeps the `data-theme` attribute and the primary color CSS variables
+ * in line with the settings store.
  */
 export function useThemeSync() {
   const settings = useSettingsStore();
-  const vuetifyTheme = useTheme();
 
   const applyThemeAttribute = () => {
     document.documentElement.dataset.theme = settings.theme;
@@ -25,18 +22,9 @@ export function useThemeSync() {
     style.setProperty("--color-on-primary", onPrimaryColor(primary));
   };
 
-  const applyVuetifyTheme = () => {
-    const { light, dark } = settings.primaryColor.value;
-
-    vuetifyTheme.themes.value.light.colors.primary = light;
-    vuetifyTheme.themes.value.dark.colors.primary = dark;
-    vuetifyTheme.change(settings.theme);
-  };
-
   const applyAll = () => {
     applyThemeAttribute();
     applyPrimaryVars();
-    applyVuetifyTheme();
   };
 
   watch(() => settings.theme, applyAll);

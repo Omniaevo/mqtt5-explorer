@@ -81,7 +81,7 @@
   --shadow-1: 0 1px 2px rgb(0 0 0 / 0.40);
   --shadow-2: 0 8px 24px rgb(0 0 0 / 0.50), 0 0 0 1px var(--color-border);
 }
-/* Base layer: kept small, the Vuetify reset still runs (removed in T16) */
+/* Base layer: minimal reset */
 *,
 *::before,
 *::after {
@@ -89,11 +89,31 @@
 }
 
 body {
+  margin: 0;
   font-family: var(--font-sans);
   font-size: var(--font-size-md);
   line-height: var(--line-height-normal);
   color: var(--color-text);
   background: var(--color-bg);
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: default;
 }
 
 :focus-visible {

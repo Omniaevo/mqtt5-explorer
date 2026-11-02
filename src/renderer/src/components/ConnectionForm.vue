@@ -213,7 +213,7 @@ const showPassword = ref(false);
 const openPanels = ref([]);
 const topicsInputId = useId();
 
-/** Fields the user already edited; errors show only for these, like Vuetify did. */
+/** Fields the user already edited; errors show only for these. */
 const touched = reactive(new Set());
 
 const connectionData = reactive(new ConnectionProperties());
