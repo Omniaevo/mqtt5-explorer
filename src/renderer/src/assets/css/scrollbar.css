@@ -7,12 +7,12 @@
 /* Handle */
 ::-webkit-scrollbar-thumb {
   background: var(--color-primary);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
 }
 
 ::-webkit-scrollbar-thumb:window-inactive {
   background: var(--color-primary);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
 }
 
 ::selection {

@@ -33,7 +33,8 @@ const switchAttrs = computed(() =>
 
 <style scoped>
 .app-switch {
-  --switch-width: 2rem;
+  --switch-width: 1.75rem;
+  --switch-height: 1rem;
   --switch-padding: 2px;
 
   display: inline-flex;
@@ -45,10 +46,10 @@ const switchAttrs = computed(() =>
 .app-switch__root {
   flex: none;
   inline-size: var(--switch-width);
-  block-size: 1.125rem;
+  block-size: var(--switch-height);
   padding: var(--switch-padding);
   border: 0;
-  border-radius: 999px;
+  border-radius: var(--radius-lg);
   background: var(--color-border);
   cursor: inherit;
   transition: background-color var(--duration-fast) var(--easing);
@@ -70,15 +71,17 @@ const switchAttrs = computed(() =>
 
 .app-switch__thumb {
   display: block;
-  inline-size: calc(1.125rem - 2 * var(--switch-padding));
-  block-size: calc(1.125rem - 2 * var(--switch-padding));
-  border-radius: 50%;
-  background: var(--color-on-primary);
+  inline-size: calc(var(--switch-height) - 2 * var(--switch-padding));
+  block-size: calc(var(--switch-height) - 2 * var(--switch-padding));
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-raised);
+  box-shadow: var(--shadow-1);
   transition: translate var(--duration-fast) var(--easing);
 }
 
 .app-switch__thumb[data-state="checked"] {
-  translate: calc(var(--switch-width) - 1.125rem) 0;
+  background: var(--color-on-primary);
+  translate: calc(var(--switch-width) - var(--switch-height)) 0;
 }
 
 .app-switch__label {
