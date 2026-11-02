@@ -167,8 +167,22 @@ const options = computed(() =>
   font-size: var(--font-size-xs);
 }
 
-/* Above dialogs (2001), because selects live inside them */
+.visually-hidden {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+</style>
+
+<style>
+/* Unscoped: the list is teleported out of the component, so scoped rules never match it.
+   Above dialogs (2001), because selects live inside them.
+   `position` is needed: Reka copies the computed z-index to its wrapper, and it is `auto` when static */
 .app-select__content {
+  position: relative;
   z-index: 2100;
   min-inline-size: var(--reka-select-trigger-width);
   max-block-size: min(20rem, var(--reka-select-content-available-height));
@@ -210,14 +224,5 @@ const options = computed(() =>
   position: absolute;
   inset-inline-end: var(--space-4);
   display: inline-flex;
-}
-
-.visually-hidden {
-  position: absolute;
-  inline-size: 1px;
-  block-size: 1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
 }
 </style>

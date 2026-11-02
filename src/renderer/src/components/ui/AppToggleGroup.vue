@@ -1,7 +1,7 @@
 <template>
   <ToggleGroupRoot v-model="model" class="app-toggle-group" :type="type">
     <component
-      :is="item.tooltip ? AppTooltip : Fragment"
+      :is="item.tooltip ? AppTooltip : Passthrough"
       v-for="item in items"
       :key="item.value"
       v-bind="item.tooltip ? { text: item.tooltip } : {}"
@@ -9,10 +9,10 @@
       <ToggleGroupItem
         class="app-toggle-group__item"
         :value="item.value"
-        :aria-label="item.icon ? item.label : undefined"
+        :aria-label="isIconOnly(item) ? item.label : undefined"
       >
         <component :is="item.icon" v-if="item.icon" :size="16" aria-hidden="true" />
-        <template v-else>{{ item.label }}</template>
+        <template v-if="!isIconOnly(item)">{{ item.label }}</template>
       </ToggleGroupItem>
     </component>
   </ToggleGroupRoot>
@@ -22,10 +22,10 @@
 /**
  * Group of toggle buttons. Extra attrs (class, events) fall through to the root element.
  * Single mode: clicking the selected item clears the model (`undefined`).
- * `items`: `{ value, label, icon?, tooltip? }[]`. An item with an `icon` is icon-only,
- * and its `label` becomes the accessible name. `tooltip` is shown with AppTooltip.
+ * `items`: `{ value, label, icon?, showLabel?, tooltip? }[]`. An item with an `icon` is icon-only,
+ * and its `label` becomes the accessible name. With `showLabel` the icon and the label are both shown.
+ * `tooltip` is shown with AppTooltip.
  */
-import { Fragment } from "vue";
 import { ToggleGroupItem, ToggleGroupRoot } from "reka-ui";
 import AppTooltip from "./AppTooltip.vue";
 
@@ -39,6 +39,11 @@ defineProps({
 });
 
 const model = defineModel({ type: [String, Array], default: undefined });
+
+// A real component: a `Fragment` given as `:is` breaks the slot validation of the parent
+const Passthrough = (_props, { slots }) => slots.default?.();
+
+const isIconOnly = (item) => Boolean(item.icon) && !item.showLabel;
 </script>
 
 <style scoped>
@@ -54,6 +59,7 @@ const model = defineModel({ type: [String, Array], default: undefined });
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: var(--space-3);
   min-inline-size: var(--control-height);
   padding-inline: var(--space-3);
   border: 0;

@@ -34,6 +34,8 @@ defineProps({
 <style>
 /* Unscoped: the content is teleported out of the component */
 .app-tooltip {
+  /* `position` is needed: Reka copies the computed z-index to its wrapper, and it is `auto` when static */
+  position: relative;
   z-index: 3000;
   padding: var(--space-2) var(--space-4);
   border-radius: var(--radius-lg);
