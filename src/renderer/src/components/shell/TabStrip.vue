@@ -14,6 +14,7 @@
       :active="tab.id === activeId"
       @select="emit('select', tab.id)"
       @close="emit('close', tab.id)"
+      @context-menu="emit('context-menu', tab.id)"
     />
   </div>
 </template>
@@ -31,7 +32,7 @@ const props = defineProps({
   activeId: { type: String, required: true },
 });
 
-const emit = defineEmits(["select", "close"]);
+const emit = defineEmits(["select", "close", "context-menu"]);
 
 const list = useTemplateRef("list");
 

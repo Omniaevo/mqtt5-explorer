@@ -107,6 +107,11 @@ const api = {
     select: (id) => ipcRenderer.send(Channel.TABS_SELECT, id),
     /** @param {string} id */
     close: (id) => ipcRenderer.send(Channel.TABS_CLOSE, id),
+    /**
+     * Pops up the native context menu of a tab at the pointer. Shell only.
+     * @param {string} id
+     */
+    openContextMenu: (id) => ipcRenderer.send(Channel.TABS_CONTEXT_MENU, id),
     /** Closes the tab of the calling view. */
     closeSelf: () => ipcRenderer.send(Channel.TABS_CLOSE),
     /**
@@ -121,6 +126,12 @@ const api = {
      * @returns {Promise<object | undefined>}
      */
     getConnection: () => ipcRenderer.invoke(Channel.TABS_GET_CONNECTION),
+    /**
+     * Tells the strip that the calling view is (or is no longer) logging
+     * to a file, so the tab can show the rec icon.
+     * @param {boolean} enabled
+     */
+    setLogging: (enabled) => ipcRenderer.send(Channel.TABS_SET_LOGGING, enabled),
     /**
      * Reports the connection state of the calling view's tab. An "error"
      * state shows the message on Home and closes the tab.

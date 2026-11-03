@@ -22,7 +22,13 @@
       <Menu :size="16" aria-hidden="true" />
     </AppButton>
 
-    <TabStrip :tabs="tabs" :active-id="activeId" @select="select" @close="close" />
+    <TabStrip
+      :tabs="tabs"
+      :active-id="activeId"
+      @select="select"
+      @close="close"
+      @context-menu="openTabMenu"
+    />
 
     <WindowControls class="shell__controls" />
   </header>
@@ -47,6 +53,7 @@ const { tabs: tabsApi, window: windowApi } = window.api;
 
 const select = (id) => tabsApi.select(id);
 const close = (id) => tabsApi.close(id);
+const openTabMenu = (id) => tabsApi.openContextMenu(id);
 
 const menuTip = useNativeTooltip();
 const showMenuTip = () => menuTip.show(menuButton.value.$el, { title: "Menu" });

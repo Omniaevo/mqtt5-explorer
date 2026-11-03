@@ -25,6 +25,8 @@ export const Channel = Object.freeze({
   TABS_OPEN_CONNECTION: "tabs:openConnection",
   TABS_GET_CONNECTION: "tabs:getConnection",
   TABS_SET_STATE: "tabs:setState",
+  TABS_CONTEXT_MENU: "tabs:contextMenu",
+  TABS_SET_LOGGING: "tabs:setLogging",
   TOOLTIP_SHOW: "tooltip:show",
   TOOLTIP_HIDE: "tooltip:hide",
   TOOLTIP_READY: "tooltip:ready",

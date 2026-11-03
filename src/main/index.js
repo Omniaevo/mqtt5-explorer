@@ -13,6 +13,8 @@ import trayIconLinux from "../../resources/img/tray/tray.png?asset";
 import { registerIpcHandlers } from "./ipcHandlers";
 import TabManager from "./TabManager";
 import TooltipOverlay from "./TooltipOverlay";
+import { PINNED_TABS_KEY, restorePinnedTabs } from "./pinnedTabs";
+import { tabMenuTemplate } from "./tabMenu";
 import { registerTabsIpc } from "./tabsIpc";
 import { registerTooltipIpc } from "./tooltipIpc";
 import { registerWindowIpc, windowState } from "./windowIpc";
@@ -35,6 +37,7 @@ let win;
 let tray;
 let tabs;
 let removeTabsIpc;
+let stopFollowingConnections;
 let removeWindowIpc;
 let removeTooltipIpc;
 let menuKind;
@@ -54,6 +57,22 @@ const popupAppMenu = ({ x, y }) => {
   if (isMac || !win) return;
 
   Menu.buildFromTemplate(menuTemplate(activeKind())).popup({ window: win, x, y });
+};
+// Right click on a tab: the menu is native, so it paints above the views
+const popupTabMenu = (tabId) => {
+  if (!win || !tabs) return;
+
+  const template = tabMenuTemplate({
+    tab: tabs.list().find((tab) => tab.id === tabId),
+    canPin: tabs.canPin(tabId),
+    actions: {
+      pin: () => tabs.pin(tabId),
+      unpin: () => tabs.unpin(tabId),
+      unload: () => tabs.unload(tabId),
+    },
+  });
+
+  if (template.length > 0) Menu.buildFromTemplate(template).popup({ window: win });
 };
 const focusWindow = () => {
   if (!win) return;
@@ -396,10 +415,13 @@ async function createWindow() {
       win.webContents.send(Channel.TABS_STATE, snapshot);
       refreshMenu();
     },
+    onPinnedChange: (connectionIds) => store.set(PINNED_TABS_KEY, connectionIds),
   });
+  stopFollowingConnections = restorePinnedTabs({ store, tabs });
   removeTabsIpc = registerTabsIpc({
     tabs,
     getShellContents: () => win.webContents,
+    onContextMenu: popupTabMenu,
   });
 
   removeTooltipIpc = registerTooltipIpc({
@@ -511,6 +533,7 @@ app.on("before-quit", async (event) => {
     // Flush log files before the process exits
     await ipc.shutdown();
 
+    if (stopFollowingConnections) stopFollowingConnections();
     if (removeTabsIpc) removeTabsIpc();
     if (removeWindowIpc) removeWindowIpc();
     if (removeTooltipIpc) removeTooltipIpc();

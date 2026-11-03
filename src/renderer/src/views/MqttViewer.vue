@@ -2,7 +2,17 @@
   <div class="viewer">
     <AppHeader>
       <template #start>
-        <AppTooltip :text="stateView.text">
+        <AppTooltip v-if="fileLoggingSwitch" text="Logging is active">
+          <AppButton
+            variant="icon"
+            color="danger"
+            aria-label="Logging is active"
+            @click="toggleNotificationsDialog"
+          >
+            <CircleDot class="rec-icon" :size="18" aria-hidden="true" />
+          </AppButton>
+        </AppTooltip>
+        <AppTooltip v-else :text="stateView.text">
           <span
             class="state-icon"
             role="img"
@@ -23,17 +33,6 @@
         <h1 class="connection__name">{{ connectionProperties.name }}</h1>
         <div class="connection__url">{{ connection.url }}</div>
       </div>
-
-      <AppTooltip v-if="fileLoggingSwitch" text="Logging is active">
-        <AppButton
-          variant="icon"
-          color="danger"
-          aria-label="Logging is active"
-          @click="toggleNotificationsDialog"
-        >
-          <CircleDot class="rec-icon" :size="18" aria-hidden="true" />
-        </AppButton>
-      </AppTooltip>
 
       <template #end>
         <Transition name="search-slide">

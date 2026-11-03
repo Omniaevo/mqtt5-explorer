@@ -18,6 +18,8 @@ const LISTENER_CHANNELS = [
   Channel.TABS_OPEN,
   Channel.TABS_OPEN_CONNECTION,
   Channel.TABS_SET_STATE,
+  Channel.TABS_CONTEXT_MENU,
+  Channel.TABS_SET_LOGGING,
   Channel.SHELL_SET_HEIGHT,
 ];
 const HANDLER_CHANNELS = [Channel.TABS_GET_STATE, Channel.TABS_GET_CONNECTION];
@@ -107,16 +109,17 @@ export function parseStripHeight(height) {
  * @param {object} deps
  * @param {import("./TabManager").default} deps.tabs
  * @param {() => Electron.WebContents} deps.getShellContents
+ * @param {(tabId: string) => void} deps.onContextMenu Shows the menu of a tab.
  * @returns {() => void} Removes the handlers.
  */
-export function registerTabsIpc({ tabs, getShellContents }) {
+export function registerTabsIpc({ tabs, getShellContents, onContextMenu }) {
   const context = {
     tabs,
     fromShell: (event) => event.sender === getShellContents(),
     tabOf: (event) => tabs.tabIdOf(event.sender.id),
   };
 
-  registerShellHandlers(context);
+  registerShellHandlers({ ...context, onContextMenu });
   registerViewHandlers(context);
 
   return () => {
@@ -126,7 +129,7 @@ export function registerTabsIpc({ tabs, getShellContents }) {
 }
 
 /** Channels only the shell may use: it drives the tab strip. */
-function registerShellHandlers({ tabs, fromShell }) {
+function registerShellHandlers({ tabs, fromShell, onContextMenu }) {
   const onShell = (channel, handler) =>
     ipcMain.on(channel, (event, ...args) => {
       if (fromShell(event)) handler(...args);
@@ -139,6 +142,9 @@ function registerShellHandlers({ tabs, fromShell }) {
     const request = parseOpenRequest(kind, payload);
 
     if (request) tabs.open(request.kind, request.payload);
+  });
+  onShell(Channel.TABS_CONTEXT_MENU, (id) => {
+    if (typeof id === "string") onContextMenu(id);
   });
   onShell(Channel.SHELL_SET_HEIGHT, (height) => {
     const parsed = parseStripHeight(height);
@@ -178,7 +184,11 @@ function registerViewHandlers({ tabs, fromShell, tabOf }) {
       tabs.setState(tabOf(event), report.state);
     }
   });
+  ipcMain.on(Channel.TABS_SET_LOGGING, (event, enabled) => {
+    if (typeof enabled === "boolean") tabs.setLogging(tabOf(event), enabled);
+  });
   ipcMain.handle(Channel.TABS_GET_CONNECTION, (event) =>
     tabs.getConnection(tabOf(event))
   );
+
 }

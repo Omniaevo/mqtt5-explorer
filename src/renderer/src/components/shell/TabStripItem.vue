@@ -6,6 +6,7 @@
       'tab-strip-item--active': active,
       'tab-strip-item--icon-only': isHome,
     }"
+    @contextmenu.prevent="openContextMenu"
   >
     <button
       class="tab-strip-item__select"
@@ -24,6 +25,13 @@
     >
       <House v-if="isHome" :size="16" aria-hidden="true" />
       <Settings v-else-if="isSettings" :size="16" aria-hidden="true" />
+      <CircleDot
+        v-else-if="tab.logging"
+        class="tab-strip-item__rec"
+        :size="14"
+        role="img"
+        aria-label="Logging is active"
+      />
       <span
         v-else
         class="tab-strip-item__dot"
@@ -33,6 +41,14 @@
       />
       <span v-if="!isHome" class="tab-strip-item__name">{{ tab.title }}</span>
     </button>
+
+    <Pin
+      v-if="tab.pinned"
+      class="tab-strip-item__pin"
+      :size="14"
+      role="img"
+      aria-label="Pinned"
+    />
 
     <!-- Mouse only: the keyboard closes the active tab with the menu shortcut -->
     <AppButton
@@ -55,7 +71,7 @@
  * It only draws the tab; the strip and main own the state.
  */
 import { computed, useTemplateRef } from "vue";
-import { House, Settings, X } from "@lucide/vue";
+import { CircleDot, House, Pin, Settings, X } from "@lucide/vue";
 import AppButton from "../ui/AppButton.vue";
 import { useNativeTooltip } from "../../composables/useNativeTooltip";
 import { TabKind } from "../../../../shared/ipcChannels";
@@ -65,7 +81,7 @@ const props = defineProps({
   active: { type: Boolean, default: false },
 });
 
-const emit = defineEmits(["select", "close"]);
+const emit = defineEmits(["select", "close", "context-menu"]);
 
 const isHome = computed(() => props.tab.kind === TabKind.HOME);
 const isSettings = computed(() => props.tab.kind === TabKind.SETTINGS);
@@ -76,6 +92,11 @@ const nativeTooltip = useNativeTooltip();
 const showTip = () =>
   nativeTooltip.show(root.value, { title: props.tab.title, subtitle: props.tab.url });
 const hideTip = nativeTooltip.hide;
+
+const openContextMenu = () => {
+  hideTip();
+  emit("context-menu");
+};
 
 // A click focuses the tab too: only keyboard focus opens the tooltip
 const showTipOnKeyboardFocus = (event) => {
@@ -145,6 +166,11 @@ const showTipOnKeyboardFocus = (event) => {
   white-space: nowrap;
 }
 
+.tab-strip-item__pin {
+  flex: none;
+  color: var(--color-text-muted);
+}
+
 /* The close button always takes its space, so the name does not jump on hover */
 .tab-strip-item__close {
   flex: none;
@@ -156,6 +182,13 @@ const showTipOnKeyboardFocus = (event) => {
 .tab-strip-item:focus-within .tab-strip-item__close,
 .tab-strip-item--active .tab-strip-item__close {
   opacity: 1;
+}
+
+/* Replaces the state dot while the tab logs to a file */
+.tab-strip-item__rec {
+  flex: none;
+  color: var(--color-danger);
+  animation: tab-strip-item-pulse 1s var(--easing) infinite alternate;
 }
 
 /* Connection state; sleeping and disconnected are hollow and muted */
@@ -200,6 +233,7 @@ const showTipOnKeyboardFocus = (event) => {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .tab-strip-item__rec,
   .tab-strip-item__dot[data-state="pending"] {
     animation: none;
   }
