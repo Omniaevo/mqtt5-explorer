@@ -66,7 +66,7 @@ const popupTabMenu = (tabId) => {
     actions: {
       pin: () => tabs.pin(tabId),
       unpin: () => tabs.unpin(tabId),
-      unload: () => tabs.unload(tabId),
+      disconnect: () => tabs.sendTo(tabId, Channel.TABS_DISCONNECT),
     },
   });
 

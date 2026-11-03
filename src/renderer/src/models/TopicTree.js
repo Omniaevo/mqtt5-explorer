@@ -23,6 +23,11 @@ class TopicTree {
     this.#top.resizeHistory(historySize);
   }
 
+  /** Drops every topic. Node ids keep growing so stale ids never match. */
+  clear() {
+    this.#top = new TopicNode(0, "", "");
+  }
+
   /** Array copy of the root nodes, in insertion order. */
   get roots() {
     return this.#top.children;

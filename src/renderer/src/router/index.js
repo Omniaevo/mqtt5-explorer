@@ -18,6 +18,7 @@ export default createRouter({
       // Main owns the connection properties of the tab (see `tabs:getConnection`)
       beforeEnter: async (to) => {
         to.meta.connection = await window.api.tabs.getConnection();
+        to.meta.initialState = await window.api.tabs.getOwnState();
 
         return to.meta.connection ? true : { name: "Home" };
       },

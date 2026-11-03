@@ -28,6 +28,9 @@ const HANDLER_CHANNELS = [
   Channel.TABS_GET_STATE,
   Channel.TABS_GET_CONNECTION,
   Channel.TABS_GET_CONNECTION_STATES,
+  Channel.TABS_GET_OWN_STATE,
+  Channel.TABS_GET_PINNED,
+  Channel.TABS_SET_PINNED,
 ];
 
 const isPlainObject = (value) =>
@@ -188,12 +191,7 @@ function registerViewHandlers({ tabs, fromShell, tabOf }) {
   ipcMain.on(Channel.TABS_SET_STATE, (event, state, message) => {
     const report = parseStateReport(state, message);
 
-    if (!report) return;
-    if (report.state === TabState.ERROR) {
-      tabs.fail(tabOf(event), report.message);
-    } else {
-      tabs.setState(tabOf(event), report.state);
-    }
+    if (report) tabs.setState(tabOf(event), report.state);
   });
   ipcMain.on(Channel.TABS_SET_LOGGING, (event, enabled) => {
     if (typeof enabled === "boolean") tabs.setLogging(tabOf(event), enabled);
@@ -209,5 +207,16 @@ function registerViewHandlers({ tabs, fromShell, tabOf }) {
       tabs.pinConnection(connectionId);
     }
   });
+  ipcMain.handle(Channel.TABS_GET_OWN_STATE, (event) =>
+    tabs.stateOf(tabOf(event))
+  );
+  ipcMain.handle(Channel.TABS_GET_PINNED, (event) => tabs.isPinned(tabOf(event)));
+  ipcMain.handle(Channel.TABS_SET_PINNED, (event, pinned) => {
+    const id = tabOf(event);
 
+    if (pinned === true) tabs.pin(id);
+    if (pinned === false) tabs.unpin(id);
+
+    return tabs.isPinned(id);
+  });
 }

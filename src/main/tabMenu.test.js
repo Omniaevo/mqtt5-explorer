@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { tabMenuTemplate } from "./tabMenu";
 
-const actions = () => ({ pin: vi.fn(), unpin: vi.fn(), unload: vi.fn() });
+const actions = () => ({ pin: vi.fn(), unpin: vi.fn(), disconnect: vi.fn() });
 const connectionTab = (fields) => ({
   id: "connection-1",
   kind: "connection",
@@ -23,14 +23,14 @@ describe("tabMenuTemplate", () => {
     expect(template).toEqual([]);
   });
 
-  it("offers Pin and Unload on an awake unpinned tab", () => {
+  it("offers Pin and Disconnect on an awake unpinned tab", () => {
     const template = tabMenuTemplate({
       tab: connectionTab(),
       canPin: true,
       actions: actions(),
     });
 
-    expect(labels(template)).toEqual(["Pin tab", "Unload tab"]);
+    expect(labels(template)).toEqual(["Pin tab", "Disconnect"]);
   });
 
   it("offers Unpin on a pinned tab", () => {
@@ -53,13 +53,16 @@ describe("tabMenuTemplate", () => {
     expect(item(template, "Pin tab").enabled).toBe(false);
   });
 
-  it("disables Unload on a sleeping tab", () => {
-    const template = tabMenuTemplate({
-      tab: connectionTab({ state: "sleeping" }),
-      canPin: true,
-      actions: actions(),
-    });
+  it.each(["sleeping", "disconnected", "error"])(
+    "disables Disconnect on a %s tab",
+    (state) => {
+      const template = tabMenuTemplate({
+        tab: connectionTab({ state }),
+        canPin: true,
+        actions: actions(),
+      });
 
-    expect(item(template, "Unload tab").enabled).toBe(false);
-  });
+      expect(item(template, "Disconnect").enabled).toBe(false);
+    }
+  );
 });

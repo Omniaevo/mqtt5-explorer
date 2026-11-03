@@ -1,5 +1,5 @@
 import { connectionUrl } from "../shared/connectionUrl";
-import { Channel, FixedTabId, TabKind, TabState } from "../shared/ipcChannels";
+import { FixedTabId, TabKind, TabState } from "../shared/ipcChannels";
 
 const HOME_ID = FixedTabId.HOME;
 const SETTINGS_ID = FixedTabId.SETTINGS;
@@ -63,8 +63,9 @@ class TabManager {
   open(kind, payload = {}) {
     const existing = this.#findExisting(kind, payload);
 
+    // Opening a connection on purpose: a sleeping tab connects right away
     if (existing) {
-      this.select(existing.id);
+      this.#activate(existing.id, TabState.PENDING);
       return existing.id;
     }
 
@@ -79,10 +80,15 @@ class TabManager {
 
   /** Shows the view of the tab, hides all the others and focuses the view. */
   select(id) {
+    this.#activate(id, TabState.DISCONNECTED);
+  }
+
+  /** `wakeState` is the state of a sleeping tab that gets its view now. */
+  #activate(id, wakeState) {
     if (!this.#find(id)) return;
 
     this.#activeId = id;
-    this.#showActive();
+    this.#showActive(wakeState);
     this.#emit();
   }
 
@@ -165,6 +171,11 @@ class TabManager {
     if (tab?.pinned) this.#setPinned(tab, false);
   }
 
+  /** True when the tab is pinned. */
+  isPinned(id) {
+    return this.#find(id)?.pinned === true;
+  }
+
   /** True when the tab is a saved connection tab that is not pinned yet. */
   canPin(id) {
     const tab = this.#find(id);
@@ -172,29 +183,9 @@ class TabManager {
     return this.#isPinnable(tab) && !tab.pinned;
   }
 
-  /**
-   * Disconnects a connection tab without closing it: the view is destroyed,
-   * so its session ends, and the tab sleeps until the next select. When the
-   * tab is active, Home becomes active.
-   * @returns {boolean} False when the tab is not an awake connection tab.
-   */
-  unload(id) {
-    const tab = this.#find(id);
-
-    if (tab?.kind !== TabKind.CONNECTION || tab.state === TabState.SLEEPING) {
-      return false;
-    }
-
-    this.#views.get(id)?.destroy();
-    this.#views.delete(id);
-    tab.state = TabState.SLEEPING;
-    tab.logging = false;
-
-    if (this.#activeId === id) this.#activeId = HOME_ID;
-
-    this.#showActive();
-    this.#emit();
-    return true;
+  /** Connection state of a tab. Only for the view of that tab. */
+  stateOf(id) {
+    return this.#find(id)?.state;
   }
 
   /**
@@ -310,18 +301,6 @@ class TabManager {
     this.#emit();
   }
 
-  /**
-   * A connection failed: Home is selected and shows the error, then the tab
-   * closes. The toast lives in Home because the tab is about to go away.
-   */
-  fail(id, message) {
-    if (this.#find(id)?.kind !== TabKind.CONNECTION) return;
-
-    this.select(HOME_ID);
-    this.sendTo(HOME_ID, Channel.NOTIFY_SHOW, message, "error");
-    this.close(id);
-  }
-
   /** Connection properties of a tab. Only for the view of that tab. */
   getConnection(id) {
     return this.#find(id)?.connection;
@@ -399,17 +378,20 @@ class TabManager {
     this.#views.set(tab.id, this.#createView(ROUTES[tab.kind](tab)));
   }
 
-  /** Gives a sleeping tab its view: the viewer loads and connects. */
-  #wake(tab) {
+  /**
+   * Gives a sleeping tab its view. The viewer starts in `state`: pending
+   * connects at once, disconnected waits for the user.
+   */
+  #wake(tab, state) {
     if (this.#views.has(tab.id)) return;
 
-    tab.state = TabState.PENDING;
+    tab.state = state;
     this.#createViewOf(tab);
     this.#layout();
   }
 
-  #showActive() {
-    this.#wake(this.#find(this.#activeId));
+  #showActive(wakeState = TabState.DISCONNECTED) {
+    this.#wake(this.#find(this.#activeId), wakeState);
     this.#syncVisibility();
     this.#views.get(this.#activeId).focus();
   }

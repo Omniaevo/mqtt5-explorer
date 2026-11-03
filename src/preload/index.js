@@ -142,6 +142,26 @@ const api = {
     pinConnection: (connectionId) =>
       ipcRenderer.send(Channel.TABS_PIN_CONNECTION, connectionId),
     /**
+     * Connection state of the calling view's tab when the view loaded.
+     * "disconnected" means: do not connect until the user asks.
+     * @returns {Promise<string>}
+     */
+    getOwnState: () => ipcRenderer.invoke(Channel.TABS_GET_OWN_STATE),
+    /**
+     * Called when the tab menu asks the view to disconnect.
+     * @param {() => void} callback
+     * @returns {() => void} Unsubscribe function.
+     */
+    onDisconnect: (callback) => subscribe(Channel.TABS_DISCONNECT, callback),
+    /** @returns {Promise<boolean>} True when the calling view's tab is pinned. */
+    getPinned: () => ipcRenderer.invoke(Channel.TABS_GET_PINNED),
+    /**
+     * Pins or unpins the calling view's tab. Only a saved connection can be pinned.
+     * @param {boolean} pinned
+     * @returns {Promise<boolean>} Pinned state after the call.
+     */
+    setPinned: (pinned) => ipcRenderer.invoke(Channel.TABS_SET_PINNED, pinned),
+    /**
      * Connection properties of the tab that owns the calling view.
      * @returns {Promise<object | undefined>}
      */
@@ -153,8 +173,8 @@ const api = {
      */
     setLogging: (enabled) => ipcRenderer.send(Channel.TABS_SET_LOGGING, enabled),
     /**
-     * Reports the connection state of the calling view's tab. An "error"
-     * state shows the message on Home and closes the tab.
+     * Reports the connection state of the calling view's tab. The tab stays
+     * open on "error"; the view shows the message itself.
      * @param {"pending" | "connected" | "disconnected" | "error"} state
      * @param {string} [message] Error text.
      */

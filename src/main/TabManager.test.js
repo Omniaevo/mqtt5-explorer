@@ -317,26 +317,12 @@ describe("TabManager", () => {
     expect(onChange).not.toHaveBeenCalled();
   });
 
-  it("shows the error on Home and closes the failed tab", () => {
-    const { manager, views } = createManager();
-    const id = manager.open("connection", { connectionId: "a" });
-
-    manager.fail(id, "The broker is unreachable");
-
-    expect(views[0].sent).toEqual([
-      ["notify:show", "The broker is unreachable", "error"],
-    ]);
-    expect(ids(manager)).toEqual(["home"]);
-    expect(manager.active().id).toBe("home");
-  });
-
-  it("does not fail a tab that is not a connection", () => {
+  it("keeps a tab of an unsaved connection unpinned", () => {
     const { manager } = createManager();
-    manager.open("settings");
+    const id = manager.open("connection", { connection: { name: "quick" } });
+    manager.pin(id);
 
-    manager.fail("settings", "x");
-
-    expect(ids(manager)).toEqual(["home", "settings"]);
+    expect(manager.isPinned(id)).toBe(false);
   });
 
   it("focuses the view of the selected tab", () => {
@@ -447,14 +433,14 @@ describe("TabManager", () => {
       expect(onPinnedChange).not.toHaveBeenCalled();
     });
 
-    it("creates the view and wakes the tab on its first select", () => {
+    it("creates the view and wakes the tab disconnected on its first select", () => {
       const { manager, views } = createManager();
       manager.restorePinned(["a"], [saved("a")]);
 
       manager.select(manager.list()[1].id);
 
       expect(views.at(-1).route).toBe(`/viewer/${manager.active().id}`);
-      expect(manager.active().state).toBe("pending");
+      expect(manager.active().state).toBe("disconnected");
     });
 
     it("keeps the other sleeping tabs asleep when one wakes", () => {
@@ -467,7 +453,7 @@ describe("TabManager", () => {
       expect(manager.list()[1].state).toBe("sleeping");
     });
 
-    it("wakes a sleeping tab when its connection is opened from Home", () => {
+    it("wakes a sleeping tab connecting when its connection is opened from Home", () => {
       const { manager } = createManager();
       manager.restorePinned(["a"], [saved("a")]);
 
@@ -484,7 +470,7 @@ describe("TabManager", () => {
 
       manager.close("settings");
 
-      expect(manager.active()).toMatchObject({ connectionId: "a", state: "pending" });
+      expect(manager.active()).toMatchObject({ connectionId: "a", state: "disconnected" });
     });
 
     it("pins right after Home and Settings in pin order", () => {
@@ -568,66 +554,6 @@ describe("TabManager", () => {
       expect(manager.canPin(a)).toBe(false);
     });
 
-    it("destroys the view of an unloaded tab and keeps the tab", () => {
-      const { manager, views } = createPinnable("a");
-      const a = openSaved(manager, "a");
-
-      expect(manager.unload(a)).toBe(true);
-
-      expect(views[1].destroyed).toBe(true);
-      expect(manager.list().find((tab) => tab.id === a).state).toBe("sleeping");
-    });
-
-    it("selects Home when the active tab is unloaded", () => {
-      const { manager } = createPinnable("a");
-      const a = openSaved(manager, "a");
-
-      manager.unload(a);
-
-      expect(manager.active().id).toBe("home");
-    });
-
-    it("keeps the active tab when another tab is unloaded", () => {
-      const { manager } = createPinnable("a");
-      const a = openSaved(manager, "a");
-      manager.open("settings");
-
-      manager.unload(a);
-
-      expect(manager.active().id).toBe("settings");
-    });
-
-    it("keeps the pin of an unloaded tab", () => {
-      const { manager, onPinnedChange } = createPinnable("a");
-      const a = openSaved(manager, "a");
-      manager.pin(a);
-      onPinnedChange.mockClear();
-
-      manager.unload(a);
-
-      expect(manager.list().find((tab) => tab.id === a).pinned).toBe(true);
-      expect(onPinnedChange).not.toHaveBeenCalled();
-    });
-
-    it("creates a new view when an unloaded tab is selected again", () => {
-      const { manager, views } = createPinnable("a");
-      const a = openSaved(manager, "a");
-      manager.unload(a);
-
-      manager.select(a);
-
-      expect(views).toHaveLength(3);
-      expect(manager.active().state).toBe("pending");
-    });
-
-    it("does not unload Home or a sleeping tab", () => {
-      const { manager } = createManager();
-      manager.restorePinned(["a"], [saved("a")]);
-
-      expect(manager.unload("home")).toBe(false);
-      expect(manager.unload(manager.list()[1].id)).toBe(false);
-    });
-
     it("renames a tab when the saved connection is renamed", () => {
       const { manager, onChange } = createPinnable("a");
       const a = openSaved(manager, "a");
@@ -698,16 +624,6 @@ describe("TabManager", () => {
       manager.setLogging("home", true);
 
       expect(onChange).not.toHaveBeenCalled();
-    });
-
-    it("clears the logging flag when the tab is unloaded", () => {
-      const { manager } = createManager();
-      const id = manager.open("connection", { connectionId: "a" });
-      manager.setLogging(id, true);
-
-      manager.unload(id);
-
-      expect(manager.list().find((tab) => tab.id === id).logging).toBe(false);
     });
 
     it("clears the logging flag when the active tab reloads", () => {

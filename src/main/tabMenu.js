@@ -5,7 +5,7 @@ import { TabKind, TabState } from "../shared/ipcChannels";
  * @param {object} deps
  * @param {{id: string, kind: string, pinned: boolean, state: string} | undefined} deps.tab
  * @param {boolean} deps.canPin
- * @param {{pin: () => void, unpin: () => void, unload: () => void}} deps.actions
+ * @param {{pin: () => void, unpin: () => void, disconnect: () => void}} deps.actions
  * @returns {Electron.MenuItemConstructorOptions[]}
  */
 export function tabMenuTemplate({ tab, canPin, actions }) {
@@ -16,9 +16,9 @@ export function tabMenuTemplate({ tab, canPin, actions }) {
       ? { label: "Unpin tab", click: actions.unpin }
       : { label: "Pin tab", enabled: canPin, click: actions.pin },
     {
-      label: "Unload tab",
-      enabled: tab.state !== TabState.SLEEPING,
-      click: actions.unload,
+      label: "Disconnect",
+      enabled: tab.state === TabState.CONNECTED || tab.state === TabState.PENDING,
+      click: actions.disconnect,
     },
   ];
 }
