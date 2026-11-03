@@ -373,7 +373,7 @@ function openBugsUrl() {
   display: flex;
   align-items: center;
   gap: var(--space-5);
-  margin: 0;
+  margin: 0 0 var(--space-5);
   color: var(--color-text-muted);
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-medium);
