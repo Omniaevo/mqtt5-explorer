@@ -180,4 +180,24 @@ describe("settings store resetToDefaults()", () => {
     expect(loadSettings(JSON.stringify({ fontScale: 125 })).fontScale).toBe(125);
     expect(loadSettings(JSON.stringify({ fontScale: 333 })).fontScale).toBe(100);
   });
+
+  it("defaults the wallpaper to none when the stored data has none", () => {
+    expect(loadSettings(JSON.stringify({})).wallpaper).toBe("none");
+  });
+
+  it("keeps a known wallpaper", () => {
+    expect(loadSettings(JSON.stringify({ wallpaper: "grid" })).wallpaper).toBe("grid");
+  });
+
+  it("falls back to none for an unknown wallpaper", () => {
+    expect(loadSettings(JSON.stringify({ wallpaper: "unknown" })).wallpaper).toBe("none");
+  });
+
+  it("resets the wallpaper to none", () => {
+    const s = loadSettings(JSON.stringify({ wallpaper: "dots" }));
+
+    s.resetToDefaults();
+
+    expect(s.wallpaper).toBe("none");
+  });
 });

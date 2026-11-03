@@ -1,4 +1,5 @@
 import { defineStore } from "pinia";
+import { DEFAULT_WALLPAPER, normalizeWallpaper } from "../utils/wallpapers";
 
 // Persisted keys: must stay unchanged to keep user data
 const SETTINGS_KEY = "saved_app_settings";
@@ -40,6 +41,7 @@ export const useSettingsStore = defineStore("settings", {
     closeTray: true,
     fontScale: DEFAULT_FONT_SCALE,
     primaryColor: defaultPrimaryColor(),
+    wallpaper: DEFAULT_WALLPAPER,
     clientId: undefined,
     keepalive: MIN_KEEPALIVE,
     reconnectPeriod: MIN_RECONNECT_PERIOD,
@@ -68,6 +70,7 @@ export const useSettingsStore = defineStore("settings", {
       this.closeTray = data.closeTray ?? true;
       this.fontScale = normalizeFontScale(data.fontScale);
       this.primaryColor = data.primaryColor || defaultPrimaryColor();
+      this.wallpaper = normalizeWallpaper(data.wallpaper);
       this.clientId = data.clientId || `m5-${crypto.randomUUID()}`;
       this.keepalive = Math.max(Number(data.keepalive || 0), MIN_KEEPALIVE);
       this.reconnectPeriod = Math.max(

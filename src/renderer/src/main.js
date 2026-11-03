@@ -17,6 +17,7 @@ import "@fontsource/ibm-plex-mono/latin-600.css";
 // Custom CSS
 import "./assets/css/tokens.css";
 import "./assets/css/scrollbar.css";
+import "./assets/css/wallpapers.css";
 
 document.documentElement.style.overflow = "hidden";
 

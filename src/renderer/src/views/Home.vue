@@ -1,111 +1,113 @@
 <template>
-  <div class="home">
-    <div class="home__column">
-      <h1 class="home__brand">
-        <img class="home__logo" :src="logo" alt="" width="24" height="24" />
-        MQTT5 Explorer
-      </h1>
+  <div class="home-page" :class="wallpaperClasses">
+    <div class="home">
+      <div class="home__column">
+        <h1 class="home__brand">
+          <img class="home__logo" :src="logo" alt="" width="24" height="24" />
+          MQTT5 Explorer
+        </h1>
 
-      <AppTextField
-        ref="searchField"
-        v-model="searchConnection"
-        class="home__search"
-        label="Search connections"
-        label-hidden
-        placeholder="Search connections or type a broker URL"
-        @keydown.enter="connectFromSearch"
-        @keydown.esc="clearSearch"
-      >
-        <template #prepend-inner>
-          <Search :size="16" aria-hidden="true" class="home__search-icon" />
-        </template>
-        <template v-if="searchConnection" #append-inner>
-          <AppButton
-            variant="icon"
-            size="sm"
-            aria-label="Clear search"
-            @click="searchConnection = ''"
-          >
-            <X :size="16" aria-hidden="true" />
-          </AppButton>
-        </template>
-      </AppTextField>
+        <AppTextField
+          ref="searchField"
+          v-model="searchConnection"
+          class="home__search"
+          label="Search connections"
+          label-hidden
+          placeholder="Search connections or type a broker URL"
+          @keydown.enter="connectFromSearch"
+          @keydown.esc="clearSearch"
+        >
+          <template #prepend-inner>
+            <Search :size="16" aria-hidden="true" class="home__search-icon" />
+          </template>
+          <template v-if="searchConnection" #append-inner>
+            <AppButton
+              variant="icon"
+              size="sm"
+              aria-label="Clear search"
+              @click="searchConnection = ''"
+            >
+              <X :size="16" aria-hidden="true" />
+            </AppButton>
+          </template>
+        </AppTextField>
 
-      <QuickConnectRow
-        v-if="quickConnectTarget"
-        :url="connectionUrl(quickConnectTarget)"
-        @connect="connectQuick"
+        <QuickConnectRow
+          v-if="quickConnectTarget"
+          :url="connectionUrl(quickConnectTarget)"
+          @connect="connectQuick"
+        />
+
+        <section v-if="recentConnections.length" class="home__section">
+          <h2 class="home__caption">Recent connections</h2>
+          <ul class="home__tiles" aria-label="Recent connections">
+            <ConnectionTile
+              v-for="connection in recentConnections"
+              :key="connection.id"
+              :connection="connection"
+              :query="searchConnection"
+              :menu-items="menuItemsFor(connection)"
+              :tab-state="tabStateOf(connection)"
+              @connect="connect(connection)"
+              @action="runAction($event, connection)"
+            />
+          </ul>
+        </section>
+
+        <section class="home__section">
+          <div class="home__divider">
+            <h2 class="home__divider-title">All connections</h2>
+            <span class="home__divider-line" aria-hidden="true" />
+            <AppButton variant="tonal" color="primary" @click="openNew">
+              <Plus :size="16" aria-hidden="true" />
+              New connection
+            </AppButton>
+          </div>
+          <ul v-if="otherConnections.length" class="home__list home__panel" aria-label="All connections">
+            <ConnectionRow
+              v-for="connection in otherConnections"
+              :key="connection.id"
+              :connection="connection"
+              :query="searchConnection"
+              :menu-items="menuItemsFor(connection)"
+              :tab-state="tabStateOf(connection)"
+              @connect="connect(connection)"
+              @action="runAction($event, connection)"
+            />
+          </ul>
+          <p v-else-if="emptyListText" class="home__empty home__panel">{{ emptyListText }}</p>
+        </section>
+      </div>
+
+      <ConnectionDialog
+        v-if="editing"
+        v-model:open="dialogOpen"
+        :connection="editing.connection"
+        :mode="editing.mode"
+        @save="save"
+        @connect="saveAndConnect"
+        @connect-temp="connectTemporary"
       />
 
-      <section v-if="recentConnections.length" class="home__section">
-        <h2 class="home__caption">Recent</h2>
-        <ul class="home__tiles" aria-label="Recent connections">
-          <ConnectionTile
-            v-for="connection in recentConnections"
-            :key="connection.id"
-            :connection="connection"
-            :query="searchConnection"
-            :menu-items="menuItemsFor(connection)"
-            :tab-state="tabStateOf(connection)"
-            @connect="connect(connection)"
-            @action="runAction($event, connection)"
-          />
-        </ul>
-      </section>
-
-      <section class="home__section">
-        <div class="home__divider">
-          <h2 class="home__divider-title">All connections</h2>
-          <span class="home__divider-line" aria-hidden="true" />
-          <AppButton variant="tonal" color="primary" @click="openNew">
-            <Plus :size="16" aria-hidden="true" />
-            New connection
+      <!-- Connection deletion confirmation -->
+      <AppDialog
+        v-model:open="deleteDialog"
+        title="Confirm delete"
+        persistent
+        hide-close
+      >
+        <p v-if="connectionToDelete">
+          Are you sure you want to delete
+          <strong>"{{ connectionToDelete.name }}"?</strong>
+        </p>
+        <template #actions>
+          <AppButton variant="text" @click="cancelDelete">Cancel</AppButton>
+          <AppButton variant="text" color="danger" @click="deleteConnection">
+            Delete
           </AppButton>
-        </div>
-        <ul v-if="otherConnections.length" class="home__list" aria-label="All connections">
-          <ConnectionRow
-            v-for="connection in otherConnections"
-            :key="connection.id"
-            :connection="connection"
-            :query="searchConnection"
-            :menu-items="menuItemsFor(connection)"
-            :tab-state="tabStateOf(connection)"
-            @connect="connect(connection)"
-            @action="runAction($event, connection)"
-          />
-        </ul>
-        <p v-else-if="emptyListText" class="home__empty">{{ emptyListText }}</p>
-      </section>
+        </template>
+      </AppDialog>
     </div>
-
-    <ConnectionDialog
-      v-if="editing"
-      v-model:open="dialogOpen"
-      :connection="editing.connection"
-      :mode="editing.mode"
-      @save="save"
-      @connect="saveAndConnect"
-      @connect-temp="connectTemporary"
-    />
-
-    <!-- Connection deletion confirmation -->
-    <AppDialog
-      v-model:open="deleteDialog"
-      title="Confirm delete"
-      persistent
-      hide-close
-    >
-      <p v-if="connectionToDelete">
-        Are you sure you want to delete
-        <strong>"{{ connectionToDelete.name }}"?</strong>
-      </p>
-      <template #actions>
-        <AppButton variant="text" @click="cancelDelete">Cancel</AppButton>
-        <AppButton variant="text" color="danger" @click="deleteConnection">
-          Delete
-        </AppButton>
-      </template>
-    </AppDialog>
   </div>
 </template>
 
@@ -123,6 +125,8 @@ import AppTextField from "../components/ui/AppTextField.vue";
 import ConnectionProperties from "../models/ConnectionProperties";
 import { useConnectionsStore } from "../stores/connections";
 import { useNotifyStore } from "../stores/notify";
+import { useSettingsStore } from "../stores/settings";
+import { wallpaperClasses as buildWallpaperClasses } from "../utils/wallpapers";
 import connectionMatches from "../utils/connectionMatches";
 import parseBrokerUrl from "../utils/parseBrokerUrl";
 import toPlain from "../utils/toPlain";
@@ -130,6 +134,8 @@ import { connectionUrl } from "../../../shared/connectionUrl";
 
 const connections = useConnectionsStore();
 const notify = useNotifyStore();
+const settings = useSettingsStore();
+const wallpaperClasses = computed(() => buildWallpaperClasses(settings.wallpaper));
 
 const searchConnection = ref("");
 const deleteDialog = ref(false);
@@ -362,8 +368,13 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
-.home {
+/* The wallpaper sits on the page; only the inner .home scrolls, so the pattern stays fixed */
+.home-page {
   block-size: 100vh;
+}
+
+.home {
+  block-size: 100%;
   overflow: auto;
 }
 
@@ -419,6 +430,14 @@ onBeforeUnmount(() => {
   margin: 0;
   padding: 0;
   list-style: none;
+}
+
+/* Solid surface so the list stays readable over a wallpaper */
+.home__panel {
+  padding: var(--space-5);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
 }
 
 .home__tiles {

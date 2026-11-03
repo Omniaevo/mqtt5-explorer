@@ -55,6 +55,17 @@
         </section>
 
         <section class="settings-group">
+          <h2 class="settings-section">Home</h2>
+          <SettingsRow
+            title="Wallpaper"
+            description="Background pattern of the start page."
+            stacked
+          >
+            <WallpaperPicker v-model="settings.wallpaper" />
+          </SettingsRow>
+        </section>
+
+        <section class="settings-group">
           <h2 class="settings-section">Topic tree</h2>
           <SettingsRow
             title="Dense tree"
@@ -241,6 +252,7 @@ import { Bug, Moon, RotateCcw, RotateCw, Sun, X } from "@lucide/vue";
 import { isMacOs } from "../utils/platform";
 import { clampHistorySize, FONT_SCALES, useSettingsStore } from "../stores/settings";
 import SettingsRow from "../components/SettingsRow.vue";
+import WallpaperPicker from "../components/WallpaperPicker.vue";
 import AppButton from "../components/ui/AppButton.vue";
 import AppDialog from "../components/ui/AppDialog.vue";
 import AppSelect from "../components/ui/AppSelect.vue";

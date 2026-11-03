@@ -43,10 +43,29 @@ const menuOpen = ref(false);
   display: flex;
   align-items: center;
   gap: var(--space-4);
-  min-block-size: var(--row-height);
+  min-block-size: var(--control-height);
   padding-inline-end: var(--space-2);
   border-radius: var(--radius-md);
   transition: background-color var(--duration-fast) var(--easing);
+}
+
+/* Hairline between rows, instead of a heavier box per row */
+.connection-row + .connection-row {
+  border-block-start: 1px solid var(--color-border);
+  border-start-start-radius: 0;
+  border-start-end-radius: 0;
+}
+
+/* Actions menu button: shown on hover, keyboard focus or while its menu is open */
+.connection-row > :not(.connection-row__main) {
+  opacity: 0;
+  transition: opacity var(--duration-fast) var(--easing);
+}
+
+.connection-row:hover > :not(.connection-row__main),
+.connection-row:focus-within > :not(.connection-row__main),
+.connection-row > [aria-expanded="true"] {
+  opacity: 1;
 }
 
 .connection-row:hover {
@@ -69,7 +88,11 @@ const menuOpen = ref(false);
   outline-offset: -2px;
 }
 
+/* Fixed name column so the URLs line up */
 .connection-row__name {
+  flex: none;
+  inline-size: 14rem;
+  max-inline-size: 45%;
   overflow: hidden;
   font-weight: var(--font-weight-medium);
   text-overflow: ellipsis;
