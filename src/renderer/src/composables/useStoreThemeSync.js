@@ -1,8 +1,7 @@
 import { onUnmounted } from "vue";
 import { useSettingsStore } from "../stores/settings";
 import { useThemeSync } from "./useThemeSync";
-
-const SETTINGS_KEY = "saved_app_settings";
+import { StoreKey } from "../../../shared/ipcChannels";
 
 /**
  * For views that only follow the theme (shell, tooltip): loads the settings
@@ -16,7 +15,7 @@ export function useStoreThemeSync() {
   applyAll();
 
   const unsubscribe = window.api.store.onChanged((key) => {
-    if (key !== SETTINGS_KEY) return;
+    if (key !== StoreKey.SETTINGS) return;
 
     settings.load();
     applyAll();

@@ -1,5 +1,5 @@
-export const MIN_QUERY_LENGTH = 2;
-export const MAX_QUERY_LENGTH = 200;
+const MIN_QUERY_LENGTH = 2;
+const MAX_QUERY_LENGTH = 200;
 export const MAX_TOPICS_PER_TAB = 20;
 export const MAX_TOPIC_LENGTH = 65535;
 export const SEARCH_TIMEOUT_MS = 500;

@@ -18,7 +18,6 @@
 <script setup>
 /**
  * Row of the "All connections" list. Click or Enter connects; right click or the button opens the menu; the menu emits `action` with the item id.
- * `tabState` is the state of the open tab of this connection, if any.
  */
 import { ref } from "vue";
 import AppMenu from "../ui/AppMenu.vue";
@@ -26,16 +25,11 @@ import HighlightedText from "../ui/HighlightedText.vue";
 import ConnectionErrorIcon from "./ConnectionErrorIcon.vue";
 import ConnectionStateDot from "./ConnectionStateDot.vue";
 import { connectionUrl } from "../../../../shared/connectionUrl";
+import { connectionItemEmits, connectionItemProps } from "./connectionItem";
 
-defineProps({
-  connection: { type: Object, required: true },
-  menuItems: { type: Array, required: true },
-  tabState: { type: String, default: undefined },
-  /** Search text to highlight in the name and URL. */
-  query: { type: String, default: "" },
-});
+defineProps(connectionItemProps);
 
-const emit = defineEmits(["connect", "action"]);
+const emit = defineEmits(connectionItemEmits);
 
 const menuOpen = ref(false);
 </script>

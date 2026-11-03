@@ -76,12 +76,6 @@ const api = {
      */
     onSelectTopic: (callback) =>
       subscribe(Channel.NOTIFY_SELECT_TOPIC, callback),
-    /**
-     * Called when main asks this view to show a toast.
-     * @param {(message: string, color: "error" | "info") => void} callback
-     * @returns {() => void} Unsubscribe function.
-     */
-    onShow: (callback) => subscribe(Channel.NOTIFY_SHOW, callback),
   },
 
   dialog: {
@@ -112,8 +106,6 @@ const api = {
      * @param {string} id
      */
     openContextMenu: (id) => ipcRenderer.send(Channel.TABS_CONTEXT_MENU, id),
-    /** Closes the tab of the calling view. */
-    closeSelf: () => ipcRenderer.send(Channel.TABS_CLOSE),
     /**
      * Opens the connection in its own tab, or selects the tab it already has.
      * Only the Home view may call it.
@@ -292,7 +284,7 @@ const api = {
     openExternal: (url) => ipcRenderer.send(Channel.APP_OPEN_EXTERNAL, url),
     /**
      * Listens to a menu event.
-     * @param {"exportDataPressed" | "importDataPressed" | "searchPressed" | "notificationPressed"} channel
+     * @param {string} channel One of the `MenuEvent` values.
      * @param {(...args: any[]) => void} callback
      * @returns {() => void} Unsubscribe function.
      */

@@ -1,9 +1,6 @@
 import { defineStore } from "pinia";
 import { DEFAULT_WALLPAPER, normalizeWallpaper } from "../utils/wallpapers";
-
-// Persisted keys: must stay unchanged to keep user data
-const SETTINGS_KEY = "saved_app_settings";
-const CLOSE_TO_TRAY_KEY = "close_to_tray";
+import { StoreKey } from "../../../shared/ipcChannels";
 
 const MIN_KEEPALIVE = 120; // In seconds
 const MIN_RECONNECT_PERIOD = 2; // In seconds
@@ -109,12 +106,12 @@ export const useSettingsStore = defineStore("settings", {
     },
 
     load() {
-      this.setAll(JSON.parse(window.api.store.get(SETTINGS_KEY) || "{}"));
+      this.setAll(JSON.parse(window.api.store.get(StoreKey.SETTINGS) || "{}"));
     },
 
     persist() {
-      window.api.store.set(SETTINGS_KEY, JSON.stringify(this.$state));
-      window.api.store.set(CLOSE_TO_TRAY_KEY, `${this.closeTray}`);
+      window.api.store.set(StoreKey.SETTINGS, JSON.stringify(this.$state));
+      window.api.store.set(StoreKey.CLOSE_TO_TRAY, `${this.closeTray}`);
     },
   },
 });

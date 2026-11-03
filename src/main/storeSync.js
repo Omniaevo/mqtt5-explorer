@@ -1,7 +1,7 @@
 import { Channel, RendererStoreKeys } from "../shared/ipcChannels";
 
 /** Sends the changed key to every live webContents except the sender. */
-export function broadcastStoreChange(key, sender, allWebContents) {
+function broadcastStoreChange(key, sender, allWebContents) {
   allWebContents
     .filter((target) => target !== sender && !target.isDestroyed())
     .forEach((target) => target.send(Channel.STORE_CHANGED, key));

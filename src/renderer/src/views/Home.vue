@@ -140,6 +140,7 @@ import connectionMatches from "../utils/connectionMatches";
 import parseBrokerUrl from "../utils/parseBrokerUrl";
 import toPlain from "../utils/toPlain";
 import { connectionUrl } from "../../../shared/connectionUrl";
+import { MenuEvent } from "../../../shared/ipcChannels";
 
 const connections = useConnectionsStore();
 const notify = useNotifyStore();
@@ -398,8 +399,8 @@ onMounted(() => {
 
 onBeforeMount(() => {
   unsubscribeMenuEvents = [
-    window.api.app.on("exportDataPressed", exportConnectionData),
-    window.api.app.on("importDataPressed", importConnectionData),
+    window.api.app.on(MenuEvent.EXPORT_DATA, exportConnectionData),
+    window.api.app.on(MenuEvent.IMPORT_DATA, importConnectionData),
     window.api.tabs.onConnectionStates(setTabStates),
   ];
   window.api.tabs.getConnectionStates().then(setTabStates);

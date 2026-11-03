@@ -1,6 +1,7 @@
 import { onScopeDispose } from "vue";
 import { useSettingsStore } from "../stores/settings";
 import { useConnectionsStore } from "../stores/connections";
+import { StoreKey } from "../../../shared/ipcChannels";
 
 /**
  * Reloads a Pinia store when another renderer changes its persisted key.
@@ -13,11 +14,11 @@ export function useStoreSync({ applySettings }) {
   const connections = useConnectionsStore();
 
   const reloaders = {
-    saved_app_settings: () => {
+    [StoreKey.SETTINGS]: () => {
       settings.load();
       applySettings();
     },
-    saved_mqtt_connections: () => connections.load(),
+    [StoreKey.CONNECTIONS]: () => connections.load(),
   };
 
   const unsubscribe = window.api.store.onChanged((key) => reloaders[key]?.());

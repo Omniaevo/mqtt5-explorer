@@ -1,8 +1,5 @@
 import { parseConnection } from "./tabsIpc";
-
-// Main-only key: the renderer never reads or writes it
-export const PINNED_TABS_KEY = "pinned_tabs";
-const CONNECTIONS_KEY = "saved_mqtt_connections";
+import { StoreKey } from "../shared/ipcChannels";
 
 /**
  * Parses the saved connections the renderer stores as a JSON string.
@@ -40,13 +37,13 @@ export function parsePinnedIds(value) {
  * @returns {() => void} Stops following the store.
  */
 export function restorePinnedTabs({ store, tabs }) {
-  const connections = parseSavedConnections(store.get(CONNECTIONS_KEY));
+  const connections = parseSavedConnections(store.get(StoreKey.CONNECTIONS));
 
   if (connections) {
-    tabs.restorePinned(parsePinnedIds(store.get(PINNED_TABS_KEY)), connections);
+    tabs.restorePinned(parsePinnedIds(store.get(StoreKey.PINNED_TABS)), connections);
   }
 
-  return store.onDidChange(CONNECTIONS_KEY, (raw) => {
+  return store.onDidChange(StoreKey.CONNECTIONS, (raw) => {
     const changed = parseSavedConnections(raw);
 
     if (changed) tabs.syncSavedConnections(changed);

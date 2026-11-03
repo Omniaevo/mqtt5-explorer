@@ -316,7 +316,7 @@ import {
   recentMessages,
 } from "../utils/HistoryView";
 import { retainedClearPackets } from "../utils/retainedClear";
-import { TabState } from "../../../shared/ipcChannels";
+import { MenuEvent, TabState } from "../../../shared/ipcChannels";
 
 const SEARCH_DEBOUNCE_MS = 250;
 // ponytail: fixed cap, enough rows to fill a tall window; measure the
@@ -493,8 +493,8 @@ onBeforeMount(() => {
   connection.init(connectionProperties, onBatch);
 
   unsubscribeMenuEvents = [
-    window.api.app.on("searchPressed", toggleSearchField),
-    window.api.app.on("notificationPressed", toggleNotificationsDialog),
+    window.api.app.on(MenuEvent.SEARCH, toggleSearchField),
+    window.api.app.on(MenuEvent.NOTIFICATION, toggleNotificationsDialog),
     window.api.notify.onSelectTopic(selectTopic),
     window.api.tabs.onDisconnect(() => disconnect()),
     window.api.tabs.onReconnect(() => isClosed.value && reconnectAndReset()),

@@ -13,7 +13,7 @@ import trayIconLinux from "../../resources/img/tray/tray.png?asset";
 import { registerIpcHandlers } from "./ipcHandlers";
 import TabManager from "./TabManager";
 import TooltipOverlay from "./TooltipOverlay";
-import { PINNED_TABS_KEY, restorePinnedTabs } from "./pinnedTabs";
+import { restorePinnedTabs } from "./pinnedTabs";
 import { tabMenuTemplate } from "./tabMenu";
 import { registerSearchIpc } from "./searchIpc";
 import TopicSearchCollector from "./TopicSearchCollector";
@@ -22,7 +22,7 @@ import { registerTooltipIpc } from "./tooltipIpc";
 import { registerWindowIpc, windowState } from "./windowIpc";
 import { createTabViewFactory, loadRoute } from "./createTabView";
 import { themeBackground } from "./themeBackground";
-import { Channel, FixedTabId, MenuEvent, TabKind } from "../shared/ipcChannels";
+import { Channel, FixedTabId, MenuEvent, StoreKey, TabKind } from "../shared/ipcChannels";
 
 const isDevelopment = process.env.NODE_ENV !== "production";
 const isSingleInstance = app.requestSingleInstanceLock();
@@ -101,7 +101,7 @@ const confirmLoggingStop = async (action, titles) => {
 const confirmLoggingClose = (titles) =>
   confirmLoggingStop(titles.length > 1 ? "Close tabs" : "Close tab", titles);
 // Views and window paint this until the page sets the theme
-const currentBackground = () => themeBackground(store.get("saved_app_settings"));
+const currentBackground = () => themeBackground(store.get(StoreKey.SETTINGS));
 const focusWindow = () => {
   if (!win) return;
   if (!win.isVisible()) win.show();
@@ -451,7 +451,7 @@ async function createWindow() {
       );
       refreshMenu();
     },
-    onPinnedChange: (connectionIds) => store.set(PINNED_TABS_KEY, connectionIds),
+    onPinnedChange: (connectionIds) => store.set(StoreKey.PINNED_TABS, connectionIds),
     onTabClosed: (tabId) => topicSearch.dropTab(tabId),
     confirmLoggingClose,
   });
@@ -508,7 +508,7 @@ async function createWindow() {
 
   // Close to tray
   win.on("close", (event) => {
-    if (store.get("close_to_tray") !== "false") {
+    if (store.get(StoreKey.CLOSE_TO_TRAY) !== "false") {
       event.preventDefault();
       win.hide();
     }

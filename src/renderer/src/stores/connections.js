@@ -1,8 +1,6 @@
 import { defineStore } from "pinia";
 import { RECENT_TILES_PER_ROW, useSettingsStore } from "./settings";
-
-// Persisted key: must stay unchanged to keep user data
-const CONNECTIONS_KEY = "saved_mqtt_connections";
+import { StoreKey } from "../../../shared/ipcChannels";
 
 // Old data may hold a number, new data an ISO string; anything unreadable counts as never
 const connectedTime = ({ lastConnectedAt }) =>
@@ -93,7 +91,7 @@ export const useConnectionsStore = defineStore("connections", {
     },
 
     load() {
-      const saved = JSON.parse(window.api.store.get(CONNECTIONS_KEY) || "[]");
+      const saved = JSON.parse(window.api.store.get(StoreKey.CONNECTIONS) || "[]");
 
       // Generate IDs if missing (retro-compatibility)
       saved.forEach((connection) => {
@@ -105,7 +103,7 @@ export const useConnectionsStore = defineStore("connections", {
 
     persist() {
       window.api.store.set(
-        CONNECTIONS_KEY,
+        StoreKey.CONNECTIONS,
         JSON.stringify(this.savedConnections)
       );
     },

@@ -1,14 +1,11 @@
 import { describe, expect, it, vi } from "vitest";
-import {
-  chartableFields,
-  extractSeries,
-  isChartable,
-  toChartValue,
-} from "./ValueExtractor";
+import { chartableFields, extractSeries, isChartable } from "./ValueExtractor";
 
 const entry = (payload, t = 1000) => ({ t, payload });
+// Plotted value of a single payload
+const toChartValue = (raw) => extractSeries([entry(raw)], null).ys[0];
 
-describe("toChartValue", () => {
+describe("payload values", () => {
   it.each([
     ["21.5", 21.5],
     [" -3 ", -3],

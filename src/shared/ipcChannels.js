@@ -13,7 +13,6 @@ export const Channel = Object.freeze({
   LOGGER_FOLDER: "logger:folder",
   NOTIFY_SET_CONFIG: "notify:setConfig",
   NOTIFY_SELECT_TOPIC: "notify:selectTopic",
-  NOTIFY_SHOW: "notify:show",
   DIALOG_OPEN_FILE: "dialog:openFile",
   APP_OPEN_FOLDER: "app:openFolder",
   APP_OPEN_EXTERNAL: "app:openExternal",
@@ -86,9 +85,18 @@ export const MenuEvent = Object.freeze({
   NOTIFICATION: "notificationPressed",
 });
 
+/** Persisted store keys: values must stay unchanged to keep user data. */
+export const StoreKey = Object.freeze({
+  CONNECTIONS: "saved_mqtt_connections",
+  SETTINGS: "saved_app_settings",
+  CLOSE_TO_TRAY: "close_to_tray",
+  // Main-only: the renderer never reads or writes it
+  PINNED_TABS: "pinned_tabs",
+});
+
 /** Store keys the renderer may read and write. */
 export const RendererStoreKeys = Object.freeze([
-  "saved_mqtt_connections",
-  "saved_app_settings",
-  "close_to_tray",
+  StoreKey.CONNECTIONS,
+  StoreKey.SETTINGS,
+  StoreKey.CLOSE_TO_TRAY,
 ]);
