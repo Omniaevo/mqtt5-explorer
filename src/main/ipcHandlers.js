@@ -1,6 +1,14 @@
-import { BrowserWindow, dialog, ipcMain, Notification, shell } from "electron";
+import {
+  BrowserWindow,
+  dialog,
+  ipcMain,
+  Notification,
+  shell,
+  webContents,
+} from "electron";
 import path from "path";
 import Session from "./Session";
+import { applyStoreSet } from "./storeSync";
 import SessionRegistry from "./SessionRegistry";
 import { LOGS_ROOT } from "./MessageLogger";
 import { Channel, RendererStoreKeys } from "../shared/ipcChannels";
@@ -42,7 +50,15 @@ export function registerIpcHandlers({
       : undefined;
   });
   ipcMain.on(Channel.STORE_SET, (event, key, value) => {
-    if (RendererStoreKeys.includes(key)) store.set(key, value);
+    applyStoreSet(
+      {
+        store,
+        sender: event.sender,
+        getAllWebContents: () => webContents.getAllWebContents(),
+      },
+      key,
+      value
+    );
 
     event.returnValue = null;
   });

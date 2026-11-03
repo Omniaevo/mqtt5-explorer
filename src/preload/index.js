@@ -22,6 +22,12 @@ const api = {
     get: (key) => ipcRenderer.sendSync(Channel.STORE_GET, key),
     /** @param {string} key @param {string} value */
     set: (key, value) => ipcRenderer.sendSync(Channel.STORE_SET, key, value),
+    /**
+     * Called with the key another renderer just changed.
+     * @param {(key: string) => void} callback
+     * @returns {() => void} Unsubscribe function.
+     */
+    onChanged: (callback) => subscribe(Channel.STORE_CHANGED, callback),
   },
 
   mqtt: {

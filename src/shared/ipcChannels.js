@@ -2,6 +2,7 @@
 export const Channel = Object.freeze({
   STORE_GET: "store:get",
   STORE_SET: "store:set",
+  STORE_CHANGED: "store:changed",
   MQTT_CONNECT: "mqtt:connect",
   MQTT_DISCONNECT: "mqtt:disconnect",
   MQTT_PUBLISH: "mqtt:publish",
