@@ -2,9 +2,7 @@
   <div class="connection-container">
     <AppHeader>
       <template #start>
-        <button class="title" type="button" @click="scrollTabs('top')">
-          MQTT Connections
-        </button>
+        <span class="title">MQTT Connections</span>
       </template>
 
       <AppTextField
@@ -32,7 +30,7 @@
             variant="tonal"
             color="primary"
             aria-label="New connection"
-            @click="addTmpConnection"
+            @click="openNew"
           >
             <Plus :size="16" aria-hidden="true" />
           </AppButton>
@@ -40,27 +38,32 @@
       </template>
     </AppHeader>
 
-    <AppTabs
-      ref="tabsRef"
-      v-model="tabId"
-      class="connection-area"
-      orientation="vertical"
-      aria-label="Connections"
-      :tabs="connectionTabs"
-    >
-      <template
-        v-for="(connection, i) in connections.brokerConnections"
+    <ul class="connection-list" aria-label="Connections">
+      <li
+        v-for="connection in filteredConnections"
         :key="connection.id"
-        #[i]
+        class="connection-list__item"
       >
-        <ConnectionForm
-          :properties="connection"
-          @connect="connect($event, i)"
-          @delete="confirmDelete(i)"
-          @updated="dataChanged($event, i)"
-        />
-      </template>
-    </AppTabs>
+        <span class="connection-list__name">{{ connection.name }}</span>
+        <span class="connection-list__url">{{ connection.protocol }}://{{ connection.host }}:{{ connection.port }}</span>
+        <AppButton variant="text" color="primary" @click="connect(connection)">Connect</AppButton>
+        <AppButton variant="text" @click="openEdit(connection)">Edit</AppButton>
+        <AppButton variant="text" @click="duplicate(connection)">Duplicate</AppButton>
+        <AppButton variant="text" color="danger" @click="confirmDelete(connection)">
+          Delete
+        </AppButton>
+      </li>
+    </ul>
+
+    <ConnectionDialog
+      v-if="editing"
+      v-model:open="dialogOpen"
+      :connection="editing.connection"
+      :mode="editing.mode"
+      @save="save"
+      @connect="saveAndConnect"
+      @connect-temp="connectTemporary"
+    />
 
     <!-- Connection deletion confirmation -->
     <AppDialog
@@ -84,13 +87,12 @@
 </template>
 
 <script setup>
-import { computed, nextTick, onBeforeMount, onBeforeUnmount, ref } from "vue";
+import { computed, onBeforeMount, onBeforeUnmount, ref } from "vue";
 import { Plus, X } from "@lucide/vue";
-import ConnectionForm from "../components/ConnectionForm.vue";
+import ConnectionDialog from "../components/ConnectionDialog.vue";
 import AppButton from "../components/ui/AppButton.vue";
 import AppDialog from "../components/ui/AppDialog.vue";
 import AppHeader from "../components/ui/AppHeader.vue";
-import AppTabs from "../components/ui/AppTabs.vue";
 import AppTextField from "../components/ui/AppTextField.vue";
 import AppTooltip from "../components/ui/AppTooltip.vue";
 import ConnectionProperties from "../models/ConnectionProperties";
@@ -101,80 +103,84 @@ import toPlain from "../utils/toPlain";
 const connections = useConnectionsStore();
 const notify = useNotifyStore();
 
-
-const tabId = ref(0);
 const searchConnection = ref("");
 const deleteDialog = ref(false);
-const deleteIndex = ref(-1);
-const tabsRef = ref(null);
+const connectionToDelete = ref(null);
 
-const connectionToDelete = computed(
-  () => connections.brokerConnections[deleteIndex.value]
-);
+/** Connection shown in the dialog: `{ connection, mode }`, or null before the first open. */
+const editing = ref(null);
+const dialogOpen = ref(false);
 
-const filteredConnectionIds = computed(() => {
+const filteredConnections = computed(() => {
   const search = (searchConnection.value || "").toLowerCase();
 
-  return new Set(
-    connections.brokerConnections
-      .filter((c) => c.name.toLowerCase().includes(search))
-      .map((c) => c.id)
+  return connections.brokerConnections.filter((connection) =>
+    connection.name.toLowerCase().includes(search)
   );
 });
 
-const connectionTabs = computed(() =>
-  connections.brokerConnections.map((connection, index) => ({
-    value: index,
-    label: connection.name,
-    hidden: !filteredConnectionIds.value.has(connection.id),
-  }))
-);
-
-function scrollTabs(to = "bottom") {
-  nextTick(() => {
-    const tabs = tabsRef.value?.listElement;
-
-    tabs?.scroll({
-      top: to === "bottom" ? tabs.scrollHeight : 0,
-      behavior: "smooth",
-    });
-  });
+function openDialog(connection, mode) {
+  editing.value = { connection, mode };
+  dialogOpen.value = true;
 }
 
-function addTmpConnection() {
-  connections.add(new ConnectionProperties());
+function openNew() {
   searchConnection.value = "";
-  tabId.value = connections.brokerConnections.length - 1;
-  scrollTabs("bottom");
+  openDialog(new ConnectionProperties(), "new");
 }
 
-function dataChanged(data, index) {
+function openEdit(connection) {
+  openDialog(connection, "edit");
+}
+
+/** Edits an unsaved copy with a new id; it joins the list only on save. */
+function duplicate(source) {
+  const copy = new ConnectionProperties();
+
+  copy.init(source);
+  copy.id = crypto.randomUUID();
+  copy.name = `${source.name} (copy)`;
+  openDialog(copy, "edit");
+}
+
+/** Adds the connection, or replaces the one with the same id. */
+function save(data) {
+  const index = connections.brokerConnections.findIndex((c) => c.id === data.id);
+
   data.saved = true;
-  connections.update(index, data);
+  if (index === -1) connections.add(data);
+  else connections.update(index, data);
   connections.persist();
 }
 
-function connect(data, index) {
-  dataChanged(data, index);
-  window.api.tabs.openConnection(toPlain(data));
+function connect(connection) {
+  window.api.tabs.openConnection(toPlain(connection));
 }
 
-function confirmDelete(index) {
-  deleteIndex.value = index;
+function saveAndConnect(data) {
+  save(data);
+  connect(data);
+}
+
+/** Opens a tab without saving the connection (D26). */
+function connectTemporary(data) {
+  connect(data);
+}
+
+function confirmDelete(connection) {
+  connectionToDelete.value = connection;
   deleteDialog.value = true;
 }
 
 function cancelDelete() {
   deleteDialog.value = false;
-  deleteIndex.value = -1;
+  connectionToDelete.value = null;
 }
 
 function deleteConnection() {
-  connections.remove(deleteIndex.value, () => {
-    connections.persist();
-    tabId.value = 0;
-    scrollTabs("top");
-  });
+  const index = connections.brokerConnections.indexOf(connectionToDelete.value);
+
+  connections.remove(index, () => connections.persist());
   deleteDialog.value = false;
 }
 
@@ -203,7 +209,6 @@ function importConnectionData(fileContent) {
 
     connections.replaceAll(imported);
     connections.persist();
-    tabId.value = 0;
   } catch {
     notify.error("The selected file is not a valid connections file");
   }
@@ -212,9 +217,6 @@ function importConnectionData(fileContent) {
 let unsubscribeMenuEvents = [];
 
 onBeforeMount(() => {
-  if (connections.brokerConnections.length === 0) addTmpConnection();
-  else tabId.value = connections.selectedConnectionId;
-
   unsubscribeMenuEvents = [
     window.api.app.on("exportDataPressed", exportConnectionData),
     window.api.app.on("importDataPressed", importConnectionData),
@@ -222,7 +224,6 @@ onBeforeMount(() => {
 });
 
 onBeforeUnmount(() => {
-  connections.setSelectedConnectionId(tabId.value);
   unsubscribeMenuEvents.forEach((unsubscribe) => unsubscribe());
 });
 </script>
@@ -235,15 +236,9 @@ onBeforeUnmount(() => {
 }
 
 .title {
-  padding: 0;
-  border: 0;
-  background: transparent;
-  color: inherit;
-  font: inherit;
   font-size: var(--font-size-lg);
   font-weight: var(--font-weight-bold);
   white-space: nowrap;
-  cursor: pointer;
 }
 
 .search-field {
@@ -251,27 +246,30 @@ onBeforeUnmount(() => {
   margin-inline: auto;
 }
 
-.connection-area {
-  --app-tabs-list-size: minmax(0, 2fr);
-  --app-tabs-panel-size: minmax(0, 3fr);
-
+.connection-list {
   flex: 1;
   margin: var(--space-4);
-  overflow: hidden;
+  padding: 0;
+  overflow: auto;
+  list-style: none;
 }
 
-/* Taller than wide: connection list on top, form below.
-   Doubled class beats the wrapper's vertical-orientation rule. */
-@media (orientation: portrait) {
-  .connection-area.connection-area[data-orientation="vertical"] {
-    grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: minmax(0, 2fr) minmax(0, 3fr);
-  }
+.connection-list__item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-3) var(--space-5);
+  border-block-end: 1px solid var(--color-border);
 }
 
-.connection-area :deep(.app-tabs__header) {
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  background: var(--color-surface);
+.connection-list__name {
+  font-weight: var(--font-weight-medium);
+}
+
+.connection-list__url {
+  flex: 1;
+  color: var(--color-text-muted);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-sm);
 }
 </style>
