@@ -40,8 +40,6 @@
       </template>
     </AppHeader>
 
-    <SettingsDialog v-model="settingsOpen" />
-
     <AppTabs
       ref="tabsRef"
       v-model="tabId"
@@ -101,7 +99,6 @@
 import { computed, nextTick, onBeforeMount, onBeforeUnmount, ref } from "vue";
 import { Plus, X } from "@lucide/vue";
 import ConnectionForm from "../components/ConnectionForm.vue";
-import SettingsDialog from "../components/SettingsDialog.vue";
 import AppButton from "../components/ui/AppButton.vue";
 import AppDialog from "../components/ui/AppDialog.vue";
 import AppHeader from "../components/ui/AppHeader.vue";
@@ -122,7 +119,6 @@ const notify = useNotifyStore();
 const version = import.meta.env.VITE_APP_VERSION;
 
 const tabId = ref(0);
-const settingsOpen = ref(false);
 const searchConnection = ref("");
 const deleteDialog = ref(false);
 const deleteIndex = ref(-1);
@@ -159,10 +155,6 @@ function scrollTabs(to = "bottom") {
       behavior: "smooth",
     });
   });
-}
-
-function toggleSettings() {
-  settingsOpen.value = !settingsOpen.value;
 }
 
 function addTmpConnection() {
@@ -240,7 +232,6 @@ onBeforeMount(() => {
   else tabId.value = connections.selectedConnectionId;
 
   unsubscribeMenuEvents = [
-    window.api.app.on("settingsPressed", toggleSettings),
     window.api.app.on("exportDataPressed", exportConnectionData),
     window.api.app.on("importDataPressed", importConnectionData),
   ];

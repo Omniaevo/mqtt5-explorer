@@ -82,6 +82,7 @@ const focusWindow = () => {
   // Ensure window is visible then focus
   setTimeout(() => win.focus(), 200);
 };
+const openSettings = () => tabs?.open(TabKind.SETTINGS);
 // Menu and tray events act on the view the user is looking at
 const sendToActiveView = (channel, ...args) =>
   tabs?.sendToActive(channel, ...args);
@@ -184,7 +185,7 @@ let menuTemplate = (kind = TabKind.HOME) => [
               label: "Settings",
               accelerator: "CommandOrControl+,",
               click: () => {
-                sendToActiveView(MenuEvent.SETTINGS);
+                openSettings();
               },
             },
           ],
@@ -265,7 +266,7 @@ let menuTemplate = (kind = TabKind.HOME) => [
               label: "Settings",
               accelerator: "CommandOrControl+,",
               click: () => {
-                sendToActiveView(MenuEvent.SETTINGS);
+                openSettings();
               },
             },
           ]
@@ -369,7 +370,7 @@ let trayTemplate = [
       if (!win.isVisible()) win.show();
       if (win.isMinimized()) win.restore();
 
-      sendToActiveView(MenuEvent.SETTINGS);
+      openSettings();
     },
   },
   { type: "separator" },

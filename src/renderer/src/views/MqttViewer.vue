@@ -221,8 +221,6 @@
     />
 
     <SearchInfoDialog v-model="searchInfoDialog" />
-
-    <SettingsDialog v-model="settingsOpen" />
   </div>
 </template>
 
@@ -247,7 +245,6 @@ import AppHeader from "../components/ui/AppHeader.vue";
 import AppTabs from "../components/ui/AppTabs.vue";
 import AppTooltip from "../components/ui/AppTooltip.vue";
 import PublishPanel from "../components/viewer/PublishPanel.vue";
-import SettingsDialog from "../components/SettingsDialog.vue";
 import SearchBar from "../components/viewer/SearchBar.vue";
 import SearchInfoDialog from "../components/viewer/SearchInfoDialog.vue";
 import TopicTreeView from "../components/viewer/TopicTreeView.vue";
@@ -296,7 +293,6 @@ const treeView = ref(null);
 const activeTab = ref("publish");
 const deleteDialog = ref(false);
 const notifyDialog = ref(false);
-const settingsOpen = ref(false);
 const searchInfoDialog = ref(false);
 const searchVisible = ref(false);
 const searchTerm = ref(undefined);
@@ -379,10 +375,6 @@ function toggleNotificationsDialog() {
   notifyDialog.value = !notifyDialog.value;
 }
 
-function toggleSettings() {
-  settingsOpen.value = !settingsOpen.value;
-}
-
 function openLogsFolder() {
   window.api.app.openFolder(window.api.logger.logsFolder());
 }
@@ -405,7 +397,6 @@ onBeforeMount(() => {
   unsubscribeMenuEvents = [
     window.api.app.on("searchPressed", toggleSearchField),
     window.api.app.on("notificationPressed", toggleNotificationsDialog),
-    window.api.app.on("settingsPressed", toggleSettings),
     window.api.notify.onSelectTopic(selectTopic),
   ];
 });

@@ -65,7 +65,6 @@ export const TabState = Object.freeze({
 
 /** Menu events sent from the main process to the renderer. */
 export const MenuEvent = Object.freeze({
-  SETTINGS: "settingsPressed",
   EXPORT_DATA: "exportDataPressed",
   IMPORT_DATA: "importDataPressed",
   SEARCH: "searchPressed",

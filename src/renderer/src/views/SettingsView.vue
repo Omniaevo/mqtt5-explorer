@@ -1,101 +1,97 @@
 <template>
-  <AppDialog
-    v-model:open="open"
-    title="Settings"
-    max-width="900px"
-    fullscreen-on-small
-  >
-    <div class="settings-body">
-      <section class="settings-group">
-        <h3 class="settings-section">Appearance</h3>
-        <SettingsRow title="Theme" description="Colors of the whole app.">
-          <AppToggleGroup v-model="theme" :items="THEME_ITEMS" aria-label="Theme" />
-        </SettingsRow>
-        <SettingsRow
-          title="Font size"
-          description="Size of all text and controls."
-        >
-          <AppSelect
-            v-model="settings.fontScale"
-            class="settings-control"
-            label="Font size"
-            label-hidden
-            :items="FONT_SIZE_ITEMS"
-            item-title="text"
-            item-value="value"
-          />
-        </SettingsRow>
-        <SettingsRow
-          title="Primary color"
-          description="Accent color of buttons and highlights."
-        >
-          <div class="color-picker">
+  <div class="settings-page">
+    <div class="settings-scroll">
+      <div class="settings-body">
+        <section class="settings-group">
+          <h2 class="settings-section">Appearance</h2>
+          <SettingsRow title="Theme" description="Colors of the whole app.">
+            <AppToggleGroup v-model="theme" :items="THEME_ITEMS" aria-label="Theme" />
+          </SettingsRow>
+          <SettingsRow
+            title="Font size"
+            description="Size of all text and controls."
+          >
             <AppSelect
-              v-model="primaryColorName"
+              v-model="settings.fontScale"
               class="settings-control"
-              label="Primary color"
+              label="Font size"
               label-hidden
-              :items="COLORS"
+              :items="FONT_SIZE_ITEMS"
               item-title="text"
-              item-value="text"
-            >
-              <template #item="{ item }">
-                <span class="color-option">
-                  <span
-                    class="color-swatch"
-                    :style="{ background: item.value[themeMode] }"
-                  />
-                  {{ item.text }}
-                </span>
-              </template>
-            </AppSelect>
-            <span
-              class="color-swatch color-swatch--preview"
-              :style="{ background: settings.primaryColor.value[themeMode] }"
-              aria-hidden="true"
+              item-value="value"
             />
-          </div>
-        </SettingsRow>
-      </section>
+          </SettingsRow>
+          <SettingsRow
+            title="Primary color"
+            description="Accent color of buttons and highlights."
+          >
+            <div class="color-picker">
+              <AppSelect
+                v-model="primaryColorName"
+                class="settings-control"
+                label="Primary color"
+                label-hidden
+                :items="COLORS"
+                item-title="text"
+                item-value="text"
+              >
+                <template #item="{ item }">
+                  <span class="color-option">
+                    <span
+                      class="color-swatch"
+                      :style="{ background: item.value[themeMode] }"
+                    />
+                    {{ item.text }}
+                  </span>
+                </template>
+              </AppSelect>
+              <span
+                class="color-swatch color-swatch--preview"
+                :style="{ background: settings.primaryColor.value[themeMode] }"
+                aria-hidden="true"
+              />
+            </div>
+          </SettingsRow>
+        </section>
 
-      <section class="settings-group">
-        <h3 class="settings-section">Topic tree</h3>
-        <SettingsRow
-          title="Dense tree"
-          description="Smaller rows. More topics fit on the screen."
-        >
-          <AppSwitch v-model="settings.denseTree" :label="switchLabel(settings.denseTree)" />
-        </SettingsRow>
-      </section>
+        <section class="settings-group">
+          <h2 class="settings-section">Topic tree</h2>
+          <SettingsRow
+            title="Dense tree"
+            description="Smaller rows. More topics fit on the screen."
+          >
+            <AppSwitch v-model="settings.denseTree" :label="switchLabel(settings.denseTree)" />
+          </SettingsRow>
+        </section>
 
-      <section class="settings-group">
-        <h3 class="settings-section">Application</h3>
-        <SettingsRow
-          title="Close to system tray"
-          description="Keep the app running when the window closes."
-        >
-          <AppSwitch v-model="settings.closeTray" :label="switchLabel(settings.closeTray)" />
-        </SettingsRow>
-        <SettingsRow
-          title="Values kept per topic (0 to disable)"
-          description="History size for each topic. From 0 to 500."
-        >
-          <AppTextField
-            :model-value="settings.historySize"
-            class="settings-control"
-            label="Values kept per topic"
-            label-hidden
-            type="number"
-            min="0"
-            max="500"
-            step="1"
-            @update:model-value="settings.historySize = clampHistorySize($event)"
-          />
-        </SettingsRow>
-      </section>
+        <section class="settings-group">
+          <h2 class="settings-section">Application</h2>
+          <SettingsRow
+            title="Close to system tray"
+            description="Keep the app running when the window closes."
+          >
+            <AppSwitch v-model="settings.closeTray" :label="switchLabel(settings.closeTray)" />
+          </SettingsRow>
+          <SettingsRow
+            title="Values kept per topic (0 to disable)"
+            description="History size for each topic. From 0 to 500."
+          >
+            <AppTextField
+              :model-value="settings.historySize"
+              class="settings-control"
+              label="Values kept per topic"
+              label-hidden
+              type="number"
+              min="0"
+              max="500"
+              step="1"
+              @update:model-value="settings.historySize = clampHistorySize($event)"
+            />
+          </SettingsRow>
+        </section>
 
-      <AppAccordion v-model="openPanel" :items="PANELS" type="single">
-        <template #item-mqtt>
+        <section class="settings-group">
+          <h2 class="settings-section">MQTT client (advanced)</h2>
           <SettingsRow
             title="Client ID"
             description="Name of this client on the broker."
@@ -177,65 +173,81 @@
               :items="MAX_RECONNECTS_OPTIONS"
             />
           </SettingsRow>
-        </template>
-      </AppAccordion>
+        </section>
+
+        <section class="settings-group">
+          <h2 class="settings-section">Keyboard shortcuts</h2>
+          <SettingsRow
+            v-for="shortcut in SHORTCUTS"
+            :key="shortcut.label"
+            :title="shortcut.label"
+          >
+            <kbd class="shortcut-keys">{{ shortcut.keys }}</kbd>
+          </SettingsRow>
+        </section>
+
+        <section class="settings-group">
+          <h2 class="settings-section">About</h2>
+          <SettingsRow title="Version">
+            <span class="settings-version">v{{ version }}</span>
+          </SettingsRow>
+          <SettingsRow
+            title="Report a bug"
+            description="Open the issue page of the project."
+          >
+            <AppButton variant="text" color="primary" size="sm" @click="openBugsUrl">
+              <Bug :size="14" aria-hidden="true" />
+              Report a bug
+            </AppButton>
+          </SettingsRow>
+          <SettingsRow
+            title="Reset to defaults"
+            description="Restore all settings. The client ID stays the same."
+          >
+            <AppButton
+              variant="text"
+              color="danger"
+              size="sm"
+              @click="resetDialog = true"
+            >
+              <RotateCcw :size="14" aria-hidden="true" />
+              Reset to defaults
+            </AppButton>
+          </SettingsRow>
+        </section>
+      </div>
     </div>
 
-    <template #actions>
-      <div class="settings-footer">
-        <span class="settings-footer__version">v{{ version }}</span>
-        <AppButton
-          variant="text"
-          color="danger"
-          size="sm"
-          @click="resetDialog = true"
-        >
-          <RotateCcw :size="14" aria-hidden="true" />
-          Reset to defaults
+    <AppDialog
+      v-model:open="resetDialog"
+      title="Confirm reset"
+      persistent
+      hide-close
+    >
+      Reset all settings to their defaults? The client ID stays the same.
+      <template #actions>
+        <AppButton variant="text" @click="resetDialog = false">Cancel</AppButton>
+        <AppButton variant="text" color="danger" @click="confirmReset">
+          Reset
         </AppButton>
-        <span class="settings-footer__spacer" />
-        <AppButton
-          variant="text"
-          color="primary"
-          size="sm"
-          @click="openBugsUrl"
-        >
-          <Bug :size="14" aria-hidden="true" />
-          Report a bug
-        </AppButton>
-      </div>
-    </template>
-  </AppDialog>
-
-  <AppDialog
-    v-model:open="resetDialog"
-    title="Confirm reset"
-    persistent
-    hide-close
-  >
-    Reset all settings to their defaults? The client ID stays the same.
-    <template #actions>
-      <AppButton variant="text" @click="resetDialog = false">Cancel</AppButton>
-      <AppButton variant="text" color="danger" @click="confirmReset">
-        Reset
-      </AppButton>
-    </template>
-  </AppDialog>
+      </template>
+    </AppDialog>
+  </div>
 </template>
 
 <script setup>
 import { computed, ref } from "vue";
 import { Bug, Moon, RotateCcw, RotateCw, Sun, X } from "@lucide/vue";
+import { isMacOs } from "../utils/platform";
 import { clampHistorySize, FONT_SCALES, useSettingsStore } from "../stores/settings";
-import SettingsRow from "./SettingsRow.vue";
-import AppAccordion from "./ui/AppAccordion.vue";
-import AppButton from "./ui/AppButton.vue";
-import AppDialog from "./ui/AppDialog.vue";
-import AppSelect from "./ui/AppSelect.vue";
-import AppSwitch from "./ui/AppSwitch.vue";
-import AppTextField from "./ui/AppTextField.vue";
-import AppToggleGroup from "./ui/AppToggleGroup.vue";
-import AppTooltip from "./ui/AppTooltip.vue";
+import SettingsRow from "../components/SettingsRow.vue";
+import AppButton from "../components/ui/AppButton.vue";
+import AppDialog from "../components/ui/AppDialog.vue";
+import AppSelect from "../components/ui/AppSelect.vue";
+import AppSwitch from "../components/ui/AppSwitch.vue";
+import AppTextField from "../components/ui/AppTextField.vue";
+import AppToggleGroup from "../components/ui/AppToggleGroup.vue";
+import AppTooltip from "../components/ui/AppTooltip.vue";
 
 const THEME_ITEMS = [
   { value: "light", label: "Light", icon: Sun, showLabel: true },
@@ -245,9 +257,6 @@ const FONT_SIZE_ITEMS = FONT_SCALES.map((value) => ({
   value,
   text: `${value}%`,
 }));
-const PANELS = [
-  { value: "mqtt", title: "MQTT client (advanced)" },
-];
 const KEEPALIVE_OPTIONS = [60, 120, 180, 240, 300];
 const RECONNECT_PERIOD_OPTIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 const MAX_RECONNECTS_OPTIONS = [0, 5, 10, 15, 20];
@@ -269,11 +278,24 @@ const COLORS = [
   { text: "Metallic Grey", value: { light: "#607D8B", dark: "#78909C" } },
 ];
 
-const open = defineModel({ type: Boolean, default: false });
+const MODIFIER_KEY = isMacOs ? "Cmd" : "Ctrl";
+// Same list as the "Keyboard shortcuts" dialog of the app menu
+const SHORTCUTS = [
+  { label: "Open settings", keys: `${MODIFIER_KEY} + ,` },
+  { label: "Toggle search", keys: `${MODIFIER_KEY} + F` },
+  { label: "Notifications and logging", keys: `${MODIFIER_KEY} + Shift + N` },
+  { label: "Reload the tab", keys: `${MODIFIER_KEY} + R` },
+  { label: "Force reload the tab", keys: `${MODIFIER_KEY} + Shift + R` },
+  { label: "Close the tab", keys: `${MODIFIER_KEY} + W` },
+  { label: "Next tab", keys: "Ctrl + Tab" },
+  { label: "Previous tab", keys: "Ctrl + Shift + Tab" },
+  { label: "Quit the app", keys: `${MODIFIER_KEY} + Q` },
+  { label: "Show shortcuts", keys: `${MODIFIER_KEY} + K` },
+  { label: "About the app", keys: `${MODIFIER_KEY} + I` },
+];
 
 const settings = useSettingsStore();
 const resetDialog = ref(false);
-const openPanel = ref("");
 
 const version = import.meta.env.VITE_APP_VERSION;
 
@@ -310,10 +332,27 @@ function openBugsUrl() {
 </script>
 
 <style scoped>
+.settings-page {
+  display: flex;
+  flex-direction: column;
+  block-size: 100vh;
+}
+
+/* The whole page scrolls */
+.settings-scroll {
+  flex: 1;
+  min-block-size: 0;
+  overflow-y: auto;
+}
+
 .settings-body {
   display: flex;
   flex-direction: column;
   gap: var(--space-6);
+  box-sizing: content-box;
+  max-inline-size: 80ch;
+  margin-inline: auto;
+  padding: var(--space-7) var(--space-6);
 }
 
 .settings-control {
@@ -347,6 +386,17 @@ function openBugsUrl() {
   border-block-start: 1px solid var(--color-border);
 }
 
+.shortcut-keys {
+  color: var(--color-text-muted);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-sm);
+}
+
+.settings-version {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+}
+
 .color-option {
   display: inline-flex;
   align-items: center;
@@ -372,21 +422,5 @@ function openBugsUrl() {
   inline-size: var(--control-height);
   block-size: var(--control-height);
   border-radius: var(--radius-md);
-}
-
-.settings-footer {
-  display: flex;
-  flex: 1;
-  align-items: center;
-  gap: var(--space-4);
-}
-
-.settings-footer__version {
-  color: var(--color-text-muted);
-  font-size: var(--font-size-sm);
-}
-
-.settings-footer__spacer {
-  flex: 1;
 }
 </style>

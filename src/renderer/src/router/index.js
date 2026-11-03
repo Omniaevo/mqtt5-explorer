@@ -7,6 +7,11 @@ export default createRouter({
     { path: "/", redirect: "/home" },
     { path: "/home", name: "Home", component: Home },
     {
+      path: "/settings",
+      name: "Settings",
+      component: () => import("../views/SettingsView.vue"),
+    },
+    {
       path: "/viewer/:tabId",
       name: "Viewer",
       component: () => import("../views/MqttViewer.vue"),

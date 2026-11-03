@@ -200,7 +200,7 @@ const api = {
     openExternal: (url) => ipcRenderer.send(Channel.APP_OPEN_EXTERNAL, url),
     /**
      * Listens to a menu event.
-     * @param {"settingsPressed" | "exportDataPressed" | "importDataPressed" | "searchPressed" | "notificationPressed"} channel
+     * @param {"exportDataPressed" | "importDataPressed" | "searchPressed" | "notificationPressed"} channel
      * @param {(...args: any[]) => void} callback
      * @returns {() => void} Unsubscribe function.
      */
