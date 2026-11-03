@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createPinia, setActivePinia } from "pinia";
-import { clampHistorySize, useSettingsStore } from "./settings";
+import { clampHistorySize, clampRecentRows, useSettingsStore } from "./settings";
 
 const stubStoredSettings = (stored) =>
   vi.stubGlobal("window", {
@@ -21,8 +21,6 @@ describe("settings store load()", () => {
     const s = loadSettings(undefined);
 
     expect(s.theme).toBe("light");
-    expect(s.denseTree).toBe(false);
-    expect(s.outline).toBe(false);
     expect(s.closeTray).toBe(true);
     expect(s.fontScale).toBe(100);
     expect(s.primaryColor.text).toBe("Indie Indigo");
@@ -63,16 +61,12 @@ describe("settings store load()", () => {
     const s = loadSettings(
       JSON.stringify({
         theme: "dark",
-        denseTree: true,
-        outline: true,
         closeTray: false,
         clientId: "my-client",
       })
     );
 
     expect(s.theme).toBe("dark");
-    expect(s.denseTree).toBe(true);
-    expect(s.outline).toBe(true);
     expect(s.closeTray).toBe(false);
     expect(s.clientId).toBe("my-client");
     expect(s.isDark).toBe(true);
@@ -152,8 +146,6 @@ describe("settings store resetToDefaults()", () => {
     const s = loadSettings(
       JSON.stringify({
         theme: "dark",
-        denseTree: true,
-        outline: true,
         closeTray: false,
         fontScale: 125,
         keepalive: 300,
@@ -166,8 +158,6 @@ describe("settings store resetToDefaults()", () => {
     s.resetToDefaults();
 
     expect(s.theme).toBe("light");
-    expect(s.denseTree).toBe(false);
-    expect(s.outline).toBe(false);
     expect(s.closeTray).toBe(true);
     expect(s.fontScale).toBe(100);
     expect(s.primaryColor.text).toBe("Indie Indigo");
@@ -199,5 +189,27 @@ describe("settings store resetToDefaults()", () => {
     s.resetToDefaults();
 
     expect(s.wallpaper).toBe("none");
+  });
+});
+
+describe("settings store recentRows", () => {
+  beforeEach(() => setActivePinia(createPinia()));
+
+  it("defaults to 2 when missing from old settings files", () => {
+    expect(loadSettings(JSON.stringify({ theme: "dark" })).recentRows).toBe(2);
+  });
+
+  it("keeps a valid value, also as a string", () => {
+    expect(loadSettings(JSON.stringify({ recentRows: "3" })).recentRows).toBe(3);
+  });
+
+  it.each([
+    [0, 1],
+    [-4, 1],
+    [99, 4],
+    [2.8, 2],
+    ["abc", 2],
+  ])("clamps %j to %i", (input, expected) => {
+    expect(clampRecentRows(input)).toBe(expected);
   });
 });

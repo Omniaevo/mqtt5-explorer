@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createPinia, setActivePinia } from "pinia";
 import { useConnectionsStore } from "./connections";
+import { useSettingsStore } from "./settings";
 
 const connection = (name, lastConnectedAt, saved = true) => ({
   id: name,
@@ -25,10 +26,10 @@ describe("connections store", () => {
   });
 
   describe("recentConnections", () => {
-    it("keeps the saved order when nothing was connected yet", () => {
-      const store = storeWith([connection("b"), connection("a"), connection("c")]);
+    it("is empty when nothing was connected yet", () => {
+      const store = storeWith([connection("b"), connection("a")]);
 
-      expect(names(store.recentConnections)).toEqual(["b", "a", "c"]);
+      expect(store.recentConnections).toEqual([]);
     });
 
     it("puts the most recently connected first", () => {
@@ -38,7 +39,7 @@ describe("connections store", () => {
         connection("new", "2026-02-01T00:00:00Z"),
       ]);
 
-      expect(names(store.recentConnections)).toEqual(["new", "old", "never"]);
+      expect(names(store.recentConnections)).toEqual(["new", "old"]);
     });
 
     it("reads a numeric timestamp from old data", () => {
@@ -48,17 +49,33 @@ describe("connections store", () => {
         connection("new", "2026-02-01T00:00:00Z"),
       ]);
 
-      expect(names(store.recentConnections)).toEqual(["new", "old", "never"]);
+      expect(names(store.recentConnections)).toEqual(["new", "old"]);
     });
 
     it("returns at most 8 connections", () => {
-      const many = Array.from({ length: 12 }, (_, i) => connection(`c${i}`));
+      const many = Array.from({ length: 12 }, (_, i) =>
+        connection(`c${i}`, "2026-01-01T00:00:00Z")
+      );
 
       expect(storeWith(many).recentConnections).toHaveLength(8);
     });
 
+    it("follows the rows setting, 4 tiles per row", () => {
+      const many = Array.from({ length: 12 }, (_, i) =>
+        connection(`c${i}`, "2026-01-01T00:00:00Z")
+      );
+      const store = storeWith(many);
+
+      useSettingsStore().recentRows = 1;
+
+      expect(store.recentConnections).toHaveLength(4);
+    });
+
     it("ignores unsaved connections", () => {
-      const store = storeWith([connection("temp", undefined, false), connection("a")]);
+      const store = storeWith([
+        connection("temp", "2026-01-01T00:00:00Z", false),
+        connection("a", "2026-01-01T00:00:00Z"),
+      ]);
 
       expect(names(store.recentConnections)).toEqual(["a"]);
     });
@@ -72,8 +89,16 @@ describe("connections store", () => {
       expect(names(store.otherConnections)).toEqual(["beta", "Zed"]);
     });
 
-    it("is empty with 8 connections or fewer", () => {
-      expect(storeWith([connection("a")]).otherConnections).toEqual([]);
+    it("is empty with 8 connected connections or fewer", () => {
+      const store = storeWith([connection("a", "2026-01-01T00:00:00Z")]);
+
+      expect(store.otherConnections).toEqual([]);
+    });
+
+    it("holds the connections that never connected", () => {
+      const store = storeWith([connection("b"), connection("a")]);
+
+      expect(names(store.otherConnections)).toEqual(["a", "b"]);
     });
   });
 
@@ -85,6 +110,14 @@ describe("connections store", () => {
 
       expect(store.brokerConnections[0].lastError).toBe("Connection refused");
       expect(window.api.store.set).toHaveBeenCalledOnce();
+    });
+
+    it("makes the connection recent", () => {
+      const store = storeWith([connection("a")]);
+
+      store.markFailed("a", "Connection refused");
+
+      expect(names(store.recentConnections)).toEqual(["a"]);
     });
 
     it("skips an unsaved connection", () => {

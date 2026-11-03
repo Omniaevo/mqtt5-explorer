@@ -1,14 +1,14 @@
 import { defineStore } from "pinia";
+import { RECENT_TILES_PER_ROW, useSettingsStore } from "./settings";
 
 // Persisted key: must stay unchanged to keep user data
 const CONNECTIONS_KEY = "saved_mqtt_connections";
-const MAX_RECENT_CONNECTIONS = 8;
 
 // Old data may hold a number, new data an ISO string; anything unreadable counts as never
 const connectedTime = ({ lastConnectedAt }) =>
   (lastConnectedAt && new Date(lastConnectedAt).getTime()) || 0;
 
-// Newest first; connections never connected go last, in their saved order
+// Newest first
 const byMostRecentlyConnected = (a, b) => connectedTime(b) - connectedTime(a);
 
 const byName = (a, b) =>
@@ -24,14 +24,17 @@ export const useConnectionsStore = defineStore("connections", {
     getByIndex: (state) => (index) => state.brokerConnections[index],
     savedConnections: (state) => state.brokerConnections.filter((c) => c.saved),
 
-    /** Top connections for the Home tiles. Without history: the first saved ones. */
+    /** Top connections for the Home tiles: only those connected at least once. */
     recentConnections() {
-      return [...this.savedConnections]
+      const { recentRows } = useSettingsStore();
+
+      return this.savedConnections
+        .filter((c) => connectedTime(c) > 0)
         .sort(byMostRecentlyConnected)
-        .slice(0, MAX_RECENT_CONNECTIONS);
+        .slice(0, recentRows * RECENT_TILES_PER_ROW);
     },
 
-    /** Saved connections not in the recent tiles, alphabetical. */
+    /** Saved connections not in the recent tiles (never connected included), alphabetical. */
     otherConnections() {
       const recentIds = new Set(this.recentConnections.map((c) => c.id));
 
@@ -70,12 +73,17 @@ export const useConnectionsStore = defineStore("connections", {
       this.persist();
     },
 
-    /** Saves why the last connection attempt of a saved connection failed. No-op for an unsaved one. */
+    /**
+     * Saves why the last connection attempt of a saved connection failed. A failed
+     * attempt still counts as recent, so it stamps `lastConnectedAt` (the field
+     * name is kept: persisted data). No-op for an unsaved connection.
+     */
     markFailed(id, message) {
       const connection = this.savedConnections.find((c) => c.id === id);
 
       if (!connection) return;
 
+      connection.lastConnectedAt = new Date().toISOString();
       connection.lastError = message;
       this.persist();
     },

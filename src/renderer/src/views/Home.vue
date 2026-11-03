@@ -439,6 +439,7 @@ onBeforeUnmount(() => {
   border-radius: var(--radius-lg);
 }
 
+/* Columns must match RECENT_TILES_PER_ROW in the settings store */
 .home__tiles {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));

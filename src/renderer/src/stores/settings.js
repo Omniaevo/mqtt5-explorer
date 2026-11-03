@@ -20,6 +20,19 @@ export const clampHistorySize = (value) => {
     : 0;
 };
 
+export const RECENT_TILES_PER_ROW = 4; // Same as the Home tile grid columns
+const DEFAULT_RECENT_ROWS = 2;
+export const RECENT_ROWS_OPTIONS = [1, 2, 3, 4];
+const MAX_RECENT_ROWS = Math.max(...RECENT_ROWS_OPTIONS);
+
+/** Converts any input to an integer in 1..MAX_RECENT_ROWS. Invalid input gives the default. */
+export const clampRecentRows = (value) => {
+  const rows = Math.trunc(Number(value));
+  return Number.isFinite(rows)
+    ? Math.min(Math.max(rows, 1), MAX_RECENT_ROWS)
+    : DEFAULT_RECENT_ROWS;
+};
+
 // Root font size in percent. Tokens use rem, so the whole UI scales with it.
 export const FONT_SCALES = [90, 100, 110, 125, 150];
 const DEFAULT_FONT_SCALE = 100;
@@ -36,8 +49,6 @@ const defaultPrimaryColor = () => ({
 export const useSettingsStore = defineStore("settings", {
   state: () => ({
     theme: "light",
-    denseTree: false,
-    outline: false,
     closeTray: true,
     fontScale: DEFAULT_FONT_SCALE,
     primaryColor: defaultPrimaryColor(),
@@ -48,6 +59,7 @@ export const useSettingsStore = defineStore("settings", {
     connectTimeout: MIN_CONNECT_TIMEOUT,
     maxReconnects: 5,
     historySize: DEFAULT_HISTORY_SIZE,
+    recentRows: DEFAULT_RECENT_ROWS,
   }),
 
   getters: {
@@ -65,8 +77,6 @@ export const useSettingsStore = defineStore("settings", {
     /** Applies stored data, filling defaults and clamping to the minimums. */
     setAll(data = {}) {
       this.theme = data.theme || "light";
-      this.denseTree = data.denseTree ?? false;
-      this.outline = data.outline ?? false;
       this.closeTray = data.closeTray ?? true;
       this.fontScale = normalizeFontScale(data.fontScale);
       this.primaryColor = data.primaryColor || defaultPrimaryColor();
@@ -85,6 +95,7 @@ export const useSettingsStore = defineStore("settings", {
       this.historySize = clampHistorySize(
         data.historySize ?? DEFAULT_HISTORY_SIZE
       );
+      this.recentRows = clampRecentRows(data.recentRows ?? DEFAULT_RECENT_ROWS);
     },
 
     /** Restores all defaults and keeps the current client ID. */

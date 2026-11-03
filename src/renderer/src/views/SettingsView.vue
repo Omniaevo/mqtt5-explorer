@@ -57,21 +57,25 @@
         <section class="settings-group">
           <h2 class="settings-section">Home</h2>
           <SettingsRow
+            title="Recent connections rows"
+            description="Rows of recent connections on Home, 4 per row."
+          >
+            <AppSelect
+              v-model="settings.recentRows"
+              class="settings-control"
+              label="Recent connections rows"
+              label-hidden
+              :items="RECENT_ROWS_ITEMS"
+              item-title="text"
+              item-value="value"
+            />
+          </SettingsRow>
+          <SettingsRow
             title="Wallpaper"
             description="Background pattern of the start page."
             stacked
           >
             <WallpaperPicker v-model="settings.wallpaper" />
-          </SettingsRow>
-        </section>
-
-        <section class="settings-group">
-          <h2 class="settings-section">Topic tree</h2>
-          <SettingsRow
-            title="Dense tree"
-            description="Smaller rows. More topics fit on the screen."
-          >
-            <AppSwitch v-model="settings.denseTree" :label="switchLabel(settings.denseTree)" />
           </SettingsRow>
         </section>
 
@@ -100,7 +104,6 @@
             />
           </SettingsRow>
         </section>
-
         <section class="settings-group">
           <h2 class="settings-section">MQTT client (advanced)</h2>
           <SettingsRow
@@ -142,7 +145,7 @@
           >
             <AppSelect
               v-model="settings.keepalive"
-              class="settings-control settings-control-wide"
+              class="settings-control"
               label="Keepalive"
               label-hidden
               :items="KEEPALIVE_OPTIONS"
@@ -154,7 +157,7 @@
           >
             <AppSelect
               v-model="settings.connectTimeout"
-              class="settings-control settings-control-wide"
+              class="settings-control"
               label="Connection timeout"
               label-hidden
               :items="CONNECT_TIMEOUT_OPTIONS"
@@ -166,7 +169,7 @@
           >
             <AppSelect
               v-model="settings.reconnectPeriod"
-              class="settings-control settings-control-wide"
+              class="settings-control"
               label="Reconnect period"
               label-hidden
               :items="RECONNECT_PERIOD_OPTIONS"
@@ -178,7 +181,7 @@
           >
             <AppSelect
               v-model="settings.maxReconnects"
-              class="settings-control settings-control-wide"
+              class="settings-control"
               label="Max reconnects"
               label-hidden
               :items="MAX_RECONNECTS_OPTIONS"
@@ -250,7 +253,12 @@
 import { computed, ref } from "vue";
 import { Bug, Moon, RotateCcw, RotateCw, Sun, X } from "@lucide/vue";
 import { isMacOs } from "../utils/platform";
-import { clampHistorySize, FONT_SCALES, useSettingsStore } from "../stores/settings";
+import {
+  clampHistorySize,
+  FONT_SCALES,
+  RECENT_ROWS_OPTIONS,
+  useSettingsStore,
+} from "../stores/settings";
 import SettingsRow from "../components/SettingsRow.vue";
 import WallpaperPicker from "../components/WallpaperPicker.vue";
 import AppButton from "../components/ui/AppButton.vue";
@@ -268,6 +276,10 @@ const THEME_ITEMS = [
 const FONT_SIZE_ITEMS = FONT_SCALES.map((value) => ({
   value,
   text: `${value}%`,
+}));
+const RECENT_ROWS_ITEMS = RECENT_ROWS_OPTIONS.map((value) => ({
+  value,
+  text: value === 1 ? "1 row" : `${value} rows`,
 }));
 const KEEPALIVE_OPTIONS = [60, 120, 180, 240, 300];
 const RECONNECT_PERIOD_OPTIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
@@ -370,10 +382,6 @@ function openBugsUrl() {
 .settings-control {
   inline-size: 220px;
   max-inline-size: 100%;
-}
-
-.settings-control-wide {
-  inline-size: 360px;
 }
 
 /* Fits "m5-" plus a GUID (40 characters), the clear button and the padding */
