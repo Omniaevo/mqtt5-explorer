@@ -20,12 +20,15 @@ import { Channel, RendererStoreKeys } from "../shared/ipcChannels";
  * @param {object} deps
  * @param {import("electron-store")} deps.store
  * @param {() => void} deps.focusWindow
+ * @param {(webContents: Electron.WebContents) => boolean} [deps.isConnectionView]
+ * Only a connection view may use the session channels.
  * @param {(webContents: Electron.WebContents) => void} [deps.onSessionFocus]
  * Called when a notification of a session is clicked.
  */
 export function registerIpcHandlers({
   store,
   focusWindow,
+  isConnectionView = () => true,
   onSessionFocus = () => {},
 }) {
   const sessions = new SessionRegistry(
@@ -39,7 +42,9 @@ export function registerIpcHandlers({
         },
       })
   );
-  const sessionOf = (event) => sessions.get(event.sender);
+  // Shell, Home and Settings get no session
+  const sessionOf = (event) =>
+    isConnectionView(event.sender) ? sessions.get(event.sender) : undefined;
 
   // Store
   ipcMain.on(Channel.STORE_GET, (event, key) => {
@@ -63,27 +68,27 @@ export function registerIpcHandlers({
 
   // MQTT
   ipcMain.on(Channel.MQTT_CONNECT, (event, properties, clientSettings) =>
-    sessionOf(event).connect(properties, clientSettings)
+    sessionOf(event)?.connect(properties, clientSettings)
   );
   ipcMain.handle(Channel.MQTT_DISCONNECT, (event) =>
-    sessionOf(event).disconnect()
+    sessionOf(event)?.disconnect()
   );
   ipcMain.on(Channel.MQTT_PUBLISH, (event, packet) =>
-    sessionOf(event).publish(packet)
+    sessionOf(event)?.publish(packet)
   );
 
   // Notifications and logging: the UI owns the config, main does the matching
   ipcMain.on(Channel.NOTIFY_SET_CONFIG, (event, config) =>
-    sessionOf(event).setNotifyConfig(config)
+    sessionOf(event)?.setNotifyConfig(config)
   );
 
   // Logger
   ipcMain.on(Channel.LOGGER_START, (event, connectionName) =>
-    sessionOf(event).startLogging(connectionName)
+    sessionOf(event)?.startLogging(connectionName)
   );
-  ipcMain.on(Channel.LOGGER_STOP, (event) => sessionOf(event).stopLogging());
+  ipcMain.on(Channel.LOGGER_STOP, (event) => sessionOf(event)?.stopLogging());
   ipcMain.on(Channel.LOGGER_FOLDER, (event) => {
-    event.returnValue = sessionOf(event).logsFolder;
+    event.returnValue = sessionOf(event)?.logsFolder ?? null;
   });
 
   // Dialog: the renderer only picks title and filters, never the dialog kind

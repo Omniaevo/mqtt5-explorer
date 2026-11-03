@@ -122,6 +122,8 @@ const sendToHome = (channel, ...args) => {
 const ipc = registerIpcHandlers({
   store,
   focusWindow,
+  isConnectionView: (webContents) =>
+    tabs?.isConnectionView(webContents.id) ?? false,
   onSessionFocus: (webContents) => tabs?.select(tabs.tabIdOf(webContents.id)),
 });
 

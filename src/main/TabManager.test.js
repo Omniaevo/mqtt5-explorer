@@ -297,6 +297,15 @@ describe("TabManager", () => {
     expect(manager.tabIdOf(-1)).toBeUndefined();
   });
 
+  it("tells connection views from other views", () => {
+    const { manager, views } = createManager();
+    manager.open("connection", { connectionId: "a" });
+
+    expect(manager.isConnectionView(views[1].webContentsId)).toBe(true);
+    expect(manager.isConnectionView(views[0].webContentsId)).toBe(false);
+    expect(manager.isConnectionView(-1)).toBe(false);
+  });
+
   it("sets the state of a connection tab and emits", () => {
     const { manager, onChange } = createManager();
     const id = manager.open("connection", { connectionId: "a" });

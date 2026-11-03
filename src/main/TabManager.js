@@ -382,6 +382,11 @@ class TabManager {
     )?.[0];
   }
 
+  /** Tells whether the webContents is the view of a connection tab. */
+  isConnectionView(webContentsId) {
+    return this.#find(this.tabIdOf(webContentsId))?.kind === TabKind.CONNECTION;
+  }
+
   /** Marks whether the view of a connection tab is logging to a file. */
   setLogging(id, enabled) {
     const tab = this.#find(id);
