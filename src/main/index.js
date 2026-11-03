@@ -19,6 +19,7 @@ import { registerTabsIpc } from "./tabsIpc";
 import { registerTooltipIpc } from "./tooltipIpc";
 import { registerWindowIpc, windowState } from "./windowIpc";
 import { createTabViewFactory, loadRoute } from "./createTabView";
+import { themeBackground } from "./themeBackground";
 import { Channel, FixedTabId, MenuEvent, TabKind } from "../shared/ipcChannels";
 
 const isDevelopment = process.env.NODE_ENV !== "production";
@@ -91,6 +92,8 @@ const confirmLoggingStop = async (action, titles) => {
 };
 const confirmLoggingClose = (titles) =>
   confirmLoggingStop(titles.length > 1 ? "Close tabs" : "Close tab", titles);
+// Views and window paint this until the page sets the theme
+const currentBackground = () => themeBackground(store.get("saved_app_settings"));
 const focusWindow = () => {
   if (!win) return;
   if (!win.isVisible()) win.show();
@@ -408,6 +411,7 @@ async function createWindow() {
     height: store.get("app_height") || 768,
     title: appName,
     icon: appIcon,
+    backgroundColor: currentBackground(),
     webPreferences,
     // The shell draws the title bar and the window controls
     frame: false,
@@ -417,7 +421,7 @@ async function createWindow() {
   if (!isMac) win.setMenuBarVisibility(false);
 
   // The window webContents is the shell; every tab is a view above it
-  const createView = createTabViewFactory(win, webPreferences);
+  const createView = createTabViewFactory(win, webPreferences, currentBackground);
   const getContentSize = () => {
     const [width, height] = win.getContentSize();
     return { width, height };

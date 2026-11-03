@@ -7,10 +7,13 @@ import path from "path";
  *
  * @param {BrowserWindow} win
  * @param {Electron.WebPreferences} webPreferences
+ * @param {() => string} getBackgroundColor Color a view shows before its page paints.
  */
-export function createTabViewFactory(win, webPreferences) {
+export function createTabViewFactory(win, webPreferences, getBackgroundColor) {
   return (route) => {
     const view = new WebContentsView({ webPreferences });
+
+    view.setBackgroundColor(getBackgroundColor());
 
     win.contentView.addChildView(view);
     loadRoute(view.webContents, route);
