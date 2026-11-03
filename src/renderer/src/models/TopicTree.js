@@ -70,6 +70,26 @@ class TopicTree {
     return nodes;
   }
 
+  /**
+   * Finds topics that hold a value and pass a filter.
+   * @param {(topic: string) => boolean} matches
+   * @param {number} limit Stops the walk after this many topics.
+   * @returns {string[]}
+   */
+  search(matches, limit) {
+    const found = [];
+    const pending = [...this.#top.children].reverse();
+
+    while (pending.length > 0 && found.length < limit) {
+      const node = pending.pop();
+
+      if (node.value !== undefined && matches(node.topic)) found.push(node.topic);
+      pending.push(...node.children.reverse());
+    }
+
+    return found;
+  }
+
   static #hasPayload(message) {
     return message.payload?.length > 0;
   }

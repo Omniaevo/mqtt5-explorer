@@ -15,6 +15,8 @@ import TabManager from "./TabManager";
 import TooltipOverlay from "./TooltipOverlay";
 import { PINNED_TABS_KEY, restorePinnedTabs } from "./pinnedTabs";
 import { tabMenuTemplate } from "./tabMenu";
+import { registerSearchIpc } from "./searchIpc";
+import TopicSearchCollector from "./TopicSearchCollector";
 import { registerTabsIpc } from "./tabsIpc";
 import { registerTooltipIpc } from "./tooltipIpc";
 import { registerWindowIpc, windowState } from "./windowIpc";
@@ -36,10 +38,16 @@ let win;
 let tray;
 let tabs;
 let removeTabsIpc;
+let removeSearchIpc;
 let stopFollowingConnections;
 let removeWindowIpc;
 let removeTooltipIpc;
 let menuKind;
+const topicSearch = new TopicSearchCollector({
+  listTargets: () => tabs?.connectedTargets() ?? [],
+  sendRequest: (tabId, request) =>
+    tabs?.sendTo(tabId, Channel.SEARCH_REQUEST, request),
+});
 
 // The menu depends on the kind of the active tab
 const activeKind = () => tabs?.active()?.kind ?? TabKind.HOME;
@@ -440,9 +448,11 @@ async function createWindow() {
       refreshMenu();
     },
     onPinnedChange: (connectionIds) => store.set(PINNED_TABS_KEY, connectionIds),
+    onTabClosed: (tabId) => topicSearch.dropTab(tabId),
     confirmLoggingClose,
   });
   stopFollowingConnections = restorePinnedTabs({ store, tabs });
+  removeSearchIpc = registerSearchIpc({ tabs, collector: topicSearch });
   removeTabsIpc = registerTabsIpc({
     tabs,
     getShellContents: () => win.webContents,
@@ -566,6 +576,7 @@ app.on("before-quit", async (event) => {
 
     if (stopFollowingConnections) stopFollowingConnections();
     if (removeTabsIpc) removeTabsIpc();
+    if (removeSearchIpc) removeSearchIpc();
     if (removeWindowIpc) removeWindowIpc();
     if (removeTooltipIpc) removeTooltipIpc();
     // Destroying the window also destroys the tab views

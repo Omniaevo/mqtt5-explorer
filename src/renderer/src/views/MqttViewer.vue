@@ -299,6 +299,7 @@ import SearchInfoDialog from "../components/viewer/SearchInfoDialog.vue";
 import TopicTreeView from "../components/viewer/TopicTreeView.vue";
 import { useConnectionSession } from "../composables/useConnectionSession";
 import { useDebouncedRef } from "../composables/useDebouncedRef";
+import { useTopicSearchResponder } from "../composables/useTopicSearchResponder";
 import { useNotifyAndLogging } from "../composables/useNotifyAndLogging";
 import { useTopicSelection } from "../composables/useTopicSelection";
 import { useTreeRefresh } from "../composables/useTreeRefresh";
@@ -354,6 +355,7 @@ const searchVisible = ref(false);
 const searchTerm = ref(undefined);
 const searchMode = ref(undefined);
 const debouncedSearchTerm = useDebouncedRef(searchTerm, SEARCH_DEBOUNCE_MS);
+useTopicSearchResponder(tree);
 
 const {
   stateView,

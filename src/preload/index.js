@@ -212,6 +212,35 @@ const api = {
       ipcRenderer.send(Channel.SHELL_SET_STATUS_HEIGHT, height),
   },
 
+  search: {
+    /**
+     * Searches topics in the connected tabs. Home only.
+     * @param {string} query At least 2 characters.
+     * @returns {Promise<{tabId: string, title: string, topics: string[]}[]>}
+     */
+    topics: (query) => ipcRenderer.invoke(Channel.SEARCH_TOPICS, query),
+    /**
+     * Selects a tab and a topic in it. Home only.
+     * @param {string} tabId
+     * @param {string} topic
+     */
+    openTopic: (tabId, topic) =>
+      ipcRenderer.send(Channel.SEARCH_OPEN_TOPIC, tabId, topic),
+    /**
+     * Viewer only. Called when Home searches topics.
+     * @param {(request: {requestId: number, query: string}) => void} callback
+     * @returns {() => void} Unsubscribe function.
+     */
+    onRequest: (callback) => subscribe(Channel.SEARCH_REQUEST, callback),
+    /**
+     * Viewer only. Answers a search request.
+     * @param {number} requestId
+     * @param {string[]} topics Matching topics.
+     */
+    respond: (requestId, topics) =>
+      ipcRenderer.send(Channel.SEARCH_RESPONSE, requestId, topics),
+  },
+
   // Shell only: the window has no native frame
   window: {
     /**

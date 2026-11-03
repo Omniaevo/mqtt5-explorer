@@ -1,5 +1,5 @@
 import { connectionUrl } from "../shared/connectionUrl";
-import { FixedTabId, TabKind, TabState } from "../shared/ipcChannels";
+import { Channel, FixedTabId, TabKind, TabState } from "../shared/ipcChannels";
 
 const HOME_ID = FixedTabId.HOME;
 const SETTINGS_ID = FixedTabId.SETTINGS;
@@ -29,6 +29,7 @@ class TabManager {
   #statusBarHeight = 0;
   #nextConnectionTabId = 1;
   #onPinnedChange;
+  #onTabClosed;
   #confirmLoggingClose;
   #savedConnections = new Map();
 
@@ -38,6 +39,7 @@ class TabManager {
    * @param {() => {width: number, height: number}} deps.getContentSize
    * @param {(snapshot: {tabs: object[], activeId: string}) => void} deps.onChange
    * @param {(connectionIds: string[]) => void} [deps.onPinnedChange] Called with the ordered ids of the pinned tabs.
+   * @param {(tabId: string) => void} [deps.onTabClosed] Called after a tab closed.
    * @param {(titles: string[]) => Promise<boolean>} [deps.confirmLoggingClose] Asks the user before tabs that log to a file close.
    */
   constructor({
@@ -45,12 +47,14 @@ class TabManager {
     getContentSize,
     onChange,
     onPinnedChange = () => {},
+    onTabClosed = () => {},
     confirmLoggingClose = async () => true,
   }) {
     this.#createView = createView;
     this.#getContentSize = getContentSize;
     this.#onChange = onChange;
     this.#onPinnedChange = onPinnedChange;
+    this.#onTabClosed = onTabClosed;
     this.#confirmLoggingClose = confirmLoggingClose;
 
     this.#add({ id: HOME_ID, kind: TabKind.HOME, title: "Home" });
@@ -220,6 +224,7 @@ class TabManager {
 
     this.#showActive();
     this.#emit();
+    this.#onTabClosed(id);
     return true;
   }
 
@@ -311,6 +316,30 @@ class TabManager {
     return this.#tabs
       .filter((tab) => tab.kind === TabKind.CONNECTION && tab.connectionId)
       .map(({ connectionId, state, pinned }) => ({ connectionId, state, pinned }));
+  }
+
+  /** Connection tabs that are connected now, with the view that owns each one. */
+  connectedTargets() {
+    return this.#tabs
+      .filter(
+        (tab) =>
+          tab.kind === TabKind.CONNECTION &&
+          tab.state === TabState.CONNECTED &&
+          this.#views.has(tab.id)
+      )
+      .map((tab) => ({
+        tabId: tab.id,
+        title: tab.title,
+        webContentsId: this.#views.get(tab.id).webContentsId,
+      }));
+  }
+
+  /** Selects a connected tab and asks its view to select a topic. */
+  selectTopic(id, topic) {
+    if (!this.connectedTargets().some((target) => target.tabId === id)) return;
+
+    this.select(id);
+    this.sendTo(id, Channel.NOTIFY_SELECT_TOPIC, topic);
   }
 
   /** Pins the open tab of a saved connection. */

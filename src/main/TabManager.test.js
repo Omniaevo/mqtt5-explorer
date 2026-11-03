@@ -842,4 +842,58 @@ describe("TabManager", () => {
       expect(manager.connectionStates()[0].pinned).toBe(true);
     });
   });
+
+  describe("topic search support", () => {
+    const connection = { id: "c1", name: "Broker" };
+
+    it("lists only connected connection tabs as search targets", () => {
+      const { manager, views } = createManager();
+      const connected = manager.open("connection", { connectionId: "c1", connection });
+
+      manager.open("connection", { connectionId: "c2", connection: { ...connection, id: "c2" } });
+      manager.setState(connected, "connected");
+
+      expect(manager.connectedTargets()).toEqual([
+        { tabId: connected, title: "Broker", webContentsId: views[1].webContentsId },
+      ]);
+    });
+
+    it("selects a connected tab and sends the topic to its view", () => {
+      const { manager, views } = createManager();
+      const tabId = manager.open("connection", { connectionId: "c1", connection });
+
+      manager.setState(tabId, "connected");
+      manager.select("home");
+      manager.selectTopic(tabId, "a/b");
+
+      expect(manager.active().id).toBe(tabId);
+      expect(views[1].sent.at(-1)).toEqual(["notify:selectTopic", "a/b"]);
+    });
+
+    it("ignores a topic for a tab that is not connected", () => {
+      const { manager, views } = createManager();
+      const tabId = manager.open("connection", { connectionId: "c1", connection });
+
+      manager.select("home");
+      manager.selectTopic(tabId, "a/b");
+
+      expect(manager.active().id).toBe("home");
+      expect(views[1].sent).toEqual([]);
+    });
+
+    it("reports a closed tab", () => {
+      const onTabClosed = vi.fn();
+      const manager = new TabManager({
+        createView: createFakeView,
+        getContentSize: () => CONTENT_SIZE,
+        onChange: vi.fn(),
+        onTabClosed,
+      });
+      const tabId = manager.open("connection", { connectionId: "c1", connection });
+
+      manager.close(tabId);
+
+      expect(onTabClosed).toHaveBeenCalledWith(tabId);
+    });
+  });
 });

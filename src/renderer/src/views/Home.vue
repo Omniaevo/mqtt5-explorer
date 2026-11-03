@@ -54,6 +54,13 @@
           </ul>
         </section>
 
+        <TopicSearchResults
+          v-if="topicGroups.length"
+          :groups="topicGroups"
+          :query="searchConnection"
+          @open="openTopic"
+        />
+
         <section class="home__section">
           <div class="home__divider">
             <h2 class="home__divider-title">All connections</h2>
@@ -112,16 +119,18 @@
 </template>
 
 <script setup>
-import { computed, onBeforeMount, onBeforeUnmount, onMounted, ref, useTemplateRef } from "vue";
+import { computed, onBeforeMount, onBeforeUnmount, onMounted, ref, useTemplateRef, watch } from "vue";
 import { Copy, Download, Pencil, Pin, Plus, Search, Trash2, X } from "@lucide/vue";
 import logo from "../assets/logo.png";
 import ConnectionDialog from "../components/ConnectionDialog.vue";
 import ConnectionRow from "../components/home/ConnectionRow.vue";
 import QuickConnectRow from "../components/home/QuickConnectRow.vue";
+import TopicSearchResults from "../components/home/TopicSearchResults.vue";
 import ConnectionTile from "../components/home/ConnectionTile.vue";
 import AppButton from "../components/ui/AppButton.vue";
 import AppDialog from "../components/ui/AppDialog.vue";
 import AppTextField from "../components/ui/AppTextField.vue";
+import { useDebouncedRef } from "../composables/useDebouncedRef";
 import ConnectionProperties from "../models/ConnectionProperties";
 import { useConnectionsStore } from "../stores/connections";
 import { useNotifyStore } from "../stores/notify";
@@ -137,7 +146,15 @@ const notify = useNotifyStore();
 const settings = useSettingsStore();
 const wallpaperClasses = computed(() => buildWallpaperClasses(settings.wallpaper));
 
+const TOPIC_SEARCH_DEBOUNCE_MS = 250;
+const TOPIC_SEARCH_MIN_LENGTH = 2;
+
 const searchConnection = ref("");
+const debouncedSearch = useDebouncedRef(searchConnection, TOPIC_SEARCH_DEBOUNCE_MS);
+
+/** Topics found in the connected tabs: `[{ tabId, title, topics }]`. */
+const topicGroups = ref([]);
+let topicSearchCount = 0;
 const deleteDialog = ref(false);
 const connectionToDelete = ref(null);
 
@@ -171,6 +188,27 @@ const emptyListText = computed(() => {
     ? "No other connections."
     : "No connections yet.";
 });
+
+/** Asks main for the matching topics; an answer that is not the latest one is dropped. */
+async function searchTopics(text) {
+  const query = text.trim();
+  const searchId = ++topicSearchCount;
+
+  if (query.length < TOPIC_SEARCH_MIN_LENGTH) {
+    topicGroups.value = [];
+    return;
+  }
+
+  const groups = await window.api.search.topics(query);
+
+  if (searchId === topicSearchCount) topicGroups.value = groups;
+}
+
+watch(debouncedSearch, searchTopics);
+
+function openTopic(tabId, topic) {
+  window.api.search.openTopic(tabId, topic);
+}
 
 function matchesSearch(connection) {
   return connectionMatches(connection, searchConnection.value);
