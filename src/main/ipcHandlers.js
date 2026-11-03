@@ -19,14 +19,12 @@ import { Channel, RendererStoreKeys } from "../shared/ipcChannels";
  *
  * @param {object} deps
  * @param {import("electron-store")} deps.store
- * @param {(page: string) => void} deps.onPageChange
  * @param {() => void} deps.focusWindow
  * @param {(webContents: Electron.WebContents) => void} [deps.onSessionFocus]
  * Called when a notification of a session is clicked.
  */
 export function registerIpcHandlers({
   store,
-  onPageChange,
   focusWindow,
   onSessionFocus = () => {},
 }) {
@@ -103,7 +101,6 @@ export function registerIpcHandlers({
   });
 
   // App
-  ipcMain.on(Channel.APP_SEND_PAGE, (_, page) => onPageChange(page));
   ipcMain.on(Channel.APP_OPEN_FOLDER, (_, folderPath) => {
     // Only the logs folder tree can be opened
     const resolved = path.resolve(String(folderPath));

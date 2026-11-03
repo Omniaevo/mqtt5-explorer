@@ -26,7 +26,7 @@ class TabManager {
 
   /**
    * @param {object} deps
-   * @param {(route: string) => {webContentsId: number, setBounds: Function, setVisible: Function, send: Function, destroy: Function}} deps.createView
+   * @param {(route: string) => {webContentsId: number, setBounds: Function, setVisible: Function, send: Function, focus: Function, reload: Function, destroy: Function}} deps.createView
    * @param {() => {width: number, height: number}} deps.getContentSize
    * @param {(snapshot: {tabs: object[], activeId: string}) => void} deps.onChange
    */
@@ -63,13 +63,40 @@ class TabManager {
     return tab.id;
   }
 
-  /** Shows the view of the tab and hides all the others. */
+  /** Shows the view of the tab, hides all the others and focuses the view. */
   select(id) {
     if (!this.#find(id)) return;
 
     this.#activeId = id;
     this.#syncVisibility();
+    this.#views.get(id).focus();
     this.#emit();
+  }
+
+  /** Selects the next tab, wrapping around. */
+  selectNext() {
+    this.#selectRelative(1);
+  }
+
+  /** Selects the previous tab, wrapping around. */
+  selectPrevious() {
+    this.#selectRelative(-1);
+  }
+
+  /**
+   * Closes the active tab.
+   * @returns {boolean} False when the active tab is Home.
+   */
+  closeActive() {
+    return this.close(this.#activeId);
+  }
+
+  /**
+   * Reloads the view of the active tab. The renderer state is lost.
+   * @param {boolean} [ignoreCache]
+   */
+  reloadActive(ignoreCache = false) {
+    this.#views.get(this.#activeId).reload(ignoreCache);
   }
 
   /**
@@ -90,6 +117,7 @@ class TabManager {
     }
 
     this.#syncVisibility();
+    this.#views.get(this.#activeId).focus();
     this.#emit();
     return true;
   }
@@ -165,6 +193,13 @@ class TabManager {
   /** Fits every view to the content area. Call it on window resize. */
   resize() {
     this.#layout();
+  }
+
+  #selectRelative(step) {
+    const index = this.#tabs.findIndex((tab) => tab.id === this.#activeId);
+    const count = this.#tabs.length;
+
+    this.select(this.#tabs[(index + step + count) % count].id);
   }
 
   #openSettings() {

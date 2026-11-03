@@ -12,6 +12,8 @@ function createFakeView(route) {
     visible: undefined,
     bounds: undefined,
     destroyed: false,
+    focusCount: 0,
+    reloads: [],
     sent: [],
     send(...message) {
       this.sent.push(message);
@@ -21,6 +23,12 @@ function createFakeView(route) {
     },
     setVisible(visible) {
       this.visible = visible;
+    },
+    focus() {
+      this.focusCount++;
+    },
+    reload(ignoreCache) {
+      this.reloads.push(ignoreCache);
     },
     destroy() {
       this.destroyed = true;
@@ -300,5 +308,54 @@ describe("TabManager", () => {
     manager.fail("settings", "x");
 
     expect(ids(manager)).toEqual(["home", "settings"]);
+  });
+
+  it("focuses the view of the selected tab", () => {
+    const { manager, views } = createManager();
+
+    manager.open("settings");
+
+    expect(views[1].focusCount).toBe(1);
+  });
+
+  it("cycles through the tabs and wraps around", () => {
+    const { manager } = createManager();
+    manager.open("settings");
+    manager.open("connection", { connectionId: "a" });
+
+    manager.selectNext();
+    expect(manager.active().id).toBe("home");
+
+    manager.selectPrevious();
+    expect(manager.active().id).toBe("connection-1");
+  });
+
+  it("closes the active tab but not Home", () => {
+    const { manager } = createManager();
+    manager.open("settings");
+
+    expect(manager.closeActive()).toBe(true);
+    expect(manager.active().id).toBe("home");
+    expect(manager.closeActive()).toBe(false);
+  });
+
+  it("focuses the new active view after a close", () => {
+    const { manager, views } = createManager();
+    manager.open("settings");
+    const before = views[0].focusCount;
+
+    manager.closeActive();
+
+    expect(views[0].focusCount).toBe(before + 1);
+  });
+
+  it("reloads the active view only", () => {
+    const { manager, views } = createManager();
+    manager.open("settings");
+
+    manager.reloadActive(true);
+
+    expect(views[1].reloads).toEqual([true]);
+    expect(views[0].reloads).toEqual([]);
   });
 });

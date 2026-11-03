@@ -15,7 +15,6 @@ export const Channel = Object.freeze({
   NOTIFY_SELECT_TOPIC: "notify:selectTopic",
   NOTIFY_SHOW: "notify:show",
   DIALOG_OPEN_FILE: "dialog:openFile",
-  APP_SEND_PAGE: "app:sendPage",
   APP_OPEN_FOLDER: "app:openFolder",
   APP_OPEN_EXTERNAL: "app:openExternal",
   TABS_STATE: "tabs:state",
@@ -66,9 +65,3 @@ export const RendererStoreKeys = Object.freeze([
   "saved_app_settings",
   "close_to_tray",
 ]);
-
-/** Pages the renderer can announce (they select the application menu). */
-export const Page = Object.freeze({
-  HOME: "home",
-  VIEWER: "viewer",
-});

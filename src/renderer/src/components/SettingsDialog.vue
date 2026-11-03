@@ -178,21 +178,6 @@
             />
           </SettingsRow>
         </template>
-
-        <template #item-shortcuts>
-          <ul class="shortcut-list">
-            <li
-              v-for="shortcut in SHORTCUTS"
-              :key="shortcut.label"
-              class="shortcut-list__item"
-            >
-              <span>{{ shortcut.label }}</span>
-              <span class="shortcut-list__keys">
-                {{ modifierKey }} + {{ shortcut.keys }}
-              </span>
-            </li>
-          </ul>
-        </template>
       </AppAccordion>
     </div>
 
@@ -242,7 +227,6 @@
 import { computed, ref } from "vue";
 import { Bug, Moon, RotateCcw, RotateCw, Sun, X } from "@lucide/vue";
 import { clampHistorySize, FONT_SCALES, useSettingsStore } from "../stores/settings";
-import { isMacOs } from "../utils/platform";
 import SettingsRow from "./SettingsRow.vue";
 import AppAccordion from "./ui/AppAccordion.vue";
 import AppButton from "./ui/AppButton.vue";
@@ -263,7 +247,6 @@ const FONT_SIZE_ITEMS = FONT_SCALES.map((value) => ({
 }));
 const PANELS = [
   { value: "mqtt", title: "MQTT client (advanced)" },
-  { value: "shortcuts", title: "Keyboard shortcuts" },
 ];
 const KEEPALIVE_OPTIONS = [60, 120, 180, 240, 300];
 const RECONNECT_PERIOD_OPTIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
@@ -286,17 +269,6 @@ const COLORS = [
   { text: "Metallic Grey", value: { light: "#607D8B", dark: "#78909C" } },
 ];
 
-const SHORTCUTS = [
-  { label: "Edit settings", keys: "COMMA" },
-  { label: "Toggle search", keys: "F" },
-  { label: "Notifications and logging", keys: "Shift + N" },
-  { label: "Reload the page", keys: "R" },
-  { label: "Force reload the page", keys: "Shift + R" },
-  { label: "Quit the app", keys: "Q" },
-  { label: "Show shortcuts dialog", keys: "K" },
-  { label: "About the app", keys: "I" },
-];
-
 const open = defineModel({ type: Boolean, default: false });
 
 const settings = useSettingsStore();
@@ -304,7 +276,6 @@ const resetDialog = ref(false);
 const openPanel = ref("");
 
 const version = import.meta.env.VITE_APP_VERSION;
-const modifierKey = isMacOs ? "Cmd" : "Ctrl";
 
 const themeMode = computed(() => (settings.isDark ? "dark" : "light"));
 
@@ -401,26 +372,6 @@ function openBugsUrl() {
   inline-size: var(--control-height);
   block-size: var(--control-height);
   border-radius: var(--radius-md);
-}
-
-.shortcut-list {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.shortcut-list__item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-5);
-  min-block-size: var(--row-height);
-}
-
-.shortcut-list__keys {
-  color: var(--color-text-muted);
-  font-family: var(--font-mono);
-  font-size: var(--font-size-sm);
 }
 
 .settings-footer {

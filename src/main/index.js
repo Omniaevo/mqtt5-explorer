@@ -14,7 +14,7 @@ import { registerIpcHandlers } from "./ipcHandlers";
 import TabManager from "./TabManager";
 import { registerTabsIpc } from "./tabsIpc";
 import { createTabViewFactory, loadRoute } from "./createTabView";
-import { Channel, MenuEvent, Page } from "../shared/ipcChannels";
+import { Channel, FixedTabId, MenuEvent, TabKind } from "../shared/ipcChannels";
 
 const isDevelopment = process.env.NODE_ENV !== "production";
 const isSingleInstance = app.requestSingleInstanceLock();
@@ -30,11 +30,16 @@ let win;
 let tray;
 let tabs;
 let removeTabsIpc;
+let menuKind;
 
-const showPage = (page) => {
-  if (Object.values(pages).includes(page)) {
-    Menu.setApplicationMenu(Menu.buildFromTemplate(menuTemplate(page)));
-  }
+// The menu depends on the kind of the active tab
+const refreshMenu = () => {
+  const kind = tabs?.active()?.kind ?? TabKind.HOME;
+
+  if (kind === menuKind) return;
+
+  menuKind = kind;
+  Menu.setApplicationMenu(Menu.buildFromTemplate(menuTemplate(kind)));
 };
 const focusWindow = () => {
   if (!win) return;
@@ -47,14 +52,17 @@ const focusWindow = () => {
 // Menu and tray events act on the view the user is looking at
 const sendToActiveView = (channel, ...args) =>
   tabs?.sendToActive(channel, ...args);
+// Import and export live in Home: select it first
+const sendToHome = (channel, ...args) => {
+  tabs?.select(FixedTabId.HOME);
+  tabs?.sendTo(FixedTabId.HOME, channel, ...args);
+};
 const ipc = registerIpcHandlers({
   store,
-  onPageChange: showPage,
   focusWindow,
   onSessionFocus: (webContents) => tabs?.select(tabs.tabIdOf(webContents.id)),
 });
 
-const pages = Page;
 const aboutMenu = [
   {
     label: "Report a bug",
@@ -76,8 +84,11 @@ const aboutMenu = [
             `Edit settings\t\t\t\t\t${meta} + COMMA\n` +
             `Toggle search\t\t\t\t\t${meta} + F\n` +
             `Notifications and logging\t\t${meta} + Shift + N\n` +
-            `Reload the page\t\t\t\t${meta} + R\n` +
-            `Force reload the page\t\t\t${meta} + Shift + R\n` +
+            `Reload the tab\t\t\t\t\t${meta} + R\n` +
+            `Force reload the tab\t\t\t${meta} + Shift + R\n` +
+            `Close the tab\t\t\t\t\t${meta} + W\n` +
+            `Next tab\t\t\t\t\t\tCtrl + Tab\n` +
+            `Previous tab\t\t\t\t\tCtrl + Shift + Tab\n` +
             `Quit the app\t\t\t\t\t${meta} + Q\n` +
             `Show shortcuts\t\t\t\t${meta} + K\n` +
             `About the app\t\t\t\t\t${meta} + I`,
@@ -126,7 +137,7 @@ const aboutMenu = [
   },
 ];
 
-let menuTemplate = (page = pages.HOME) => [
+let menuTemplate = (kind = TabKind.HOME) => [
   ...(isMac
     ? [
         {
@@ -140,9 +151,7 @@ let menuTemplate = (page = pages.HOME) => [
               label: "Settings",
               accelerator: "CommandOrControl+,",
               click: () => {
-                if (win != undefined && win.webContents != undefined) {
-                  sendToActiveView(MenuEvent.SETTINGS);
-                }
+                sendToActiveView(MenuEvent.SETTINGS);
               },
             },
           ],
@@ -154,16 +163,45 @@ let menuTemplate = (page = pages.HOME) => [
     submenu: [
       {
         label: "Reload",
-        role: "reload",
+        accelerator: "CommandOrControl+R",
+        click: () => tabs?.reloadActive(),
       },
       {
         label: "Force reload",
-        role: "forceReload",
+        accelerator: "CommandOrControl+Shift+R",
+        click: () => tabs?.reloadActive(true),
       },
       {
         type: "separator",
       },
-      ...(isMac ? [{ label: "Close window", role: "close" }] : []),
+      {
+        label: "Close tab",
+        accelerator: "CommandOrControl+W",
+        click: () => tabs?.closeActive(),
+      },
+      {
+        label: "Next tab",
+        accelerator: "Ctrl+Tab",
+        click: () => tabs?.selectNext(),
+      },
+      {
+        label: "Previous tab",
+        accelerator: "Ctrl+Shift+Tab",
+        click: () => tabs?.selectPrevious(),
+      },
+      {
+        type: "separator",
+      },
+      // Cmd + W belongs to "Close tab"
+      ...(isMac
+        ? [
+            {
+              label: "Close window",
+              accelerator: "Cmd+Shift+W",
+              role: "close",
+            },
+          ]
+        : []),
       {
         label: `Quit ${appName}`,
         role: "quit",
@@ -194,33 +232,25 @@ let menuTemplate = (page = pages.HOME) => [
               label: "Settings",
               accelerator: "CommandOrControl+,",
               click: () => {
-                if (win != undefined && win.webContents != undefined) {
-                  sendToActiveView(MenuEvent.SETTINGS);
-                }
+                sendToActiveView(MenuEvent.SETTINGS);
               },
             },
           ]
         : []),
     ],
   },
-  ...(page === pages.HOME
+  ...(kind === TabKind.HOME
     ? [
         {
           label: "Connections",
           submenu: [
             {
               label: "Export all",
-              click: () => {
-                if (win != undefined && win.webContents != undefined) {
-                  sendToActiveView(MenuEvent.EXPORT_DATA);
-                }
-              },
+              click: () => sendToHome(MenuEvent.EXPORT_DATA),
             },
             {
               label: "Import from file",
               click: () => {
-                if (win == undefined || win.webContents == undefined) return;
-
                 dialog
                   .showOpenDialog({
                     properties: ["openFile"],
@@ -237,13 +267,10 @@ let menuTemplate = (page = pages.HOME) => [
                       "utf8"
                     );
 
-                    sendToActiveView(MenuEvent.IMPORT_DATA, fileContent);
+                    sendToHome(MenuEvent.IMPORT_DATA, fileContent);
                   })
                   .catch((err) => {
-                    sendToActiveView(
-                      MenuEvent.IMPORT_DATA,
-                      `Error: ${err}`
-                    );
+                    sendToHome(MenuEvent.IMPORT_DATA, `Error: ${err}`);
                   });
               },
             },
@@ -254,25 +281,17 @@ let menuTemplate = (page = pages.HOME) => [
   {
     label: "Tools",
     submenu: [
-      ...(page === pages.VIEWER
+      ...(kind === TabKind.CONNECTION
         ? [
             {
               label: "Toggle search",
               accelerator: "CommandOrControl+F",
-              click: () => {
-                if (win != undefined && win.webContents != undefined) {
-                  sendToActiveView(MenuEvent.SEARCH);
-                }
-              },
+              click: () => sendToActiveView(MenuEvent.SEARCH),
             },
             {
               label: "Toggle logging",
               accelerator: "CommandOrControl+Shift+N",
-              click: () => {
-                if (win != undefined && win.webContents != undefined) {
-                  sendToActiveView(MenuEvent.NOTIFICATION);
-                }
-              },
+              click: () => sendToActiveView(MenuEvent.NOTIFICATION),
             },
           ]
         : []),
@@ -348,7 +367,10 @@ async function createWindow() {
       const [width, height] = win.getContentSize();
       return { width, height };
     },
-    onChange: (snapshot) => win.webContents.send(Channel.TABS_STATE, snapshot),
+    onChange: (snapshot) => {
+      win.webContents.send(Channel.TABS_STATE, snapshot);
+      refreshMenu();
+    },
   });
   removeTabsIpc = registerTabsIpc({
     tabs,
@@ -391,7 +413,7 @@ async function createWindow() {
     }
   });
 
-  Menu.setApplicationMenu(Menu.buildFromTemplate(menuTemplate()));
+  refreshMenu();
 
   await loadRoute(win.webContents, "/shell");
 

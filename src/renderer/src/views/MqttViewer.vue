@@ -413,7 +413,6 @@ let unsubscribeMenuEvents = [];
 onBeforeMount(() => {
   connection.init(connectionProperties, onBatch);
 
-  window.api.app.sendPage("viewer");
   unsubscribeMenuEvents = [
     window.api.app.on("searchPressed", toggleSearchField),
     window.api.app.on("notificationPressed", toggleNotificationsDialog),

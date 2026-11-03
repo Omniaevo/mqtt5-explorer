@@ -142,8 +142,6 @@ const api = {
   app: {
     /** Operating system name, as given by `process.platform`. */
     platform: process.platform,
-    /** @param {"home" | "viewer"} name */
-    sendPage: (name) => ipcRenderer.send(Channel.APP_SEND_PAGE, name),
     /** @param {string} path Folder inside the logs folder. */
     openFolder: (path) => ipcRenderer.send(Channel.APP_OPEN_FOLDER, path),
     /** @param {string} url An http(s) URL. */

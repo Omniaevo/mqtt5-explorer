@@ -239,7 +239,6 @@ onBeforeMount(() => {
   if (connections.brokerConnections.length === 0) addTmpConnection();
   else tabId.value = connections.selectedConnectionId;
 
-  window.api.app.sendPage("home");
   unsubscribeMenuEvents = [
     window.api.app.on("settingsPressed", toggleSettings),
     window.api.app.on("exportDataPressed", exportConnectionData),

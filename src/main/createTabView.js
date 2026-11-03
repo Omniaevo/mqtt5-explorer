@@ -20,6 +20,11 @@ export function createTabViewFactory(win, webPreferences) {
       setBounds: (bounds) => view.setBounds(bounds),
       setVisible: (visible) => view.setVisible(visible),
       send: (channel, ...args) => view.webContents.send(channel, ...args),
+      focus: () => view.webContents.focus(),
+      reload: (ignoreCache) =>
+        ignoreCache
+          ? view.webContents.reloadIgnoringCache()
+          : view.webContents.reload(),
       destroy: () => {
         win.contentView.removeChildView(view);
         view.webContents.close();
