@@ -1,3 +1,5 @@
+import { ConnectionFields } from "../../../shared/connectionFields";
+
 /** Settings of one saved connection, with the form validation rules. */
 class ConnectionProperties {
   id = crypto.randomUUID();
@@ -18,6 +20,8 @@ class ConnectionProperties {
   caCertPath = undefined;
   clientCertPath = undefined;
   clientKeyPath = undefined;
+  lastConnectedAt = undefined;
+  lastError = undefined;
   saved = false;
 
   static rules = {
@@ -44,23 +48,9 @@ class ConnectionProperties {
   init(properties = undefined) {
     if (properties === undefined) return;
 
-    this.id = properties.id;
-    this.name = properties.name;
-    this.protocol = properties.protocol;
-    this.version = properties.version;
-    this.port = properties.port;
-    this.validateCertificate = properties.validateCertificate;
-    this.topics = properties.topics;
-    this.host = properties.host;
-    this.username = properties.username;
-    this.password = properties.password;
-    this.caCert = properties.caCert;
-    this.clientId = properties.clientId;
-    this.clientCert = properties.clientCert;
-    this.clientKey = properties.clientKey;
-    this.caCertPath = properties.caCertPath;
-    this.clientCertPath = properties.clientCertPath;
-    this.clientKeyPath = properties.clientKeyPath;
+    ConnectionFields.all.forEach((field) => {
+      this[field] = properties[field];
+    });
 
     this.tls = this.protocol.replace("mqtt", "").replace("ws", "") === "s";
   }

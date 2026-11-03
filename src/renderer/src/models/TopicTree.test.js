@@ -412,4 +412,33 @@ describe("TopicTree", () => {
       expect(payloads(tree, "a")).toEqual(["1"]);
     });
   });
+
+  describe("search", () => {
+    const filled = () => {
+      const tree = new TopicTree();
+
+      ["a/temp", "a/hum", "b/temp", "b/x/temp"].forEach((topic) =>
+        tree.apply(message(topic))
+      );
+
+      return tree;
+    };
+    const hasTemp = SearchEngine.matcher("temp");
+
+    it("finds the topics with a value, depth first", () => {
+      expect(filled().search(hasTemp, 10)).toEqual(["a/temp", "b/temp", "b/x/temp"]);
+    });
+
+    it("stops at the limit", () => {
+      expect(filled().search(hasTemp, 2)).toEqual(["a/temp", "b/temp"]);
+    });
+
+    it("skips branches without a value", () => {
+      const tree = new TopicTree();
+
+      tree.apply(message("temp/inner"));
+
+      expect(tree.search(hasTemp, 10)).toEqual(["temp/inner"]);
+    });
+  });
 });

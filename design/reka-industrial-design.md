@@ -14,7 +14,7 @@ Source of truth in this repo:
 
 ## 1. Identity in one paragraph
 
-A data tool, not a showcase. Compact density (28px controls, 24px rows, 13px body). Sharp corners (2–4px). Depth comes from 1px hairline borders and three neutral layers, not from shadows. Neutrals are tinted 5% with the primary color, so a user-picked primary changes the mood of the whole app. Accent use is restrained: the primary color marks only selection, focus, the active tab, "on" states and the one main action. Monospace for every machine value (topics, IDs, URLs, payloads, timestamps). Motion is short (100/180ms) and functional. No gradients, no colored header bands, no large radii, no decorative illustrations.
+A data tool, not a showcase. Compact density (28px controls, 24px rows, 13px body). Sharp corners (2–4px). Depth comes from 1px hairline borders and three neutral layers, not from shadows. Neutrals are tinted 5% with the primary color, so a user-picked primary changes the mood of the whole app. Accent use is restrained: the primary color marks only selection, focus, the active tab, "on" states and the one main action. Monospace for every machine value (topics, IDs, URLs, payloads, timestamps). Motion is short (100/180ms) and functional. No gradients, no colored header bands, no large radii, no decorative illustrations. The only exception is the Home wallpaper (see "Wallpaper" in section 6).
 
 Visual references: GitHub / Grafana (clear data, hairlines) + Linear / Raycast (soft calm dark).
 
@@ -30,7 +30,7 @@ Visual references: GitHub / Grafana (clear data, hairlines) + Linear / Raycast (
 | Lists > ~200 rows | `@tanstack/vue-virtual` | Rendering all rows |
 | Charts | `uplot`, colors read from CSS vars at runtime | Hard-coded chart colors |
 
-Before writing a new component, reuse an existing `App*` wrapper (`AppButton`, `AppTextField`, `AppTextarea`, `AppSelect`, `AppSwitch`, `AppToggleGroup`, `AppTabs`, `AppAccordion`, `AppDialog`, `AppTooltip`, `AppHeader`). Build a new `App*` wrapper only when Reka has the primitive and no wrapper exists.
+Before writing a new component, reuse an existing `App*` wrapper (`AppButton`, `AppTextField`, `AppTextarea`, `AppSelect`, `AppSwitch`, `AppToggleGroup`, `AppTabs`, `AppAccordion`, `AppDialog`, `AppTooltip`, `AppHeader`, `AppMenu`). Build a new `App*` wrapper only when Reka has the primitive and no wrapper exists.
 
 ## 3. Tokens (copy as-is)
 
@@ -246,11 +246,61 @@ Height 18px, padding-inline `--space-3`, `xs`, 1px border, `--radius-sm`, muted.
 
 ### Header bar — `AppHeader`
 
-`min-block-size: --header-height`, padding-inline `--space-4`, gap `--space-4`, surface bg, bottom hairline. Slots `start | default (grows) | end`. Title `lg` bold; a mono `xs` muted line (URL) may sit under it. Icon actions at the end; status icons colored primary/danger. No colored band, no drag region.
+`min-block-size: --header-height`, padding-inline `--space-4`, gap `--space-4`, surface bg, bottom hairline. Slots `start | default (grows) | end`. Title `lg` bold; a mono `xs` muted line (URL) may sit under it. Icon actions at the end; status icons colored primary/danger. No colored band, no drag region. Only the tab strip has a drag region (see "Tab strip").
+
+### Actions menu — `AppMenu`
+
+Icon button (`Ellipsis`, `icon` `sm`, `aria-label` + title) that opens a Reka `DropdownMenu`. Props: `label`, `items` = `{ id, label, icon?, danger?, separatorBefore? }`. Emits `select` with the item id. `v-model:open` lets the parent open it (for example on right click).
+
+- Content: raised bg, `--shadow-2`, `--radius-lg`, padding `--space-2`, min width `16ch`, z 2100, aligned to the end of the button, offset 4px.
+- Item: `--row-height`, padding-inline `--space-4`, `--radius-md`, `md` text, optional 14px muted icon, gap `--space-4`. Highlighted = `--color-hover`.
+- `danger` item = danger text and icon. `separatorBefore` = 1px `--color-border` line.
+- Teleported, so the CSS is **unscoped** and needs `position: relative` for the z-index.
+- Used for tile and row actions on Home (edit, duplicate, pin, export, delete). The shell menu and the tab context menu are native popups, not `AppMenu` (overlays cannot cross the view boundary).
+
+### Tab strip
+
+The shell is the window's top bar: a separate page that only draws the tabs. Each tab is a native view below it.
+
+- Bar: `--header-height`, padding-inline `--space-4`, gap `--space-2`, surface bg, 1px bottom hairline. Windows and Linux: `[menu button][tabs…][drag space][window controls]`. macOS: the traffic lights replace the menu button and there are no window controls.
+- **Drag region (the only one in the app).** The bar is `-webkit-app-region: drag`. The tab list, the menu button and the window controls are `no-drag`. The empty space between the tabs and the controls is what drags the window.
+- Order: Home (icon only, fixed, cannot close), Settings (when open), pinned tabs, then normal tabs.
+- Tab: `--control-height` tall, `--radius-lg`, `sm` text, weight 500, muted at rest. Width `flex: 0 1 24ch`, min `12ch`. When tabs do not fit, they shrink to the minimum and the list scrolls sideways (no scrollbar, the wheel scrolls it).
+- States: hover = `--color-hover`. Active = tonal primary (14% tint over surface, 22% on hover) with primary text. Dragging = 0.5 opacity. Drop target = 2px primary inset line at the inline start.
+- **Status dot** (connection tabs): 8px square, `--radius-sm`, 1px border. Connected = success fill. Pending = warning fill with the 1s pulse. Error = danger fill. Sleeping (pinned, not started) and disconnected = hollow, muted. While file logging is on, a danger `CircleDot` (pulsing) replaces the dot.
+- **Activity dot**: a count of messages that arrived in a background tab. Primary fill, on-primary mono `xs` text, `--radius-sm`. Shows `99+` above 99. It clears when the tab is selected.
+- Pinned tab: same width as the others, with a 14px muted `Pin` icon after the name.
+- Close button: `icon` `sm` with `X` 14px. It always takes its space, but is visible only on hover, focus-within and the active tab. Middle click also closes. The keyboard closes with the menu shortcut.
+- Keyboard: arrows, Home and End move the focus (roving tabindex); Enter or Space selects.
+- Tooltips and menus are native overlays drawn by main, so they can cover the tab views.
+
+### Start page (Home)
+
+The first tab. A single centered column, `min(100%, 100ch)`, padding-inline `--space-6`, block gap `--space-7`, top margin `--space-8`. The page scrolls inside; the shell never scrolls.
+
+1. Brand: `lg` medium muted title with a 24px logo, centered.
+2. Search: `AppTextField` (hidden label), `min(100%, 60ch)`, centered. It filters, and a typed broker URL shows a quick-connect row below it.
+3. Section "Recent connections": muted `sm` medium caption, then a tile grid.
+4. Topic results from the connected tabs (only when the search text matches).
+5. Section "All connections": a divider row (muted `sm` medium title, 1px line that fills the row, tonal primary "New connection" button), then the list.
+
+- **Tile**: raised bg, 1px border, `--radius-lg`, padding `--space-5`. Hover adds a `--color-hover` overlay. Head = state dot (only if a tab is open) + bold name (ellipsis) + error icon; below it the mono `xs` muted URL. An `AppMenu` sits at the top end corner. The whole tile connects; right click opens the menu.
+- Grid: 4 columns, gap `--space-5`; 2 columns below 600px. The number of rows is a setting (1 to 4, default 2). The column count must match `RECENT_TILES_PER_ROW`.
+- **List panel**: `--color-surface`, 1px border, `--radius-lg`, padding `--space-5`; rows like the list rows in section 7.
+- Empty state: one muted `sm` sentence inside a panel.
+
+### Wallpaper
+
+An exception to "no decorative illustrations". Only the Home page can have one. It is chosen in Settings (default: none).
+
+- Markup: `class="wallpaper wallpaper--<id>"` on a positioned container. The pattern is on `::before`, behind the content (`z-index: -1`, `pointer-events: none`). Only the inner area scrolls, so the pattern stays fixed.
+- Patterns (9): grid, dots, diagonal, blueprint, waves, topographic, circuit, honeycomb, crosses. They are CSS gradients or SVG shapes used as `mask-image`, so the ink is a token (a data URI cannot read CSS variables).
+- Ink: only `color-mix(in oklab, var(--color-primary) 6–12%, transparent)`. It follows the theme and the user primary. No raw colors, no animation.
+- Content stays on raised or surface backgrounds (tiles, list panel), so contrast does not depend on the pattern.
 
 ### Settings row
 
-Title (`md`) + muted description (`sm`) on the left, control on the right; stacked below 600px. Settings dialog groups rows under section titles.
+Title (`md`) + muted description (`sm`) on the left, control on the right; stacked below 600px. The Settings page (a tab, not a dialog) groups rows under section titles.
 
 ## 7. Data display patterns
 
@@ -268,8 +318,9 @@ Title (`md`) + muted description (`sm`) on the left, control on the right; stack
 - Master/detail: CSS grid `2fr 3fr`, gap `--space-5`, margin `--space-4`, `grid-template-rows: minmax(0, 1fr)`. Master = bordered surface panel (padding `--space-4`). Detail = flat on `--color-bg` with its own toolbar row (`--header-height`) + tabs.
 - `@media (orientation: portrait)`: stack master over detail (`2fr / 3fr` rows). Below 600px: dialogs fullscreen, settings rows stack.
 - Forms: column gap `--space-6`, rows of fields with gap `--space-7`; narrow fields capped in `ch`; sticky action bar at bottom with top hairline, primary action pushed to inline end. Dividers = 1px `--color-border`, block margin `--space-6`.
+- Window shell: a tab strip at the top (`--header-height`), one native view per tab below it (Home, Settings, one per connection), and a status bar at the bottom. Each tab page is a full-height column and scrolls on its own. Dialogs and toasts stay inside the page that opens them.
 - Always add `min-inline-size: 0` / `min-block-size: 0` to flex/grid children that hold long text or scroll areas.
-- z-index scale: dialog 2000/2001, select menu 2100, tooltip/toast 3000. Teleported content (select, tooltip, toast) needs **unscoped** CSS and `position: relative` so Reka copies the z-index.
+- z-index scale: dialog 2000/2001, select menu and actions menu 2100, tooltip/toast 3000. Teleported content (select, tooltip, toast) needs **unscoped** CSS and `position: relative` so Reka copies the z-index.
 
 ## 9. Motion
 
@@ -346,3 +397,4 @@ const innerAttrs = computed(() =>
 8. Reduced motion respected.
 9. Existing `App*` component reused where one fits.
 10. Compare against `design/sample.html` for spacing and density.
+11. No `-webkit-app-region: drag` outside the tab strip. Wallpapers only on Home, tinted from tokens.

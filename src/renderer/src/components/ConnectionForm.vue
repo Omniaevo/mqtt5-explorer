@@ -158,17 +158,26 @@
     </div>
 
     <footer class="conn-form__actions">
-      <AppButton color="danger" variant="text" @click="emit('delete')">Delete</AppButton>
-      <AppButton variant="text" :disabled="!isValid" @click="emitConnectionData('updated')">
+      <AppButton class="conn-form__cancel" variant="text" @click="emit('cancel')">
+        Cancel
+      </AppButton>
+      <AppButton
+        v-if="mode === 'new'"
+        variant="text"
+        :disabled="!isValid"
+        @click="emitConnectionData('connect-temp')"
+      >
+        Connect
+      </AppButton>
+      <AppButton variant="text" :disabled="!isValid" @click="emitConnectionData('save')">
         Save
       </AppButton>
       <AppButton
-        class="conn-form__connect"
         color="primary"
         :disabled="!isValid"
         @click="emitConnectionData('connect')"
       >
-        Connect
+        Save and connect
       </AppButton>
     </footer>
   </section>
@@ -205,11 +214,17 @@ const CLIENT_FILES = [
   { field: "clientKey", label: "Client key file" },
 ];
 
+/**
+ * Connection fields and actions. Emits a detached copy with:
+ * `save`, `connect` (save and connect), `connect-temp` (new mode only, nothing saved).
+ * `cancel` carries no data.
+ */
 const props = defineProps({
   properties: { type: Object, required: true },
+  mode: { type: String, default: "edit", validator: (value) => ["new", "edit"].includes(value) },
 });
 
-const emit = defineEmits(["connect", "delete", "updated"]);
+const emit = defineEmits(["save", "connect", "connect-temp", "cancel"]);
 
 const settings = useSettingsStore();
 const showPassword = ref(false);
@@ -266,19 +281,15 @@ function deselectFile(destination) {
 
 <style scoped>
 .conn-form {
-  display: grid;
-  grid-template-columns: 1fr;
-  grid-template-rows: 1fr min-content;
-  block-size: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
 }
 
 .conn-form__scroll {
   display: flex;
   flex-direction: column;
   gap: var(--space-6);
-  padding: var(--space-6);
-  overflow: auto;
-  min-block-size: 0;
 }
 
 .conn-form__row {
@@ -419,11 +430,12 @@ function deselectFile(destination) {
   display: flex;
   align-items: center;
   gap: var(--space-4);
-  padding: var(--space-4) var(--space-6);
+  justify-content: flex-end;
+  padding-block-start: var(--space-5);
   border-block-start: 1px solid var(--color-border);
 }
 
-.conn-form__connect {
-  margin-inline-start: auto;
+.conn-form__cancel {
+  margin-inline-end: auto;
 }
 </style>
