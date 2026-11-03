@@ -148,6 +148,9 @@ const api = {
     /** @param {number} height Strip height in pixels. */
     setStripHeight: (height) =>
       ipcRenderer.send(Channel.SHELL_SET_HEIGHT, height),
+    /** @param {number} height Status bar height in pixels. */
+    setStatusBarHeight: (height) =>
+      ipcRenderer.send(Channel.SHELL_SET_STATUS_HEIGHT, height),
   },
 
   // Shell only: the window has no native frame

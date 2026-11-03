@@ -33,6 +33,7 @@ export const Channel = Object.freeze({
   TOOLTIP_CONTENT: "tooltip:content",
   TOOLTIP_SIZE: "tooltip:size",
   SHELL_SET_HEIGHT: "shell:setHeight",
+  SHELL_SET_STATUS_HEIGHT: "shell:setStatusHeight",
   SHELL_OPEN_MENU: "shell:openMenu",
   WINDOW_MINIMIZE: "window:minimize",
   WINDOW_TOGGLE_MAXIMIZE: "window:toggleMaximize",

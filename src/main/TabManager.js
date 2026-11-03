@@ -23,34 +23,31 @@ const connectionUrl = ({ protocol, host, port }) =>
 class TabManager {
   #createView;
   #getContentSize;
-  #getCornerRadius;
   #onChange;
   #tabs = [];
   #views = new Map();
   #activeId = HOME_ID;
   #stripHeight = 0;
+  #statusBarHeight = 0;
   #nextConnectionTabId = 1;
   #onPinnedChange;
   #savedConnections = new Map();
 
   /**
    * @param {object} deps
-   * @param {(route: string) => {webContentsId: number, setBounds: Function, setBorderRadius: Function, setVisible: Function, send: Function, focus: Function, reload: Function, destroy: Function}} deps.createView
+   * @param {(route: string) => {webContentsId: number, setBounds: Function, setVisible: Function, send: Function, focus: Function, reload: Function, destroy: Function}} deps.createView
    * @param {() => {width: number, height: number}} deps.getContentSize
-   * @param {() => number} deps.getCornerRadius Radius of the view corners in pixels.
    * @param {(snapshot: {tabs: object[], activeId: string}) => void} deps.onChange
    * @param {(connectionIds: string[]) => void} [deps.onPinnedChange] Called with the ordered ids of the pinned tabs.
    */
   constructor({
     createView,
     getContentSize,
-    getCornerRadius,
     onChange,
     onPinnedChange = () => {},
   }) {
     this.#createView = createView;
     this.#getContentSize = getContentSize;
-    this.#getCornerRadius = getCornerRadius;
     this.#onChange = onChange;
     this.#onPinnedChange = onPinnedChange;
 
@@ -326,6 +323,14 @@ class TabManager {
     this.#layout();
   }
 
+  /** Called when the shell reports its status bar height in pixels. */
+  setStatusBarHeight(height) {
+    if (height === this.#statusBarHeight) return;
+
+    this.#statusBarHeight = height;
+    this.#layout();
+  }
+
   /** Fits every view to the content area. Call it on window resize. */
   resize() {
     this.#layout();
@@ -471,15 +476,10 @@ class TabManager {
       x: 0,
       y: this.#stripHeight,
       width,
-      height: Math.max(height - this.#stripHeight, 0),
+      height: Math.max(height - this.#stripHeight - this.#statusBarHeight, 0),
     };
 
-    const radius = this.#getCornerRadius();
-
-    this.#views.forEach((view) => {
-      view.setBounds(bounds);
-      view.setBorderRadius(radius);
-    });
+    this.#views.forEach((view) => view.setBounds(bounds));
     this.#syncVisibility();
   }
 

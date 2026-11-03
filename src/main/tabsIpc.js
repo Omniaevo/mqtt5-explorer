@@ -21,6 +21,7 @@ const LISTENER_CHANNELS = [
   Channel.TABS_CONTEXT_MENU,
   Channel.TABS_SET_LOGGING,
   Channel.SHELL_SET_HEIGHT,
+  Channel.SHELL_SET_STATUS_HEIGHT,
 ];
 const HANDLER_CHANNELS = [Channel.TABS_GET_STATE, Channel.TABS_GET_CONNECTION];
 
@@ -94,8 +95,8 @@ export function parseStateReport(state, message) {
   };
 }
 
-/** Returns the strip height clamped to a sane range, or undefined when invalid. */
-export function parseStripHeight(height) {
+/** Returns the height of a shell bar clamped to a sane range, or undefined when invalid. */
+export function parseBarHeight(height) {
   if (typeof height !== "number" || !Number.isFinite(height)) return undefined;
 
   return Math.min(Math.max(Math.round(height), 0), MAX_STRIP_HEIGHT);
@@ -147,9 +148,14 @@ function registerShellHandlers({ tabs, fromShell, onContextMenu }) {
     if (typeof id === "string") onContextMenu(id);
   });
   onShell(Channel.SHELL_SET_HEIGHT, (height) => {
-    const parsed = parseStripHeight(height);
+    const parsed = parseBarHeight(height);
 
     if (parsed !== undefined) tabs.setStripHeight(parsed);
+  });
+  onShell(Channel.SHELL_SET_STATUS_HEIGHT, (height) => {
+    const parsed = parseBarHeight(height);
+
+    if (parsed !== undefined) tabs.setStatusBarHeight(parsed);
   });
   ipcMain.handle(Channel.TABS_GET_STATE, (event) =>
     fromShell(event) ? tabs.snapshot() : undefined

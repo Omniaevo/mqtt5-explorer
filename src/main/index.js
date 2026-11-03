@@ -27,8 +27,6 @@ const isMac = process.platform === "darwin";
 const isWindows = process.platform === "win32";
 const appName = "MQTT5 Explorer";
 const COPYRIGHT_YEAR = 2021;
-// Matches the rounded top corners of the window the desktop draws
-const WINDOW_CORNER_RADIUS = 12;
 const LICENSE_URL_BASE = "https://github.com/Omniaevo/mqtt5-explorer/blob";
 
 const store = new Store();
@@ -409,9 +407,6 @@ async function createWindow() {
   tabs = new TabManager({
     createView,
     getContentSize,
-    // A maximized or full screen window has square corners
-    getCornerRadius: () =>
-      win.isMaximized() || win.isFullScreen() ? 0 : WINDOW_CORNER_RADIUS,
     onChange: (snapshot) => {
       win.webContents.send(Channel.TABS_STATE, snapshot);
       refreshMenu();

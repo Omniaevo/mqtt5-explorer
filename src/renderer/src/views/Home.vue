@@ -62,18 +62,6 @@
       </template>
     </AppTabs>
 
-    <footer class="foot-bar">
-      <div class="client-id">
-        <span>Client ID:</span>
-        <span class="client-id__value">{{ settings.clientId }}</span>
-      </div>
-
-      <div class="app-version">
-        <img class="app-version__logo" :src="logo" alt="" />
-        v{{ version }}
-      </div>
-    </footer>
-
     <!-- Connection deletion confirmation -->
     <AppDialog
       v-model:open="deleteDialog"
@@ -108,15 +96,11 @@ import AppTooltip from "../components/ui/AppTooltip.vue";
 import ConnectionProperties from "../models/ConnectionProperties";
 import { useConnectionsStore } from "../stores/connections";
 import { useNotifyStore } from "../stores/notify";
-import { useSettingsStore } from "../stores/settings";
 import toPlain from "../utils/toPlain";
-import logo from "../assets/logo.svg";
 
-const settings = useSettingsStore();
 const connections = useConnectionsStore();
 const notify = useNotifyStore();
 
-const version = import.meta.env.VITE_APP_VERSION;
 
 const tabId = ref(0);
 const searchConnection = ref("");
@@ -289,38 +273,5 @@ onBeforeUnmount(() => {
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   background: var(--color-surface);
-}
-
-.foot-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: var(--space-4);
-  color: var(--color-text-muted);
-}
-
-.client-id {
-  display: flex;
-  gap: var(--space-4);
-  align-items: center;
-  font-size: var(--font-size-sm);
-}
-
-.client-id__value {
-  font-family: var(--font-mono);
-  color: var(--color-primary);
-  font-weight: var(--font-weight-bold);
-}
-
-.app-version {
-  display: flex;
-  gap: var(--space-2);
-  align-items: center;
-  font-size: var(--font-size-sm);
-}
-
-.app-version__logo {
-  inline-size: 1.4em;
-  block-size: 1.4em;
 }
 </style>
