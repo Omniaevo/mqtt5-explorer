@@ -28,6 +28,7 @@
       @select="select"
       @close="close"
       @context-menu="openTabMenu"
+      @reorder="reorder"
     />
 
     <WindowControls class="shell__controls" />
@@ -67,6 +68,7 @@ const { tabs: tabsApi, window: windowApi } = window.api;
 const select = (id) => tabsApi.select(id);
 const close = (id) => tabsApi.close(id);
 const openTabMenu = (id) => tabsApi.openContextMenu(id);
+const reorder = (id, targetId) => tabsApi.reorder(id, targetId);
 
 const menuTip = useNativeTooltip();
 const showMenuTip = () => menuTip.show(menuButton.value.$el, { title: "Menu" });

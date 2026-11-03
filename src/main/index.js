@@ -63,15 +63,34 @@ const popupTabMenu = (tabId) => {
   const template = tabMenuTemplate({
     tab: tabs.list().find((tab) => tab.id === tabId),
     canPin: tabs.canPin(tabId),
+    canCloseOthers: tabs.hasClosableOthers(tabId),
     actions: {
       pin: () => tabs.pin(tabId),
       unpin: () => tabs.unpin(tabId),
+      reconnect: () => tabs.sendTo(tabId, Channel.TABS_RECONNECT),
       disconnect: () => tabs.sendTo(tabId, Channel.TABS_DISCONNECT),
+      close: () => tabs.requestClose([tabId]),
+      closeOthers: () => tabs.closeOthers(tabId),
     },
   });
 
   if (template.length > 0) Menu.buildFromTemplate(template).popup({ window: win });
 };
+// Logging stops with the tab (or the app): the user must agree first
+const confirmLoggingStop = async (action, titles) => {
+  const { response } = await dialog.showMessageBox(win, {
+    type: "warning",
+    message: `Logging is active. ${action} and stop logging?`,
+    detail: titles.join("\n"),
+    buttons: [action, "Cancel"],
+    defaultId: 1,
+    cancelId: 1,
+  });
+
+  return response === 0;
+};
+const confirmLoggingClose = (titles) =>
+  confirmLoggingStop(titles.length > 1 ? "Close tabs" : "Close tab", titles);
 const focusWindow = () => {
   if (!win) return;
   if (!win.isVisible()) win.show();
@@ -417,6 +436,7 @@ async function createWindow() {
       refreshMenu();
     },
     onPinnedChange: (connectionIds) => store.set(PINNED_TABS_KEY, connectionIds),
+    confirmLoggingClose,
   });
   stopFollowingConnections = restorePinnedTabs({ store, tabs });
   removeTabsIpc = registerTabsIpc({
@@ -529,6 +549,12 @@ app.on("ready", async () => {
 
 app.on("before-quit", async (event) => {
   event.preventDefault();
+
+  const loggingTitles = tabs?.loggingTitles() ?? [];
+
+  if (loggingTitles.length > 0 && !(await confirmLoggingStop("Quit", loggingTitles))) {
+    return;
+  }
 
   try {
     // Flush log files before the process exits

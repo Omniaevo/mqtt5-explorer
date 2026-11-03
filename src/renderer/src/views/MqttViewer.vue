@@ -340,7 +340,9 @@ const {
   version: treeVersion,
   request: requestTreeRefresh,
   wasUpdatedInLastBatch: isBlinking,
-} = useTreeRefresh();
+} = useTreeRefresh((messageCount) =>
+  window.api.tabs.addActivity(messageCount)
+);
 
 const publishPanel = ref(null);
 const treeView = ref(null);
@@ -428,7 +430,7 @@ function onBatch(packets) {
 
   packets.forEach((packet) => tree.apply(packet, batchTimestamp));
 
-  requestTreeRefresh(batchTimestamp);
+  requestTreeRefresh(batchTimestamp, packets.length);
 }
 
 function toggleSearchField() {
@@ -490,6 +492,7 @@ onBeforeMount(() => {
     window.api.app.on("notificationPressed", toggleNotificationsDialog),
     window.api.notify.onSelectTopic(selectTopic),
     window.api.tabs.onDisconnect(() => disconnect()),
+    window.api.tabs.onReconnect(() => isClosed.value && reconnectAndReset()),
   ];
 });
 

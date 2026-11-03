@@ -19,7 +19,9 @@ const LISTENER_CHANNELS = [
   Channel.TABS_OPEN_CONNECTION,
   Channel.TABS_SET_STATE,
   Channel.TABS_CONTEXT_MENU,
+  Channel.TABS_REORDER,
   Channel.TABS_SET_LOGGING,
+  Channel.TABS_SET_ACTIVITY,
   Channel.TABS_PIN_CONNECTION,
   Channel.SHELL_SET_HEIGHT,
   Channel.SHELL_SET_STATUS_HEIGHT,
@@ -155,6 +157,11 @@ function registerShellHandlers({ tabs, fromShell, onContextMenu }) {
   onShell(Channel.TABS_CONTEXT_MENU, (id) => {
     if (typeof id === "string") onContextMenu(id);
   });
+  onShell(Channel.TABS_REORDER, (id, targetId) => {
+    if (typeof id === "string" && typeof targetId === "string") {
+      tabs.move(id, targetId);
+    }
+  });
   onShell(Channel.SHELL_SET_HEIGHT, (height) => {
     const parsed = parseBarHeight(height);
 
@@ -176,7 +183,7 @@ function registerViewHandlers({ tabs, fromShell, tabOf }) {
     // The shell closes any tab; a view closes its own tab
     const target = fromShell(event) ? id : tabOf(event);
 
-    if (typeof target === "string") tabs.close(target);
+    if (typeof target === "string") tabs.requestClose([target]);
   });
   ipcMain.on(Channel.TABS_OPEN_CONNECTION, (event, connection) => {
     const parsed = parseConnection(connection);
@@ -195,6 +202,11 @@ function registerViewHandlers({ tabs, fromShell, tabOf }) {
   });
   ipcMain.on(Channel.TABS_SET_LOGGING, (event, enabled) => {
     if (typeof enabled === "boolean") tabs.setLogging(tabOf(event), enabled);
+  });
+  ipcMain.on(Channel.TABS_SET_ACTIVITY, (event, messageCount) => {
+    if (Number.isSafeInteger(messageCount)) {
+      tabs.addActivity(tabOf(event), messageCount);
+    }
   });
   ipcMain.handle(Channel.TABS_GET_CONNECTION, (event) =>
     tabs.getConnection(tabOf(event))

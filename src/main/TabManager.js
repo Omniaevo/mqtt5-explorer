@@ -29,6 +29,7 @@ class TabManager {
   #statusBarHeight = 0;
   #nextConnectionTabId = 1;
   #onPinnedChange;
+  #confirmLoggingClose;
   #savedConnections = new Map();
 
   /**
@@ -37,17 +38,20 @@ class TabManager {
    * @param {() => {width: number, height: number}} deps.getContentSize
    * @param {(snapshot: {tabs: object[], activeId: string}) => void} deps.onChange
    * @param {(connectionIds: string[]) => void} [deps.onPinnedChange] Called with the ordered ids of the pinned tabs.
+   * @param {(titles: string[]) => Promise<boolean>} [deps.confirmLoggingClose] Asks the user before tabs that log to a file close.
    */
   constructor({
     createView,
     getContentSize,
     onChange,
     onPinnedChange = () => {},
+    confirmLoggingClose = async () => true,
   }) {
     this.#createView = createView;
     this.#getContentSize = getContentSize;
     this.#onChange = onChange;
     this.#onPinnedChange = onPinnedChange;
+    this.#confirmLoggingClose = confirmLoggingClose;
 
     this.#add({ id: HOME_ID, kind: TabKind.HOME, title: "Home" });
     this.#layout();
@@ -85,8 +89,11 @@ class TabManager {
 
   /** `wakeState` is the state of a sleeping tab that gets its view now. */
   #activate(id, wakeState) {
-    if (!this.#find(id)) return;
+    const tab = this.#find(id);
 
+    if (!tab) return;
+
+    tab.activity = 0;
     this.#activeId = id;
     this.#showActive(wakeState);
     this.#emit();
@@ -108,11 +115,76 @@ class TabManager {
   }
 
   /**
-   * Closes the active tab.
-   * @returns {boolean} False when the active tab is Home.
+   * Closes the active tab, after the user confirms if it logs to a file.
+   * @returns {Promise<boolean>} False when nothing closed.
    */
   closeActive() {
-    return this.close(this.#activeId);
+    return this.requestClose([this.#activeId]);
+  }
+
+  /**
+   * Closes tabs on the user's request. One confirmation covers all the tabs
+   * that log to a file. Home and unknown ids are skipped.
+   * @param {string[]} ids
+   * @returns {Promise<boolean>} False when nothing closed.
+   */
+  async requestClose(ids) {
+    const targets = ids
+      .filter((id) => id !== HOME_ID)
+      .map((id) => this.#find(id))
+      .filter(Boolean);
+
+    if (targets.length === 0) return false;
+
+    const loggingTitles = targets.filter((tab) => tab.logging).map((tab) => tab.title);
+
+    if (loggingTitles.length > 0 && !(await this.#confirmLoggingClose(loggingTitles))) {
+      return false;
+    }
+
+    targets.forEach((tab) => this.close(tab.id));
+    return true;
+  }
+
+  /** Closes every tab except Home, the given one and the pinned ones. */
+  closeOthers(id) {
+    const others = this.#tabs
+      .filter((tab) => tab.id !== id && tab.id !== HOME_ID && !tab.pinned)
+      .map((tab) => tab.id);
+
+    return this.requestClose(others);
+  }
+
+  /** True when a close-others call on this tab would close something. */
+  hasClosableOthers(id) {
+    return this.#tabs.some(
+      (tab) => tab.id !== id && tab.id !== HOME_ID && !tab.pinned
+    );
+  }
+
+  /** Titles of the tabs that log to a file now. */
+  loggingTitles() {
+    return this.#tabs.filter((tab) => tab.logging).map((tab) => tab.title);
+  }
+
+  /**
+   * Moves a connection tab to the place of another one of the same group
+   * (pinned or not). Home and Settings stay fixed. A new pinned order is
+   * reported for saving.
+   */
+  move(id, targetId) {
+    const tab = this.#find(id);
+    const target = this.#find(targetId);
+
+    if (!tab || !target || tab === target) return;
+    if (tab.kind !== TabKind.CONNECTION || target.kind !== TabKind.CONNECTION) return;
+    if (tab.pinned !== target.pinned) return;
+
+    this.#tabs.splice(this.#tabs.indexOf(tab), 1);
+    this.#tabs.splice(this.#tabs.indexOf(target), 0, tab);
+
+    if (tab.pinned) this.#notifyPinned();
+    this.#emit();
   }
 
   /**
@@ -291,6 +363,20 @@ class TabManager {
     this.#emit();
   }
 
+  /**
+   * Counts the messages a background connection tab got since the last
+   * visit. The active tab has no count.
+   */
+  addActivity(id, messageCount) {
+    const tab = this.#find(id);
+
+    if (tab?.kind !== TabKind.CONNECTION || id === this.#activeId) return;
+    if (!(messageCount > 0)) return;
+
+    tab.activity += messageCount;
+    this.#emit();
+  }
+
   /** Sets the connection state of a connection tab. */
   setState(id, state) {
     const tab = this.#find(id);
@@ -357,6 +443,7 @@ class TabManager {
       state,
       pinned,
       logging: false,
+      activity: 0,
       url: connection && connectionUrl(connection),
       connectionId: connection?.id,
       connection,

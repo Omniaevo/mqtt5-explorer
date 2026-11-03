@@ -5,8 +5,14 @@
     :class="{
       'tab-strip-item--active': active,
       'tab-strip-item--icon-only': isHome,
+      'tab-strip-item--dragging': dragging,
+      'tab-strip-item--drop-target': dropTarget,
     }"
+    :data-tab-id="tab.id"
+    :draggable="isConnection"
     @contextmenu.prevent="openContextMenu"
+    @mousedown.middle.prevent
+    @auxclick.middle.prevent="closeUnlessHome"
   >
     <button
       class="tab-strip-item__select"
@@ -39,6 +45,12 @@
         role="img"
         :aria-label="tab.state"
       />
+      <span
+        v-if="tab.activity > 0"
+        class="tab-strip-item__activity"
+        :aria-label="`${tab.activity} new messages`"
+        >{{ activityLabel }}</span
+      >
       <span v-if="!isHome" class="tab-strip-item__name">{{ tab.title }}</span>
     </button>
 
@@ -76,15 +88,31 @@ import AppButton from "../ui/AppButton.vue";
 import { useNativeTooltip } from "../../composables/useNativeTooltip";
 import { TabKind } from "../../../../shared/ipcChannels";
 
+const MAX_SHOWN_ACTIVITY = 99;
+
 const props = defineProps({
   tab: { type: Object, required: true },
   active: { type: Boolean, default: false },
+  dragging: { type: Boolean, default: false },
+  dropTarget: { type: Boolean, default: false },
 });
 
 const emit = defineEmits(["select", "close", "context-menu"]);
 
 const isHome = computed(() => props.tab.kind === TabKind.HOME);
 const isSettings = computed(() => props.tab.kind === TabKind.SETTINGS);
+const isConnection = computed(() => props.tab.kind === TabKind.CONNECTION);
+
+const activityLabel = computed(() =>
+  props.tab.activity > MAX_SHOWN_ACTIVITY
+    ? `${MAX_SHOWN_ACTIVITY}+`
+    : props.tab.activity
+);
+
+// Middle click closes the tab, like in a browser
+const closeUnlessHome = () => {
+  if (!isHome.value) emit("close");
+};
 
 const root = useTemplateRef("root");
 const nativeTooltip = useNativeTooltip();
@@ -127,6 +155,15 @@ const showTipOnKeyboardFocus = (event) => {
   background: var(--tab-bg-hover);
 }
 
+.tab-strip-item--dragging {
+  opacity: 0.5;
+}
+
+/* Marks the tab the dragged one will take the place of */
+.tab-strip-item--drop-target {
+  box-shadow: inset 2px 0 0 var(--color-primary);
+}
+
 /* Same tonal look as a primary tonal button */
 .tab-strip-item--active {
   --tab-bg: color-mix(in oklab, var(--color-primary) 14%, var(--color-surface));
@@ -164,6 +201,18 @@ const showTipOnKeyboardFocus = (event) => {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* Messages a background tab got since the last visit */
+.tab-strip-item__activity {
+  flex: none;
+  padding-inline: var(--space-2);
+  border-radius: var(--radius-sm);
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  line-height: var(--line-height-tight);
 }
 
 .tab-strip-item__pin {

@@ -345,13 +345,13 @@ describe("TabManager", () => {
     expect(manager.active().id).toBe("connection-1");
   });
 
-  it("closes the active tab but not Home", () => {
+  it("closes the active tab but not Home", async () => {
     const { manager } = createManager();
     manager.open("settings");
 
-    expect(manager.closeActive()).toBe(true);
+    expect(await manager.closeActive()).toBe(true);
     expect(manager.active().id).toBe("home");
-    expect(manager.closeActive()).toBe(false);
+    expect(await manager.closeActive()).toBe(false);
   });
 
   it("focuses the new active view after a close", () => {
@@ -592,6 +592,182 @@ describe("TabManager", () => {
       manager.syncSavedConnections([]);
 
       expect(manager.list()).toHaveLength(2);
+    });
+  });
+
+  describe("closing and reordering", () => {
+    const saved = (id) => ({
+      id,
+      name: id,
+      protocol: "mqtt",
+      host: "broker",
+      port: 1883,
+    });
+    const openSaved = (manager, id) =>
+      manager.open("connection", { connectionId: id, connection: saved(id) });
+
+    function createWithConfirm(answer) {
+      const confirmLoggingClose = vi.fn(async () => answer);
+      const manager = new TabManager({
+        createView: createFakeView,
+        getContentSize: () => CONTENT_SIZE,
+        onChange: vi.fn(),
+        onPinnedChange: onPinned,
+        confirmLoggingClose,
+      });
+
+      manager.restorePinned([], ["a", "b", "c", "d"].map(saved));
+      return { manager, confirmLoggingClose };
+    }
+    const onPinned = vi.fn();
+
+    it("closes a logging tab after the user confirms", async () => {
+      const { manager, confirmLoggingClose } = createWithConfirm(true);
+      const id = openSaved(manager, "a");
+      manager.setLogging(id, true);
+
+      await manager.requestClose([id]);
+
+      expect(confirmLoggingClose).toHaveBeenCalledWith(["a"]);
+      expect(ids(manager)).not.toContain(id);
+    });
+
+    it("keeps a logging tab when the user cancels", async () => {
+      const { manager } = createWithConfirm(false);
+      const id = openSaved(manager, "a");
+      manager.setLogging(id, true);
+
+      expect(await manager.requestClose([id])).toBe(false);
+      expect(ids(manager)).toContain(id);
+    });
+
+    it("does not ask when no tab logs", async () => {
+      const { manager, confirmLoggingClose } = createWithConfirm(true);
+      const id = openSaved(manager, "a");
+
+      await manager.requestClose([id]);
+
+      expect(confirmLoggingClose).not.toHaveBeenCalled();
+    });
+
+    it("asks once for all the logging tabs of a close others", async () => {
+      const { manager, confirmLoggingClose } = createWithConfirm(true);
+      const first = openSaved(manager, "a");
+      const second = openSaved(manager, "b");
+      const keep = openSaved(manager, "c");
+      manager.setLogging(first, true);
+      manager.setLogging(second, true);
+
+      await manager.closeOthers(keep);
+
+      expect(confirmLoggingClose).toHaveBeenCalledTimes(1);
+    });
+
+    it("closes others but keeps Home, itself and pinned tabs", async () => {
+      const { manager } = createWithConfirm(true);
+      const pinned = openSaved(manager, "a");
+      manager.pin(pinned);
+      openSaved(manager, "b");
+      const keep = openSaved(manager, "c");
+
+      await manager.closeOthers(keep);
+
+      expect(ids(manager)).toEqual(["home", pinned, keep]);
+    });
+
+    it("moves a tab to the place of another tab of the same group", () => {
+      const { manager } = createWithConfirm(true);
+      const first = openSaved(manager, "a");
+      const second = openSaved(manager, "b");
+      const third = openSaved(manager, "c");
+
+      manager.move(third, first);
+
+      expect(ids(manager)).toEqual(["home", third, first, second]);
+    });
+
+    it("does not move a tab across the pinned group", () => {
+      const { manager } = createWithConfirm(true);
+      const pinned = openSaved(manager, "a");
+      manager.pin(pinned);
+      const normal = openSaved(manager, "b");
+
+      manager.move(normal, pinned);
+
+      expect(ids(manager)).toEqual(["home", pinned, normal]);
+    });
+
+    it("does not move Settings", () => {
+      const { manager } = createWithConfirm(true);
+      manager.open("settings");
+      const id = openSaved(manager, "a");
+
+      manager.move("settings", id);
+
+      expect(ids(manager)[1]).toBe("settings");
+    });
+
+    it("reports the new pinned order after a pinned move", () => {
+      onPinned.mockClear();
+      const { manager } = createWithConfirm(true);
+      const first = openSaved(manager, "a");
+      const second = openSaved(manager, "b");
+      manager.pin(first);
+      manager.pin(second);
+      onPinned.mockClear();
+
+      manager.move(second, first);
+
+      expect(onPinned).toHaveBeenLastCalledWith(["b", "a"]);
+    });
+  });
+
+  describe("activity", () => {
+    const activityOf = (manager, id) =>
+      manager.list().find((tab) => tab.id === id).activity;
+
+    it("counts the messages of a background connection tab", () => {
+      const { manager, onChange } = createManager();
+      const id = manager.open("connection", { connectionId: "a" });
+      manager.select("home");
+      onChange.mockClear();
+
+      manager.addActivity(id, 3);
+      manager.addActivity(id, 4);
+
+      expect(activityOf(manager, id)).toBe(7);
+      expect(onChange).toHaveBeenCalledTimes(2);
+    });
+
+    it("ignores an empty or negative count", () => {
+      const { manager } = createManager();
+      const id = manager.open("connection", { connectionId: "a" });
+      manager.select("home");
+
+      manager.addActivity(id, 0);
+      manager.addActivity(id, -5);
+
+      expect(activityOf(manager, id)).toBe(0);
+    });
+
+    it("does not count for the active tab", () => {
+      const { manager } = createManager();
+      const id = manager.open("connection", { connectionId: "a" });
+
+      manager.addActivity(id, 5);
+
+      expect(activityOf(manager, id)).toBe(0);
+    });
+
+    it("clears the counter when the tab is selected", () => {
+      const { manager } = createManager();
+      const id = manager.open("connection", { connectionId: "a" });
+      manager.select("home");
+      manager.addActivity(id, 5);
+
+      manager.select(id);
+
+      expect(activityOf(manager, id)).toBe(0);
     });
   });
 

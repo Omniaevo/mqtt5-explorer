@@ -6,12 +6,18 @@
     aria-label="Tabs"
     @keydown="moveFocus"
     @wheel="scrollHorizontally"
+    @dragstart="startDrag"
+    @dragover="overDrag"
+    @drop="dropDrag"
+    @dragend="endDrag"
   >
     <TabStripItem
       v-for="tab in tabs"
       :key="tab.id"
       :tab="tab"
       :active="tab.id === activeId"
+      :dragging="tab.id === dragId"
+      :drop-target="tab.id === dropId"
       @select="emit('select', tab.id)"
       @close="emit('close', tab.id)"
       @context-menu="emit('context-menu', tab.id)"
@@ -24,15 +30,16 @@
  * Tab list of the shell. Tabs shrink to their minimum width, then the list
  * scrolls. Plain tab roles are used: the panels live in other processes.
  */
-import { nextTick, useTemplateRef, watch } from "vue";
+import { nextTick, ref, useTemplateRef, watch } from "vue";
 import TabStripItem from "./TabStripItem.vue";
+import { TabKind } from "../../../../shared/ipcChannels";
 
 const props = defineProps({
   tabs: { type: Array, required: true },
   activeId: { type: String, required: true },
 });
 
-const emit = defineEmits(["select", "close", "context-menu"]);
+const emit = defineEmits(["select", "close", "context-menu", "reorder"]);
 
 const list = useTemplateRef("list");
 
@@ -63,6 +70,57 @@ const scrollHorizontally = (event) => {
   if (event.deltaX !== 0) return;
 
   list.value.scrollLeft += event.deltaY;
+};
+
+// Drag to reorder: main checks the rules too, this only draws the drop mark
+const dragId = ref("");
+const dropId = ref("");
+
+const tabOf = (event) =>
+  props.tabs.find(
+    (tab) => tab.id === event.target.closest?.("[data-tab-id]")?.dataset.tabId
+  );
+
+const isReorderable = (tab) => tab?.kind === TabKind.CONNECTION;
+const canDrop = (dragged, over) =>
+  isReorderable(dragged) &&
+  isReorderable(over) &&
+  dragged.id !== over.id &&
+  dragged.pinned === over.pinned;
+
+const startDrag = (event) => {
+  const tab = tabOf(event);
+
+  if (!isReorderable(tab)) return;
+
+  dragId.value = tab.id;
+  event.dataTransfer.effectAllowed = "move";
+  event.dataTransfer.setData("text/plain", tab.id);
+};
+
+const overDrag = (event) => {
+  const over = tabOf(event);
+  const dragged = props.tabs.find((tab) => tab.id === dragId.value);
+
+  dropId.value = canDrop(dragged, over) ? over.id : "";
+
+  if (!dropId.value) return;
+
+  event.preventDefault();
+  event.dataTransfer.dropEffect = "move";
+};
+
+const dropDrag = (event) => {
+  if (!dropId.value) return;
+
+  event.preventDefault();
+  emit("reorder", dragId.value, dropId.value);
+  endDrag();
+};
+
+const endDrag = () => {
+  dragId.value = "";
+  dropId.value = "";
 };
 
 watch(

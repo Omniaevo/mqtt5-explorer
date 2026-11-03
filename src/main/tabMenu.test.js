@@ -1,7 +1,14 @@
 import { describe, expect, it, vi } from "vitest";
 import { tabMenuTemplate } from "./tabMenu";
 
-const actions = () => ({ pin: vi.fn(), unpin: vi.fn(), disconnect: vi.fn() });
+const actions = () => ({
+  pin: vi.fn(),
+  unpin: vi.fn(),
+  reconnect: vi.fn(),
+  disconnect: vi.fn(),
+  close: vi.fn(),
+  closeOthers: vi.fn(),
+});
 const connectionTab = (fields) => ({
   id: "connection-1",
   kind: "connection",
@@ -9,60 +16,68 @@ const connectionTab = (fields) => ({
   state: "connected",
   ...fields,
 });
-const labels = (template) => template.map((item) => item.label);
+const build = (tab, extra = {}) =>
+  tabMenuTemplate({
+    tab,
+    canPin: true,
+    canCloseOthers: true,
+    actions: actions(),
+    ...extra,
+  });
+const labels = (template) =>
+  template.filter((entry) => entry.label).map((entry) => entry.label);
 const item = (template, label) => template.find((entry) => entry.label === label);
 
 describe("tabMenuTemplate", () => {
   it("has no menu for Home", () => {
-    const template = tabMenuTemplate({
-      tab: { id: "home", kind: "home" },
-      canPin: false,
-      actions: actions(),
-    });
-
-    expect(template).toEqual([]);
+    expect(build({ id: "home", kind: "home" })).toEqual([]);
   });
 
-  it("offers Pin and Disconnect on an awake unpinned tab", () => {
-    const template = tabMenuTemplate({
-      tab: connectionTab(),
-      canPin: true,
-      actions: actions(),
-    });
+  it("offers only Close on Settings", () => {
+    expect(labels(build({ id: "settings", kind: "settings" }))).toEqual(["Close"]);
+  });
 
-    expect(labels(template)).toEqual(["Pin tab", "Disconnect"]);
+  it("offers every action on a connection tab", () => {
+    expect(labels(build(connectionTab()))).toEqual([
+      "Pin tab",
+      "Reconnect",
+      "Disconnect",
+      "Close",
+      "Close others",
+    ]);
   });
 
   it("offers Unpin on a pinned tab", () => {
-    const template = tabMenuTemplate({
-      tab: connectionTab({ pinned: true }),
-      canPin: false,
-      actions: actions(),
-    });
-
-    expect(labels(template)[0]).toBe("Unpin tab");
+    expect(labels(build(connectionTab({ pinned: true })))[0]).toBe("Unpin tab");
   });
 
   it("disables Pin when the connection is not saved", () => {
-    const template = tabMenuTemplate({
-      tab: connectionTab(),
-      canPin: false,
-      actions: actions(),
-    });
+    const template = build(connectionTab(), { canPin: false });
 
     expect(item(template, "Pin tab").enabled).toBe(false);
+  });
+
+  it("disables Close others when there is no other tab to close", () => {
+    const template = build(connectionTab(), { canCloseOthers: false });
+
+    expect(item(template, "Close others").enabled).toBe(false);
   });
 
   it.each(["sleeping", "disconnected", "error"])(
     "disables Disconnect on a %s tab",
     (state) => {
-      const template = tabMenuTemplate({
-        tab: connectionTab({ state }),
-        canPin: true,
-        actions: actions(),
-      });
-
-      expect(item(template, "Disconnect").enabled).toBe(false);
+      expect(item(build(connectionTab({ state })), "Disconnect").enabled).toBe(false);
     }
   );
+
+  it.each(["sleeping", "pending", "connected"])(
+    "disables Reconnect on a %s tab",
+    (state) => {
+      expect(item(build(connectionTab({ state })), "Reconnect").enabled).toBe(false);
+    }
+  );
+
+  it.each(["disconnected", "error"])("enables Reconnect on a %s tab", (state) => {
+    expect(item(build(connectionTab({ state })), "Reconnect").enabled).toBe(true);
+  });
 });

@@ -153,6 +153,18 @@ const api = {
      * @returns {() => void} Unsubscribe function.
      */
     onDisconnect: (callback) => subscribe(Channel.TABS_DISCONNECT, callback),
+    /**
+     * Called when the user picks Reconnect in the tab menu.
+     * @param {() => void} callback
+     * @returns {() => void} Unsubscribe function.
+     */
+    onReconnect: (callback) => subscribe(Channel.TABS_RECONNECT, callback),
+    /**
+     * Moves a tab to the place of another tab of the same group. Shell only.
+     * @param {string} id
+     * @param {string} targetId
+     */
+    reorder: (id, targetId) => ipcRenderer.send(Channel.TABS_REORDER, id, targetId),
     /** @returns {Promise<boolean>} True when the calling view's tab is pinned. */
     getPinned: () => ipcRenderer.invoke(Channel.TABS_GET_PINNED),
     /**
@@ -172,6 +184,13 @@ const api = {
      * @param {boolean} enabled
      */
     setLogging: (enabled) => ipcRenderer.send(Channel.TABS_SET_LOGGING, enabled),
+    /**
+     * Tells the strip how many messages the calling view got while it was
+     * hidden. Send it once per batch; selecting the tab clears the counter.
+     * @param {number} messageCount
+     */
+    addActivity: (messageCount) =>
+      ipcRenderer.send(Channel.TABS_SET_ACTIVITY, messageCount),
     /**
      * Reports the connection state of the calling view's tab. The tab stays
      * open on "error"; the view shows the message itself.
