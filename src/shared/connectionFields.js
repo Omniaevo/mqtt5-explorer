@@ -30,5 +30,7 @@ export const ConnectionFields = Object.freeze({
     "protocol",
     "topics",
     "validateCertificate",
+    // Renderer only (Home recents): an ISO string, or a timestamp in old data
+    "lastConnectedAt",
   ]),
 });

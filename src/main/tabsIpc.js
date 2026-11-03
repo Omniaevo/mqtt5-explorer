@@ -20,10 +20,15 @@ const LISTENER_CHANNELS = [
   Channel.TABS_SET_STATE,
   Channel.TABS_CONTEXT_MENU,
   Channel.TABS_SET_LOGGING,
+  Channel.TABS_PIN_CONNECTION,
   Channel.SHELL_SET_HEIGHT,
   Channel.SHELL_SET_STATUS_HEIGHT,
 ];
-const HANDLER_CHANNELS = [Channel.TABS_GET_STATE, Channel.TABS_GET_CONNECTION];
+const HANDLER_CHANNELS = [
+  Channel.TABS_GET_STATE,
+  Channel.TABS_GET_CONNECTION,
+  Channel.TABS_GET_CONNECTION_STATES,
+];
 
 const isPlainObject = (value) =>
   typeof value === "object" && value !== null && !Array.isArray(value);
@@ -196,5 +201,13 @@ function registerViewHandlers({ tabs, fromShell, tabOf }) {
   ipcMain.handle(Channel.TABS_GET_CONNECTION, (event) =>
     tabs.getConnection(tabOf(event))
   );
+  ipcMain.handle(Channel.TABS_GET_CONNECTION_STATES, (event) =>
+    tabOf(event) === FixedTabId.HOME ? tabs.connectionStates() : undefined
+  );
+  ipcMain.on(Channel.TABS_PIN_CONNECTION, (event, connectionId) => {
+    if (tabOf(event) === FixedTabId.HOME && typeof connectionId === "string") {
+      tabs.pinConnection(connectionId);
+    }
+  });
 
 }

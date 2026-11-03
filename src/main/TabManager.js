@@ -1,3 +1,4 @@
+import { connectionUrl } from "../shared/connectionUrl";
 import { Channel, FixedTabId, TabKind, TabState } from "../shared/ipcChannels";
 
 const HOME_ID = FixedTabId.HOME;
@@ -11,9 +12,6 @@ const ROUTES = Object.freeze({
 
 const indexById = (connections) =>
   new Map(connections.map((connection) => [connection.id, connection]));
-
-const connectionUrl = ({ protocol, host, port }) =>
-  `${protocol}://${host}:${port}`;
 
 /**
  * Owns the tab list and the one view of each tab. Only the active view is
@@ -243,6 +241,20 @@ class TabManager {
       .forEach((tab) => this.close(tab.id));
 
     if (renamed) this.#emit();
+  }
+
+  /** Reduced state of the connection tabs, for the Home view. */
+  connectionStates() {
+    return this.#tabs
+      .filter((tab) => tab.kind === TabKind.CONNECTION && tab.connectionId)
+      .map(({ connectionId, state, pinned }) => ({ connectionId, state, pinned }));
+  }
+
+  /** Pins the open tab of a saved connection. */
+  pinConnection(connectionId) {
+    const tab = this.#tabs.find((t) => t.connectionId === connectionId);
+
+    if (tab) this.pin(tab.id);
   }
 
   /** Tabs in display order, without the connection properties. */

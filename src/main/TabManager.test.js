@@ -720,4 +720,34 @@ describe("TabManager", () => {
       expect(manager.list().find((tab) => tab.id === id).logging).toBe(false);
     });
   });
+
+  describe("connection states for Home", () => {
+    const saved = (id) => ({
+      id,
+      name: id,
+      protocol: "mqtt",
+      host: "broker",
+      port: 1883,
+    });
+
+    it("lists only connection tabs with a reduced state", () => {
+      const { manager } = createManager();
+
+      manager.restorePinned(["a"], [saved("a")]);
+
+      expect(manager.connectionStates()).toEqual([
+        { connectionId: "a", state: "sleeping", pinned: true },
+      ]);
+    });
+
+    it("pins the open tab of a saved connection", () => {
+      const { manager } = createManager();
+
+      manager.syncSavedConnections([saved("a")]);
+      manager.open("connection", { connectionId: "a", connection: saved("a") });
+      manager.pinConnection("a");
+
+      expect(manager.connectionStates()[0].pinned).toBe(true);
+    });
+  });
 });

@@ -20,6 +20,7 @@ class ConnectionProperties {
   caCertPath = undefined;
   clientCertPath = undefined;
   clientKeyPath = undefined;
+  lastConnectedAt = undefined;
   saved = false;
 
   static rules = {

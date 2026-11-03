@@ -122,6 +122,26 @@ const api = {
     openConnection: (connection) =>
       ipcRenderer.send(Channel.TABS_OPEN_CONNECTION, connection),
     /**
+     * Called with the reduced state of the open connection tabs on every change.
+     * Home only.
+     * @param {(states: {connectionId: string, state: string, pinned: boolean}[]) => void} callback
+     * @returns {() => void} Unsubscribe function.
+     */
+    onConnectionStates: (callback) =>
+      subscribe(Channel.TABS_CONNECTION_STATES, callback),
+    /**
+     * Current reduced state of the open connection tabs. Home only.
+     * @returns {Promise<{connectionId: string, state: string, pinned: boolean}[]>}
+     */
+    getConnectionStates: () =>
+      ipcRenderer.invoke(Channel.TABS_GET_CONNECTION_STATES),
+    /**
+     * Pins the open tab of a saved connection. Home only.
+     * @param {string} connectionId
+     */
+    pinConnection: (connectionId) =>
+      ipcRenderer.send(Channel.TABS_PIN_CONNECTION, connectionId),
+    /**
      * Connection properties of the tab that owns the calling view.
      * @returns {Promise<object | undefined>}
      */

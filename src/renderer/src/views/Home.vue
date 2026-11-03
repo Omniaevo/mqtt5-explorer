@@ -1,17 +1,21 @@
 <template>
-  <div class="connection-container">
-    <AppHeader>
-      <template #start>
-        <span class="title">MQTT Connections</span>
-      </template>
+  <div class="home">
+    <div class="home__column">
+      <h1 class="home__brand">
+        <img class="home__logo" :src="logo" alt="" width="24" height="24" />
+        MQTT5 Explorer
+      </h1>
 
       <AppTextField
         v-model="searchConnection"
-        class="search-field"
+        class="home__search"
         label="Search connections"
         label-hidden
         placeholder="Search connections"
       >
+        <template #prepend-inner>
+          <Search :size="16" aria-hidden="true" class="home__search-icon" />
+        </template>
         <template v-if="searchConnection" #append-inner>
           <AppButton
             variant="icon"
@@ -24,36 +28,44 @@
         </template>
       </AppTextField>
 
-      <template #end>
-        <AppTooltip text="New connection">
-          <AppButton
-            variant="tonal"
-            color="primary"
-            aria-label="New connection"
-            @click="openNew"
-          >
-            <Plus :size="16" aria-hidden="true" />
-          </AppButton>
-        </AppTooltip>
-      </template>
-    </AppHeader>
+      <section v-if="connections.recentConnections.length" class="home__section">
+        <h2 class="home__caption">Recent</h2>
+        <ul class="home__tiles" aria-label="Recent connections">
+          <ConnectionTile
+            v-for="connection in connections.recentConnections"
+            :key="connection.id"
+            :connection="connection"
+            :menu-items="menuItemsFor(connection)"
+            :tab-state="tabStateOf(connection)"
+            @connect="connect(connection)"
+            @action="runAction($event, connection)"
+          />
+        </ul>
+      </section>
 
-    <ul class="connection-list" aria-label="Connections">
-      <li
-        v-for="connection in filteredConnections"
-        :key="connection.id"
-        class="connection-list__item"
-      >
-        <span class="connection-list__name">{{ connection.name }}</span>
-        <span class="connection-list__url">{{ connection.protocol }}://{{ connection.host }}:{{ connection.port }}</span>
-        <AppButton variant="text" color="primary" @click="connect(connection)">Connect</AppButton>
-        <AppButton variant="text" @click="openEdit(connection)">Edit</AppButton>
-        <AppButton variant="text" @click="duplicate(connection)">Duplicate</AppButton>
-        <AppButton variant="text" color="danger" @click="confirmDelete(connection)">
-          Delete
-        </AppButton>
-      </li>
-    </ul>
+      <section class="home__section">
+        <div class="home__divider">
+          <h2 class="home__divider-title">All connections</h2>
+          <span class="home__divider-line" aria-hidden="true" />
+          <AppButton variant="tonal" color="primary" @click="openNew">
+            <Plus :size="16" aria-hidden="true" />
+            New connection
+          </AppButton>
+        </div>
+        <ul v-if="connections.otherConnections.length" class="home__list" aria-label="All connections">
+          <ConnectionRow
+            v-for="connection in connections.otherConnections"
+            :key="connection.id"
+            :connection="connection"
+            :menu-items="menuItemsFor(connection)"
+            :tab-state="tabStateOf(connection)"
+            @connect="connect(connection)"
+            @action="runAction($event, connection)"
+          />
+        </ul>
+        <p v-else class="home__empty">{{ emptyListText }}</p>
+      </section>
+    </div>
 
     <ConnectionDialog
       v-if="editing"
@@ -88,13 +100,14 @@
 
 <script setup>
 import { computed, onBeforeMount, onBeforeUnmount, ref } from "vue";
-import { Plus, X } from "@lucide/vue";
+import { Copy, Download, Pencil, Pin, Plus, Search, Trash2, X } from "@lucide/vue";
+import logo from "../assets/logo.png";
 import ConnectionDialog from "../components/ConnectionDialog.vue";
+import ConnectionRow from "../components/home/ConnectionRow.vue";
+import ConnectionTile from "../components/home/ConnectionTile.vue";
 import AppButton from "../components/ui/AppButton.vue";
 import AppDialog from "../components/ui/AppDialog.vue";
-import AppHeader from "../components/ui/AppHeader.vue";
 import AppTextField from "../components/ui/AppTextField.vue";
-import AppTooltip from "../components/ui/AppTooltip.vue";
 import ConnectionProperties from "../models/ConnectionProperties";
 import { useConnectionsStore } from "../stores/connections";
 import { useNotifyStore } from "../stores/notify";
@@ -111,13 +124,42 @@ const connectionToDelete = ref(null);
 const editing = ref(null);
 const dialogOpen = ref(false);
 
-const filteredConnections = computed(() => {
-  const search = (searchConnection.value || "").toLowerCase();
+/** Reduced state of the open connection tabs, by connection id. */
+const tabStates = ref(new Map());
 
-  return connections.brokerConnections.filter((connection) =>
-    connection.name.toLowerCase().includes(search)
-  );
-});
+const emptyListText = computed(() =>
+  connections.recentConnections.length
+    ? "No other connections."
+    : "No connections yet."
+);
+
+function tabStateOf(connection) {
+  return tabStates.value.get(connection.id)?.state;
+}
+
+function menuItemsFor(connection) {
+  const canPin = tabStates.value.get(connection.id)?.pinned === false;
+
+  return [
+    { id: "edit", label: "Edit", icon: Pencil },
+    { id: "duplicate", label: "Duplicate", icon: Copy },
+    ...(canPin ? [{ id: "pin", label: "Pin tab", icon: Pin }] : []),
+    { id: "export", label: "Export", icon: Download },
+    { id: "delete", label: "Delete", icon: Trash2, danger: true, separatorBefore: true },
+  ];
+}
+
+const MENU_ACTIONS = {
+  edit: (connection) => openEdit(connection),
+  duplicate: (connection) => duplicate(connection),
+  pin: (connection) => window.api.tabs.pinConnection(connection.id),
+  export: (connection) => downloadAsJson([connection], connection.name),
+  delete: (connection) => confirmDelete(connection),
+};
+
+function runAction(actionId, connection) {
+  MENU_ACTIONS[actionId](connection);
+}
 
 function openDialog(connection, mode) {
   editing.value = { connection, mode };
@@ -125,7 +167,6 @@ function openDialog(connection, mode) {
 }
 
 function openNew() {
-  searchConnection.value = "";
   openDialog(new ConnectionProperties(), "new");
 }
 
@@ -184,16 +225,21 @@ function deleteConnection() {
   deleteDialog.value = false;
 }
 
-function exportConnectionData() {
-  const json = JSON.stringify(connections.savedConnections, null, 2);
+/** Downloads connections in the format the import reads. */
+function downloadAsJson(list, fileLabel) {
+  const json = JSON.stringify(list, null, 2);
   const download = document.createElement("a");
 
   download.href = URL.createObjectURL(
     new Blob([json], { type: "application/json" })
   );
-  download.download = `connections-${Date.now()}.json`;
+  download.download = `${fileLabel}-${Date.now()}.json`;
   download.click();
   URL.revokeObjectURL(download.href);
+}
+
+function exportConnectionData() {
+  downloadAsJson(connections.savedConnections, "connections");
 }
 
 function importConnectionData(fileContent) {
@@ -214,13 +260,19 @@ function importConnectionData(fileContent) {
   }
 }
 
+function setTabStates(states) {
+  tabStates.value = new Map(states.map((state) => [state.connectionId, state]));
+}
+
 let unsubscribeMenuEvents = [];
 
 onBeforeMount(() => {
   unsubscribeMenuEvents = [
     window.api.app.on("exportDataPressed", exportConnectionData),
     window.api.app.on("importDataPressed", importConnectionData),
+    window.api.tabs.onConnectionStates(setTabStates),
   ];
+  window.api.tabs.getConnectionStates().then(setTabStates);
 });
 
 onBeforeUnmount(() => {
@@ -229,47 +281,101 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
-.connection-container {
+.home {
+  block-size: 100vh;
+  overflow: auto;
+}
+
+.home__column {
   display: flex;
   flex-direction: column;
-  block-size: 100vh;
-}
-
-.title {
-  font-size: var(--font-size-lg);
-  font-weight: var(--font-weight-bold);
-  white-space: nowrap;
-}
-
-.search-field {
-  inline-size: min(100%, 40ch);
+  gap: var(--space-7);
+  inline-size: min(100%, 100ch);
   margin-inline: auto;
+  margin-block-start: var(--space-8);
+  padding-inline: var(--space-6);
+  padding-block-end: var(--space-8);
 }
 
-.connection-list {
-  flex: 1;
-  margin: var(--space-4);
-  padding: 0;
-  overflow: auto;
-  list-style: none;
-}
-
-.connection-list__item {
+.home__brand {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: var(--space-4);
-  padding: var(--space-3) var(--space-5);
-  border-block-end: 1px solid var(--color-border);
-}
-
-.connection-list__name {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-lg);
   font-weight: var(--font-weight-medium);
 }
 
-.connection-list__url {
-  flex: 1;
+.home__search {
+  inline-size: min(100%, 60ch);
+  margin-inline: auto;
+}
+
+.home__search-icon {
+  flex: none;
   color: var(--color-text-muted);
-  font-family: var(--font-mono);
+}
+
+.home__section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.home__caption {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.home__tiles,
+.home__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.home__tiles {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-5);
+}
+
+/* Narrow window: 2 tile columns */
+@media (max-width: 600px) {
+  .home__tiles {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.home__divider {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+}
+
+.home__divider-title {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  white-space: nowrap;
+}
+
+.home__divider-line {
+  flex: 1;
+  block-size: 1px;
+  background: var(--color-border);
+}
+
+.home__empty {
+  margin: 0;
+  color: var(--color-text-muted);
   font-size: var(--font-size-sm);
 }
 </style>

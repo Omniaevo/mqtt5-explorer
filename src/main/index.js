@@ -409,6 +409,11 @@ async function createWindow() {
     getContentSize,
     onChange: (snapshot) => {
       win.webContents.send(Channel.TABS_STATE, snapshot);
+      tabs.sendTo(
+        FixedTabId.HOME,
+        Channel.TABS_CONNECTION_STATES,
+        tabs.connectionStates()
+      );
       refreshMenu();
     },
     onPinnedChange: (connectionIds) => store.set(PINNED_TABS_KEY, connectionIds),
