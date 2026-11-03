@@ -1,8 +1,7 @@
 import { computed, ref } from "vue";
-import { useRouter } from "vue-router";
 import { Cloud, CloudCheck, CloudSync } from "@lucide/vue";
 import Connection from "../utils/Connection";
-import { useNotifyStore } from "../stores/notify";
+import { TabState } from "../../../shared/ipcChannels";
 
 const STATES = Connection.connectionStates;
 const UNREACHABLE_MESSAGE = "The broker is unreachable";
@@ -26,13 +25,11 @@ const STATE_VIEWS = {
 
 /**
  * Connection lifecycle of the viewer: state, its icon description, and the
- * disconnect flow (back to Home, with a toast on errors).
+ * disconnect flow. The tab reports to main, which closes it on disconnect and
+ * shows the error on Home.
  * @param {Connection} connection Already initialised connection.
  */
 export function useConnectionSession(connection) {
-  const router = useRouter();
-  const notify = useNotifyStore();
-
   const state = ref(STATES.PENDING);
   const stateView = computed(() => STATE_VIEWS[state.value]);
 
@@ -42,6 +39,7 @@ export function useConnectionSession(connection) {
       clientSettings,
       () => {
         state.value = STATES.CONNECTED;
+        window.api.tabs.setState(TabState.CONNECTED);
         onConnected();
       },
       (error) => disconnect(error)
@@ -55,9 +53,14 @@ export function useConnectionSession(connection) {
     connection.disconnect(() => {
       state.value = failed ? STATES.ERROR : STATES.DISCONNECTED;
 
-      router.replace({ name: "Home" }).then(() => {
-        if (failed) notify.error(errorMessage || UNREACHABLE_MESSAGE);
-      });
+      if (failed) {
+        window.api.tabs.setState(
+          TabState.ERROR,
+          errorMessage || UNREACHABLE_MESSAGE
+        );
+      } else {
+        window.api.tabs.closeSelf();
+      }
     });
   }
 

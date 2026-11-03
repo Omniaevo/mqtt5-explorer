@@ -51,6 +51,7 @@ const ipc = registerIpcHandlers({
   store,
   onPageChange: showPage,
   focusWindow,
+  onSessionFocus: (webContents) => tabs?.select(tabs.tabIdOf(webContents.id)),
 });
 
 const pages = Page;

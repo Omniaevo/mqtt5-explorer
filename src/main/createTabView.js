@@ -16,6 +16,7 @@ export function createTabViewFactory(win, webPreferences) {
     loadRoute(view.webContents, route);
 
     return {
+      webContentsId: view.webContents.id,
       setBounds: (bounds) => view.setBounds(bounds),
       setVisible: (visible) => view.setVisible(visible),
       send: (channel, ...args) => view.webContents.send(channel, ...args),

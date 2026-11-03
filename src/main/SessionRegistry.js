@@ -1,6 +1,7 @@
 /**
  * Keeps one session per webContents. A session lives until its webContents
- * is destroyed or starts loading again (a reload drops the renderer state).
+ * is destroyed or loads a new document (a reload drops the renderer state).
+ * Same-page navigations and loading events of subframes keep the session.
  */
 class SessionRegistry {
   #createSession;
@@ -38,9 +39,12 @@ class SessionRegistry {
   }
 
   #disposeWhenGone(webContents, session) {
+    const releaseOnNewDocument = (details) => {
+      if (details.isMainFrame && !details.isSameDocument) release();
+    };
     const release = () => {
       webContents.off("destroyed", release);
-      webContents.off("did-start-loading", release);
+      webContents.off("did-start-navigation", releaseOnNewDocument);
 
       if (this.#sessions.get(webContents.id) === session) {
         this.#sessions.delete(webContents.id);
@@ -50,7 +54,7 @@ class SessionRegistry {
     };
 
     webContents.on("destroyed", release);
-    webContents.on("did-start-loading", release);
+    webContents.on("did-start-navigation", releaseOnNewDocument);
   }
 }
 

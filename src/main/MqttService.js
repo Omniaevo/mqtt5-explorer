@@ -45,6 +45,9 @@ class MqttService {
   }
 
   publish(packet) {
+    // No client: never connected, or already disposed
+    if (!this.#client) return;
+
     const options = { qos: packet.qos, retain: packet.retain };
 
     if (this.#properties.version > 4 && packet.properties) {
@@ -52,7 +55,7 @@ class MqttService {
     }
 
     if (packet.topic != undefined) {
-      this.#client?.publish(packet.topic, packet.payload, options);
+      this.#client.publish(packet.topic, packet.payload, options);
     }
   }
 

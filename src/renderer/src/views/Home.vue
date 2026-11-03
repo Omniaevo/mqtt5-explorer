@@ -99,7 +99,6 @@
 
 <script setup>
 import { computed, nextTick, onBeforeMount, onBeforeUnmount, ref } from "vue";
-import { useRouter } from "vue-router";
 import { Plus, X } from "@lucide/vue";
 import ConnectionForm from "../components/ConnectionForm.vue";
 import SettingsDialog from "../components/SettingsDialog.vue";
@@ -113,9 +112,9 @@ import ConnectionProperties from "../models/ConnectionProperties";
 import { useConnectionsStore } from "../stores/connections";
 import { useNotifyStore } from "../stores/notify";
 import { useSettingsStore } from "../stores/settings";
+import toPlain from "../utils/toPlain";
 import logo from "../assets/logo.svg";
 
-const router = useRouter();
 const settings = useSettingsStore();
 const connections = useConnectionsStore();
 const notify = useNotifyStore();
@@ -181,7 +180,7 @@ function dataChanged(data, index) {
 
 function connect(data, index) {
   dataChanged(data, index);
-  router.push({ name: "Viewer", params: { index } });
+  window.api.tabs.openConnection(toPlain(data));
 }
 
 function confirmDelete(index) {

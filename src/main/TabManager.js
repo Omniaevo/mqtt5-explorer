@@ -1,4 +1,4 @@
-import { FixedTabId, TabKind, TabState } from "../shared/ipcChannels";
+import { Channel, FixedTabId, TabKind, TabState } from "../shared/ipcChannels";
 
 const HOME_ID = FixedTabId.HOME;
 const SETTINGS_ID = FixedTabId.SETTINGS;
@@ -26,7 +26,7 @@ class TabManager {
 
   /**
    * @param {object} deps
-   * @param {(route: string) => {setBounds: Function, setVisible: Function, send: Function, destroy: Function}} deps.createView
+   * @param {(route: string) => {webContentsId: number, setBounds: Function, setVisible: Function, send: Function, destroy: Function}} deps.createView
    * @param {() => {width: number, height: number}} deps.getContentSize
    * @param {(snapshot: {tabs: object[], activeId: string}) => void} deps.onChange
    */
@@ -109,7 +109,44 @@ class TabManager {
 
   /** Sends an IPC message to the view of the active tab. */
   sendToActive(channel, ...args) {
-    this.#views.get(this.#activeId)?.send(channel, ...args);
+    this.sendTo(this.#activeId, channel, ...args);
+  }
+
+  /** Sends an IPC message to the view of one tab. */
+  sendTo(id, channel, ...args) {
+    this.#views.get(id)?.send(channel, ...args);
+  }
+
+  /**
+   * Finds the tab that owns a webContents.
+   * @returns {string | undefined} Id of the tab.
+   */
+  tabIdOf(webContentsId) {
+    return [...this.#views].find(
+      ([, view]) => view.webContentsId === webContentsId
+    )?.[0];
+  }
+
+  /** Sets the connection state of a connection tab. */
+  setState(id, state) {
+    const tab = this.#find(id);
+
+    if (tab?.kind !== TabKind.CONNECTION || tab.state === state) return;
+
+    tab.state = state;
+    this.#emit();
+  }
+
+  /**
+   * A connection failed: Home is selected and shows the error, then the tab
+   * closes. The toast lives in Home because the tab is about to go away.
+   */
+  fail(id, message) {
+    if (this.#find(id)?.kind !== TabKind.CONNECTION) return;
+
+    this.select(HOME_ID);
+    this.sendTo(HOME_ID, Channel.NOTIFY_SHOW, message, "error");
+    this.close(id);
   }
 
   /** Connection properties of a tab. Only for the view of that tab. */
@@ -143,6 +180,7 @@ class TabManager {
       id: `connection-${this.#nextConnectionTabId++}`,
       kind: TabKind.CONNECTION,
       title: connection?.name ?? "Connection",
+      state: TabState.PENDING,
       connectionId,
       connection,
     });

@@ -3,9 +3,12 @@ import TabManager from "./TabManager";
 
 const CONTENT_SIZE = { width: 1000, height: 700 };
 
+let nextWebContentsId = 1;
+
 function createFakeView(route) {
   return {
     route,
+    webContentsId: nextWebContentsId++,
     visible: undefined,
     bounds: undefined,
     destroyed: false,
@@ -235,5 +238,67 @@ describe("TabManager", () => {
       [],
       [["settingsPressed", 1]],
     ]);
+  });
+
+  it("starts a connection tab as pending", () => {
+    const { manager } = createManager();
+    const id = manager.open("connection", { connectionId: "a" });
+
+    expect(manager.list().find((tab) => tab.id === id).state).toBe("pending");
+  });
+
+  it("finds the tab that owns a webContents", () => {
+    const { manager, views } = createManager();
+    const id = manager.open("connection", { connectionId: "a" });
+
+    expect(manager.tabIdOf(views[1].webContentsId)).toBe(id);
+  });
+
+  it("finds no tab for an unknown webContents", () => {
+    const { manager } = createManager();
+
+    expect(manager.tabIdOf(-1)).toBeUndefined();
+  });
+
+  it("sets the state of a connection tab and emits", () => {
+    const { manager, onChange } = createManager();
+    const id = manager.open("connection", { connectionId: "a" });
+    onChange.mockClear();
+
+    manager.setState(id, "connected");
+
+    expect(onChange).toHaveBeenCalledTimes(1);
+    expect(manager.list().find((tab) => tab.id === id).state).toBe("connected");
+  });
+
+  it("ignores a state change on a tab that is not a connection", () => {
+    const { manager, onChange } = createManager();
+    onChange.mockClear();
+
+    manager.setState("home", "error");
+
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
+  it("shows the error on Home and closes the failed tab", () => {
+    const { manager, views } = createManager();
+    const id = manager.open("connection", { connectionId: "a" });
+
+    manager.fail(id, "The broker is unreachable");
+
+    expect(views[0].sent).toEqual([
+      ["notify:show", "The broker is unreachable", "error"],
+    ]);
+    expect(ids(manager)).toEqual(["home"]);
+    expect(manager.active().id).toBe("home");
+  });
+
+  it("does not fail a tab that is not a connection", () => {
+    const { manager } = createManager();
+    manager.open("settings");
+
+    manager.fail("settings", "x");
+
+    expect(ids(manager)).toEqual(["home", "settings"]);
   });
 });

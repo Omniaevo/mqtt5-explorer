@@ -13,6 +13,7 @@ export const Channel = Object.freeze({
   LOGGER_FOLDER: "logger:folder",
   NOTIFY_SET_CONFIG: "notify:setConfig",
   NOTIFY_SELECT_TOPIC: "notify:selectTopic",
+  NOTIFY_SHOW: "notify:show",
   DIALOG_OPEN_FILE: "dialog:openFile",
   APP_SEND_PAGE: "app:sendPage",
   APP_OPEN_FOLDER: "app:openFolder",
@@ -22,6 +23,9 @@ export const Channel = Object.freeze({
   TABS_SELECT: "tabs:select",
   TABS_CLOSE: "tabs:close",
   TABS_OPEN: "tabs:open",
+  TABS_OPEN_CONNECTION: "tabs:openConnection",
+  TABS_GET_CONNECTION: "tabs:getConnection",
+  TABS_SET_STATE: "tabs:setState",
   SHELL_SET_HEIGHT: "shell:setHeight",
 });
 

@@ -76,6 +76,12 @@ const api = {
      */
     onSelectTopic: (callback) =>
       subscribe(Channel.NOTIFY_SELECT_TOPIC, callback),
+    /**
+     * Called when main asks this view to show a toast.
+     * @param {(message: string, color: "error" | "info") => void} callback
+     * @returns {() => void} Unsubscribe function.
+     */
+    onShow: (callback) => subscribe(Channel.NOTIFY_SHOW, callback),
   },
 
   dialog: {
@@ -101,6 +107,28 @@ const api = {
     select: (id) => ipcRenderer.send(Channel.TABS_SELECT, id),
     /** @param {string} id */
     close: (id) => ipcRenderer.send(Channel.TABS_CLOSE, id),
+    /** Closes the tab of the calling view. */
+    closeSelf: () => ipcRenderer.send(Channel.TABS_CLOSE),
+    /**
+     * Opens the connection in its own tab, or selects the tab it already has.
+     * Only the Home view may call it.
+     * @param {object} connection Plain connection properties.
+     */
+    openConnection: (connection) =>
+      ipcRenderer.send(Channel.TABS_OPEN_CONNECTION, connection),
+    /**
+     * Connection properties of the tab that owns the calling view.
+     * @returns {Promise<object | undefined>}
+     */
+    getConnection: () => ipcRenderer.invoke(Channel.TABS_GET_CONNECTION),
+    /**
+     * Reports the connection state of the calling view's tab. An "error"
+     * state shows the message on Home and closes the tab.
+     * @param {"pending" | "connected" | "disconnected" | "error"} state
+     * @param {string} [message] Error text.
+     */
+    setState: (state, message) =>
+      ipcRenderer.send(Channel.TABS_SET_STATE, state, message),
     /**
      * @param {"settings" | "connection"} kind
      * @param {{connectionId?: string, connection?: object}} [payload]

@@ -13,6 +13,9 @@
         @click="select(tab.id)"
       >
         {{ tab.title }}
+        <span v-if="tab.kind === TabKind.CONNECTION" class="shell__state">
+          ({{ tab.state }})
+        </span>
       </button>
 
       <button
@@ -128,6 +131,11 @@ onUnmounted(() => {
   margin-inline-end: var(--space-2);
   padding: var(--space-1);
   border-radius: var(--radius-md);
+}
+
+.shell__state {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
 }
 
 .shell__select:hover,

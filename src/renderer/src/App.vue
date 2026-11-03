@@ -24,7 +24,7 @@
 </template>
 
 <script setup>
-import { watch } from "vue";
+import { onBeforeUnmount, watch } from "vue";
 import { setLucideProps, X } from "@lucide/vue";
 import {
   ToastClose,
@@ -55,6 +55,13 @@ settings.load();
 connections.load();
 applyAll();
 useStoreSync({ applySettings: applyAll });
+
+// Main asks this view to show a toast, e.g. when a connection tab failed
+const unsubscribeToast = window.api.notify.onShow((message, color) =>
+  notify.show(message, color)
+);
+
+onBeforeUnmount(unsubscribeToast);
 
 // Every settings change is saved right away
 watch(() => settings.$state, settings.persist, { deep: true });

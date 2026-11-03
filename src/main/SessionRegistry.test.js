@@ -6,6 +6,8 @@ function createWebContents(id) {
   return Object.assign(new EventEmitter(), { id });
 }
 
+const NEW_DOCUMENT = { isMainFrame: true, isSameDocument: false };
+
 function createRegistry() {
   const createSession = vi.fn(() => ({
     dispose: vi.fn(() => Promise.resolve()),
@@ -55,15 +57,51 @@ describe("SessionRegistry", () => {
     expect(registry.size).toBe(0);
   });
 
-  it("disposes the session when the webContents starts loading", () => {
+  it("disposes the session when the webContents loads a new document", () => {
+    const { registry } = createRegistry();
+    const webContents = createWebContents(1);
+    const session = registry.get(webContents);
+
+    webContents.emit("did-start-navigation", NEW_DOCUMENT);
+
+    expect(session.dispose).toHaveBeenCalledTimes(1);
+    expect(registry.size).toBe(0);
+  });
+
+  it("keeps the session on a same-page navigation", () => {
+    const { registry } = createRegistry();
+    const webContents = createWebContents(1);
+    const session = registry.get(webContents);
+
+    webContents.emit("did-start-navigation", {
+      isMainFrame: true,
+      isSameDocument: true,
+    });
+
+    expect(session.dispose).not.toHaveBeenCalled();
+  });
+
+  it("keeps the session when a subframe navigates", () => {
+    const { registry } = createRegistry();
+    const webContents = createWebContents(1);
+    const session = registry.get(webContents);
+
+    webContents.emit("did-start-navigation", {
+      isMainFrame: false,
+      isSameDocument: false,
+    });
+
+    expect(session.dispose).not.toHaveBeenCalled();
+  });
+
+  it("keeps the session when only the loading state changes", () => {
     const { registry } = createRegistry();
     const webContents = createWebContents(1);
     const session = registry.get(webContents);
 
     webContents.emit("did-start-loading");
 
-    expect(session.dispose).toHaveBeenCalledTimes(1);
-    expect(registry.size).toBe(0);
+    expect(session.dispose).not.toHaveBeenCalled();
   });
 
   it("creates a fresh session after a reload", () => {
@@ -71,7 +109,7 @@ describe("SessionRegistry", () => {
     const webContents = createWebContents(1);
     const before = registry.get(webContents);
 
-    webContents.emit("did-start-loading");
+    webContents.emit("did-start-navigation", NEW_DOCUMENT);
 
     expect(registry.get(webContents)).not.toBe(before);
   });
@@ -81,7 +119,7 @@ describe("SessionRegistry", () => {
     const webContents = createWebContents(1);
     const session = registry.get(webContents);
 
-    webContents.emit("did-start-loading");
+    webContents.emit("did-start-navigation", NEW_DOCUMENT);
     webContents.emit("destroyed");
 
     expect(session.dispose).toHaveBeenCalledTimes(1);

@@ -270,7 +270,6 @@ import { useTreeRefresh } from "../composables/useTreeRefresh";
 import TopicTree from "../models/TopicTree";
 import ConnectionProperties from "../models/ConnectionProperties";
 import SearchEngine from "../../../shared/SearchEngine";
-import { useConnectionsStore } from "../stores/connections";
 import { useSettingsStore } from "../stores/settings";
 import {
   formatEntryTime,
@@ -287,11 +286,10 @@ const MAX_SHOWN_MESSAGES = 50;
 
 const route = useRoute();
 const settings = useSettingsStore();
-const connections = useConnectionsStore();
 const connection = inject("connection");
 
 const connectionProperties = new ConnectionProperties();
-connectionProperties.init(connections.getByIndex(route.params.index));
+connectionProperties.init(route.meta.connection);
 
 const isV5 = connectionProperties.version > 4;
 
