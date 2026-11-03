@@ -40,7 +40,6 @@ const focusWindow = () => {
   setTimeout(() => win.focus(), 200);
 };
 const ipc = registerIpcHandlers({
-  getWindow: () => win,
   store,
   onPageChange: showPage,
   focusWindow,
@@ -359,9 +358,6 @@ async function createWindow() {
       win.hide();
     }
   });
-
-  // A page reload drops the renderer state, so the MQTT session must go too
-  win.webContents.on("did-start-loading", () => ipc.resetSession());
 
   Menu.setApplicationMenu(Menu.buildFromTemplate(menuTemplate()));
 
