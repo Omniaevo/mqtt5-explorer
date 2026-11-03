@@ -224,6 +224,7 @@ class TabManager {
       kind: TabKind.CONNECTION,
       title: connection?.name ?? "Connection",
       state: TabState.PENDING,
+      url: connection && `${connection.protocol}://${connection.host}:${connection.port}`,
       connectionId,
       connection,
     });

@@ -2,6 +2,7 @@ import { createApp } from "vue";
 import { createPinia } from "pinia";
 import App from "./App.vue";
 import Shell from "./views/Shell.vue";
+import TooltipOverlay from "./views/TooltipOverlay.vue";
 import router from "./router";
 import Connection from "./utils/Connection";
 
@@ -19,13 +20,14 @@ import "./assets/css/scrollbar.css";
 
 document.documentElement.style.overflow = "hidden";
 
-// The shell is the window itself: no router, no connection or toast host
-const isShell = window.location.hash.startsWith("#/shell");
-const app = createApp(isShell ? Shell : App);
+// The shell and the tooltip view are not tabs: no router, no connection or toast host
+const HOSTS = { "#/shell": Shell, "#/tooltip": TooltipOverlay };
+const host = HOSTS[window.location.hash];
+const app = createApp(host ?? App);
 
 app.use(createPinia());
 
-if (!isShell) {
+if (!host) {
   app.provide("connection", new Connection());
   app.use(router);
 }

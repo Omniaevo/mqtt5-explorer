@@ -20,6 +20,9 @@ export function createTabViewFactory(win, webPreferences) {
       setBounds: (bounds) => view.setBounds(bounds),
       setBorderRadius: (radius) => view.setBorderRadius(radius),
       setVisible: (visible) => view.setVisible(visible),
+      setBackgroundColor: (color) => view.setBackgroundColor(color),
+      // Adding a child again moves it above its siblings
+      bringToFront: () => win.contentView.addChildView(view),
       send: (channel, ...args) => view.webContents.send(channel, ...args),
       focus: () => view.webContents.focus(),
       reload: (ignoreCache) =>

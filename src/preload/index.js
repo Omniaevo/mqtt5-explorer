@@ -159,6 +159,27 @@ const api = {
     onState: (callback) => subscribe(Channel.WINDOW_STATE, callback),
   },
 
+  // Native tooltip: the shell asks for it, a view of its own draws it above the tabs
+  tooltip: {
+    /**
+     * Shell only. Shows a tooltip below an element after the caller's delay.
+     * @param {{title: string, subtitle?: string, anchor: {x: number, y: number, width: number, height: number}}} request
+     */
+    show: (request) => ipcRenderer.send(Channel.TOOLTIP_SHOW, request),
+    /** Shell only. */
+    hide: () => ipcRenderer.send(Channel.TOOLTIP_HIDE),
+    /** Tooltip view only: tells main it can receive content. */
+    ready: () => ipcRenderer.send(Channel.TOOLTIP_READY),
+    /**
+     * Tooltip view only.
+     * @param {(content: {id: number, title: string, subtitle?: string}) => void} callback
+     * @returns {() => void} Unsubscribe function.
+     */
+    onContent: (callback) => subscribe(Channel.TOOLTIP_CONTENT, callback),
+    /** Tooltip view only: size of the drawn content, for the view bounds. */
+    reportSize: (size) => ipcRenderer.send(Channel.TOOLTIP_SIZE, size),
+  },
+
   app: {
     /** Operating system name, as given by `process.platform`. */
     platform: process.platform,

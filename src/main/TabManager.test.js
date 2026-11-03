@@ -106,6 +106,15 @@ describe("TabManager", () => {
     expect(ids(manager)).toEqual(["home", "settings"]);
   });
 
+  it("exposes the broker url of a connection tab", () => {
+    const { manager } = createManager();
+    const connection = { name: "A", protocol: "mqtt", host: "broker", port: 1883 };
+
+    const id = manager.open("connection", { connectionId: "a", connection });
+
+    expect(manager.list().find((tab) => tab.id === id).url).toBe("mqtt://broker:1883");
+  });
+
   it("selects the existing tab of a connection", () => {
     const { manager } = createManager();
     const first = manager.open("connection", { connectionId: "a" });

@@ -12,7 +12,9 @@ import trayIconMac from "../../resources/img/tray/trayTemplate.png?asset";
 import trayIconLinux from "../../resources/img/tray/tray.png?asset";
 import { registerIpcHandlers } from "./ipcHandlers";
 import TabManager from "./TabManager";
+import TooltipOverlay from "./TooltipOverlay";
 import { registerTabsIpc } from "./tabsIpc";
+import { registerTooltipIpc } from "./tooltipIpc";
 import { registerWindowIpc, windowState } from "./windowIpc";
 import { createTabViewFactory, loadRoute } from "./createTabView";
 import { Channel, FixedTabId, MenuEvent, TabKind } from "../shared/ipcChannels";
@@ -34,6 +36,7 @@ let tray;
 let tabs;
 let removeTabsIpc;
 let removeWindowIpc;
+let removeTooltipIpc;
 let menuKind;
 
 // The menu depends on the kind of the active tab
@@ -377,12 +380,15 @@ async function createWindow() {
   if (!isMac) win.setMenuBarVisibility(false);
 
   // The window webContents is the shell; every tab is a view above it
+  const createView = createTabViewFactory(win, webPreferences);
+  const getContentSize = () => {
+    const [width, height] = win.getContentSize();
+    return { width, height };
+  };
+
   tabs = new TabManager({
-    createView: createTabViewFactory(win, webPreferences),
-    getContentSize: () => {
-      const [width, height] = win.getContentSize();
-      return { width, height };
-    },
+    createView,
+    getContentSize,
     // A maximized or full screen window has square corners
     getCornerRadius: () =>
       win.isMaximized() || win.isFullScreen() ? 0 : WINDOW_CORNER_RADIUS,
@@ -393,6 +399,11 @@ async function createWindow() {
   });
   removeTabsIpc = registerTabsIpc({
     tabs,
+    getShellContents: () => win.webContents,
+  });
+
+  removeTooltipIpc = registerTooltipIpc({
+    overlay: new TooltipOverlay({ createView, getContentSize }),
     getShellContents: () => win.webContents,
   });
 
@@ -502,6 +513,7 @@ app.on("before-quit", async (event) => {
 
     if (removeTabsIpc) removeTabsIpc();
     if (removeWindowIpc) removeWindowIpc();
+    if (removeTooltipIpc) removeTooltipIpc();
     // Destroying the window also destroys the tab views
     if (win && !win.isDestroyed()) win.destroy();
     if (tray) tray.destroy();
