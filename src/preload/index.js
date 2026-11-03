@@ -88,6 +88,29 @@ const api = {
       ipcRenderer.invoke(Channel.DIALOG_OPEN_FILE, options),
   },
 
+  tabs: {
+    /** @returns {Promise<{tabs: object[], activeId: string}>} */
+    getState: () => ipcRenderer.invoke(Channel.TABS_GET_STATE),
+    /**
+     * Called with the new tab list on every change.
+     * @param {(state: {tabs: object[], activeId: string}) => void} callback
+     * @returns {() => void} Unsubscribe function.
+     */
+    onState: (callback) => subscribe(Channel.TABS_STATE, callback),
+    /** @param {string} id */
+    select: (id) => ipcRenderer.send(Channel.TABS_SELECT, id),
+    /** @param {string} id */
+    close: (id) => ipcRenderer.send(Channel.TABS_CLOSE, id),
+    /**
+     * @param {"settings" | "connection"} kind
+     * @param {{connectionId?: string, connection?: object}} [payload]
+     */
+    open: (kind, payload) => ipcRenderer.send(Channel.TABS_OPEN, kind, payload),
+    /** @param {number} height Strip height in pixels. */
+    setStripHeight: (height) =>
+      ipcRenderer.send(Channel.SHELL_SET_HEIGHT, height),
+  },
+
   app: {
     /** Operating system name, as given by `process.platform`. */
     platform: process.platform,

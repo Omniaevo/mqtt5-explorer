@@ -1,6 +1,7 @@
 import { createApp } from "vue";
 import { createPinia } from "pinia";
 import App from "./App.vue";
+import Shell from "./views/Shell.vue";
 import router from "./router";
 import Connection from "./utils/Connection";
 
@@ -18,9 +19,15 @@ import "./assets/css/scrollbar.css";
 
 document.documentElement.style.overflow = "hidden";
 
-const app = createApp(App);
+// The shell is the window itself: no router, no connection or toast host
+const isShell = window.location.hash.startsWith("#/shell");
+const app = createApp(isShell ? Shell : App);
 
-app.provide("connection", new Connection());
 app.use(createPinia());
-app.use(router);
+
+if (!isShell) {
+  app.provide("connection", new Connection());
+  app.use(router);
+}
+
 app.mount("#app");

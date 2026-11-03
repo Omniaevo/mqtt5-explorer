@@ -17,6 +17,34 @@ export const Channel = Object.freeze({
   APP_SEND_PAGE: "app:sendPage",
   APP_OPEN_FOLDER: "app:openFolder",
   APP_OPEN_EXTERNAL: "app:openExternal",
+  TABS_STATE: "tabs:state",
+  TABS_GET_STATE: "tabs:getState",
+  TABS_SELECT: "tabs:select",
+  TABS_CLOSE: "tabs:close",
+  TABS_OPEN: "tabs:open",
+  SHELL_SET_HEIGHT: "shell:setHeight",
+});
+
+/** Kinds of tab the main process can host. */
+export const TabKind = Object.freeze({
+  HOME: "home",
+  SETTINGS: "settings",
+  CONNECTION: "connection",
+});
+
+/** Ids of the tabs that exist at most once. */
+export const FixedTabId = Object.freeze({
+  HOME: "home",
+  SETTINGS: "settings",
+});
+
+/** Connection state of a tab. Tabs without a connection are always ready. */
+export const TabState = Object.freeze({
+  SLEEPING: "sleeping",
+  PENDING: "pending",
+  CONNECTED: "connected",
+  DISCONNECTED: "disconnected",
+  ERROR: "error",
 });
 
 /** Menu events sent from the main process to the renderer. */

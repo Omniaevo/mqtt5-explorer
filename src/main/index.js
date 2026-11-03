@@ -11,7 +11,10 @@ import trayIconWindows from "../../resources/img/tray/tray.ico?asset";
 import trayIconMac from "../../resources/img/tray/trayTemplate.png?asset";
 import trayIconLinux from "../../resources/img/tray/tray.png?asset";
 import { registerIpcHandlers } from "./ipcHandlers";
-import { MenuEvent, Page } from "../shared/ipcChannels";
+import TabManager from "./TabManager";
+import { registerTabsIpc } from "./tabsIpc";
+import { createTabViewFactory, loadRoute } from "./createTabView";
+import { Channel, MenuEvent, Page } from "../shared/ipcChannels";
 
 const isDevelopment = process.env.NODE_ENV !== "production";
 const isSingleInstance = app.requestSingleInstanceLock();
@@ -25,6 +28,8 @@ const store = new Store();
 
 let win;
 let tray;
+let tabs;
+let removeTabsIpc;
 
 const showPage = (page) => {
   if (Object.values(pages).includes(page)) {
@@ -39,6 +44,9 @@ const focusWindow = () => {
   // Ensure window is visible then focus
   setTimeout(() => win.focus(), 200);
 };
+// Menu and tray events act on the view the user is looking at
+const sendToActiveView = (channel, ...args) =>
+  tabs?.sendToActive(channel, ...args);
 const ipc = registerIpcHandlers({
   store,
   onPageChange: showPage,
@@ -132,7 +140,7 @@ let menuTemplate = (page = pages.HOME) => [
               accelerator: "CommandOrControl+,",
               click: () => {
                 if (win != undefined && win.webContents != undefined) {
-                  win.webContents.send(MenuEvent.SETTINGS);
+                  sendToActiveView(MenuEvent.SETTINGS);
                 }
               },
             },
@@ -186,7 +194,7 @@ let menuTemplate = (page = pages.HOME) => [
               accelerator: "CommandOrControl+,",
               click: () => {
                 if (win != undefined && win.webContents != undefined) {
-                  win.webContents.send(MenuEvent.SETTINGS);
+                  sendToActiveView(MenuEvent.SETTINGS);
                 }
               },
             },
@@ -203,7 +211,7 @@ let menuTemplate = (page = pages.HOME) => [
               label: "Export all",
               click: () => {
                 if (win != undefined && win.webContents != undefined) {
-                  win.webContents.send(MenuEvent.EXPORT_DATA);
+                  sendToActiveView(MenuEvent.EXPORT_DATA);
                 }
               },
             },
@@ -228,10 +236,10 @@ let menuTemplate = (page = pages.HOME) => [
                       "utf8"
                     );
 
-                    win.webContents.send(MenuEvent.IMPORT_DATA, fileContent);
+                    sendToActiveView(MenuEvent.IMPORT_DATA, fileContent);
                   })
                   .catch((err) => {
-                    win.webContents.send(
+                    sendToActiveView(
                       MenuEvent.IMPORT_DATA,
                       `Error: ${err}`
                     );
@@ -252,7 +260,7 @@ let menuTemplate = (page = pages.HOME) => [
               accelerator: "CommandOrControl+F",
               click: () => {
                 if (win != undefined && win.webContents != undefined) {
-                  win.webContents.send(MenuEvent.SEARCH);
+                  sendToActiveView(MenuEvent.SEARCH);
                 }
               },
             },
@@ -261,7 +269,7 @@ let menuTemplate = (page = pages.HOME) => [
               accelerator: "CommandOrControl+Shift+N",
               click: () => {
                 if (win != undefined && win.webContents != undefined) {
-                  win.webContents.send(MenuEvent.NOTIFICATION);
+                  sendToActiveView(MenuEvent.NOTIFICATION);
                 }
               },
             },
@@ -308,7 +316,7 @@ let trayTemplate = [
       if (!win.isVisible()) win.show();
       if (win.isMinimized()) win.restore();
 
-      win.webContents.send(MenuEvent.SETTINGS);
+      sendToActiveView(MenuEvent.SETTINGS);
     },
   },
   { type: "separator" },
@@ -317,17 +325,33 @@ let trayTemplate = [
 
 async function createWindow() {
   // Create the browser window.
+  const webPreferences = {
+    preload: path.join(__dirname, "../preload/index.js"),
+    contextIsolation: true,
+    nodeIntegration: false,
+    sandbox: true,
+  };
+
   win = new BrowserWindow({
     width: store.get("app_width") || 1366,
     height: store.get("app_height") || 768,
     title: appName,
     icon: appIcon,
-    webPreferences: {
-      preload: path.join(__dirname, "../preload/index.js"),
-      contextIsolation: true,
-      nodeIntegration: false,
-      sandbox: true,
+    webPreferences,
+  });
+
+  // The window webContents is the shell; every tab is a view above it
+  tabs = new TabManager({
+    createView: createTabViewFactory(win, webPreferences),
+    getContentSize: () => {
+      const [width, height] = win.getContentSize();
+      return { width, height };
     },
+    onChange: (snapshot) => win.webContents.send(Channel.TABS_STATE, snapshot),
+  });
+  removeTabsIpc = registerTabsIpc({
+    tabs,
+    getShellContents: () => win.webContents,
   });
 
   // Create the tray icon
@@ -344,12 +368,19 @@ async function createWindow() {
 
   // Catch window resizing for storing the information
   win.on("resize", () => {
+    tabs.resize();
+
     const size = win.getSize();
 
     // Save to local storage
     store.set("app_width", size[0]);
     store.set("app_height", size[1]);
   });
+
+  // Maximize, restore and full screen do not always fire "resize" first
+  ["maximize", "unmaximize", "enter-full-screen", "leave-full-screen"].forEach(
+    (eventName) => win.on(eventName, () => tabs.resize())
+  );
 
   // Close to tray
   win.on("close", (event) => {
@@ -361,14 +392,11 @@ async function createWindow() {
 
   Menu.setApplicationMenu(Menu.buildFromTemplate(menuTemplate()));
 
+  await loadRoute(win.webContents, "/shell");
+
   if (process.env.ELECTRON_RENDERER_URL) {
-    // Load the url of the dev server if in development mode
-    await win.loadURL(process.env.ELECTRON_RENDERER_URL);
     if (!process.env.IS_TEST) win.webContents.openDevTools({ mode: "detach" });
   } else {
-    // Load the built index.html when not in development
-    await win.loadFile(path.join(__dirname, "../renderer/index.html"));
-
     // Verify if the app can be updated.
     autoUpdater.checkForUpdatesAndNotify();
   }
@@ -404,19 +432,27 @@ app.on("activate", () => {
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-app.on("ready", async () => createWindow());
+app.on("ready", async () => {
+  // A second instance quits: it must not build a window that fails to load
+  if (isSingleInstance) await createWindow();
+});
 
 app.on("before-quit", async (event) => {
   event.preventDefault();
 
-  // Flush log files before the process exits
-  await ipc.shutdown();
+  try {
+    // Flush log files before the process exits
+    await ipc.shutdown();
 
-  if (win) win.destroy();
-  if (tray) tray.destroy();
-
-  app.removeAllListeners();
-  app.exit();
+    if (removeTabsIpc) removeTabsIpc();
+    // Destroying the window also destroys the tab views
+    if (win && !win.isDestroyed()) win.destroy();
+    if (tray) tray.destroy();
+  } finally {
+    // The process must exit even if a cleanup step fails
+    app.removeAllListeners();
+    app.exit();
+  }
 });
 
 // Exit cleanly on request from parent process in development mode.
