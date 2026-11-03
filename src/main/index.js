@@ -143,12 +143,14 @@ const aboutMenu = [
           type: "info",
           title: "Keyboard shortcuts",
           message:
-            `Edit settings\t\t\t\t\t${meta} + COMMA\n` +
+            `Open settings\t\t\t\t\t${meta} + COMMA\n` +
             `Toggle search\t\t\t\t\t${meta} + F\n` +
             `Notifications and logging\t\t${meta} + Shift + N\n` +
             `Reload the tab\t\t\t\t\t${meta} + R\n` +
             `Force reload the tab\t\t\t${meta} + Shift + R\n` +
             `Close the tab\t\t\t\t\t${meta} + W\n` +
+            (isMac ? "Close the window\t\t\t\tCmd + Shift + W\n" : "") +
+            `Focus the Home search\t\t${meta} + L or /\n` +
             `Next tab\t\t\t\t\t\tCtrl + Tab\n` +
             `Previous tab\t\t\t\t\tCtrl + Shift + Tab\n` +
             `Quit the app\t\t\t\t\t${meta} + Q\n` +

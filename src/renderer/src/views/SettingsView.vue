@@ -311,6 +311,8 @@ const SHORTCUTS = [
   { label: "Reload the tab", keys: `${MODIFIER_KEY} + R` },
   { label: "Force reload the tab", keys: `${MODIFIER_KEY} + Shift + R` },
   { label: "Close the tab", keys: `${MODIFIER_KEY} + W` },
+  ...(isMacOs ? [{ label: "Close the window", keys: "Cmd + Shift + W" }] : []),
+  { label: "Focus the Home search", keys: `${MODIFIER_KEY} + L or /` },
   { label: "Next tab", keys: "Ctrl + Tab" },
   { label: "Previous tab", keys: "Ctrl + Shift + Tab" },
   { label: "Quit the app", keys: `${MODIFIER_KEY} + Q` },

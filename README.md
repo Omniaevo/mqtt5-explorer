@@ -10,6 +10,37 @@ The aim of this project is to bring the users a client app capable of making use
 
 > **NEWS!** You can find a complete rewrite and redesign of MQTT5 Expolorer [here](https://github.com/Omniaevo/mqtt5-explorer-go). The new project is based on **GoLang** (using **Wails**) instead of Electron, the UI has been updated to **Vue 3**. The *Go version* has the starting version set to *2.0.0* but, since the new project is not complete yet and it is primarily *vibe-coded* ([OpenCode + MiniMax M2.5](https://opencode.ai/)), it is not intended to replace this version of the app present in this repository. We'll be glad if you want to try it and give feedbacks on the new *Go version* of [MQTT5 Explorer](https://github.com/Omniaevo/mqtt5-explorer-go)!
 
+## Features
+
+- **Browser-like window.** A tab strip replaces the native title bar. Windows and Linux keep the native window buttons. macOS keeps its traffic lights and menu bar.
+- **Parallel connections.** Each connection opens in its own tab. Several brokers stay live at the same time. A tab shows the connection state and the number of new messages it got in the background.
+- **Pinned tabs.** Pin a saved connection from the tab menu or the Home menu. Pinned tabs come back at the next start. They connect only when you select them.
+- **Start page.** The Home tab has a search field, your recent connections as tiles (1 to 4 rows, set in Settings) and all other connections in a list.
+- **Quick connect.** Type a broker URL (`mqtt://`, `mqtts://`, `ws://` or `wss://`) in the Home search and press Enter. It opens a temporary tab. Save the connection to pin it.
+- **Topic search across tabs.** The Home search also finds topics in the connected tabs. A click opens the tab on that topic.
+- **Wallpapers.** Pick one of 9 patterns for the Home page in Settings. They follow the theme and your primary color.
+- **Settings tab.** Theme, font size, primary color, Home layout, connection defaults and the shortcut list.
+
+### Keyboard shortcuts
+
+Use `Cmd` instead of `Ctrl` on macOS.
+
+| Action | Shortcut |
+| --- | --- |
+| Open settings | `Ctrl + ,` |
+| Toggle search (connection tab) | `Ctrl + F` |
+| Notifications and logging (connection tab) | `Ctrl + Shift + N` |
+| Reload the tab | `Ctrl + R` |
+| Force reload the tab | `Ctrl + Shift + R` |
+| Close the tab | `Ctrl + W` |
+| Close the window (macOS only) | `Cmd + Shift + W` |
+| Focus the Home search (Home tab) | `Ctrl + L` or `/` |
+| Next tab | `Ctrl + Tab` |
+| Previous tab | `Ctrl + Shift + Tab` |
+| Quit the app | `Ctrl + Q` |
+| Show shortcuts | `Ctrl + K` |
+| About the app | `Ctrl + I` |
+
 ## Screenshots
 
 ### Dark theme
@@ -50,9 +81,9 @@ npm install
 
 Source layout:
 
-- `src/main`: main process (window, MQTT client, settings, logger, notifications).
+- `src/main`: main process (window, tab manager, one MQTT session per connection tab, settings, logger, notifications).
 - `src/preload`: preload script. It exposes `window.api` to the renderer.
-- `src/renderer`: Vue 3 interface. It has no access to Node.js.
+- `src/renderer`: Vue 3 interface. It has no access to Node.js. One bundle with several routes: the shell (tab strip), Home, Settings and the connection viewer. Each tab is a separate view.
 - `src/shared`: code used by both main and renderer.
 
 ### Compiles and hot-reloads for development
@@ -125,7 +156,9 @@ Configuration files:
 - `electron-builder.yml`: packaging (AppImage, Flatpak, dmg, portable exe), output dir and publish target.
 - `vitest.config.mjs`, `eslint.config.mjs`, `.prettierrc`: tests, lint and format.
 - `src/renderer/src/assets/css/tokens.css`: design tokens (colors, spacing, typography) for light and dark themes.
+- `src/renderer/src/assets/css/wallpapers.css`: Home wallpaper patterns (tinted from the tokens).
 - `src/renderer/src/components/ui/`: shared UI components built on Reka UI.
+- `design/`: design system ("Reka Industrial"), tokens and a static sample page.
 
 See:
 
