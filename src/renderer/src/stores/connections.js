@@ -66,6 +66,17 @@ export const useConnectionsStore = defineStore("connections", {
       if (!connection) return;
 
       connection.lastConnectedAt = new Date().toISOString();
+      connection.lastError = undefined;
+      this.persist();
+    },
+
+    /** Saves why the last connection attempt of a saved connection failed. No-op for an unsaved one. */
+    markFailed(id, message) {
+      const connection = this.savedConnections.find((c) => c.id === id);
+
+      if (!connection) return;
+
+      connection.lastError = message;
       this.persist();
     },
 

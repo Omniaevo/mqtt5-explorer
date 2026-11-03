@@ -363,7 +363,9 @@ const {
   stayDisconnected,
   reconnect,
   disconnect,
-} = useConnectionSession(connection);
+} = useConnectionSession(connection, (message) =>
+  connections.markFailed(connectionProperties.id, message)
+);
 const {
   selectedNode,
   selectedView,

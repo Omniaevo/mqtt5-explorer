@@ -224,6 +224,7 @@ function duplicate(source) {
   copy.init(source);
   copy.id = crypto.randomUUID();
   copy.name = `${source.name} (copy)`;
+  copy.lastError = undefined;
   openDialog(copy, "edit");
 }
 

@@ -77,6 +77,34 @@ describe("connections store", () => {
     });
   });
 
+  describe("markFailed", () => {
+    it("saves the error of a saved connection", () => {
+      const store = storeWith([connection("a")]);
+
+      store.markFailed("a", "Connection refused");
+
+      expect(store.brokerConnections[0].lastError).toBe("Connection refused");
+      expect(window.api.store.set).toHaveBeenCalledOnce();
+    });
+
+    it("skips an unsaved connection", () => {
+      const store = storeWith([connection("t", undefined, false)]);
+
+      store.markFailed("t", "Connection refused");
+
+      expect(window.api.store.set).not.toHaveBeenCalled();
+    });
+
+    it("is cleared by the next successful connect", () => {
+      const store = storeWith([connection("a")]);
+      store.markFailed("a", "Connection refused");
+
+      store.markConnected("a");
+
+      expect(store.brokerConnections[0].lastError).toBeUndefined();
+    });
+  });
+
   describe("markConnected", () => {
     it("stamps and saves a saved connection", () => {
       const store = storeWith([connection("a")]);

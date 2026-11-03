@@ -4,6 +4,7 @@
       <span class="connection-tile__head">
         <ConnectionStateDot v-if="tabState" :state="tabState" />
         <span class="connection-tile__name"><HighlightedText :text="connection.name" :query="query" /></span>
+        <ConnectionErrorIcon v-if="connection.lastError" :message="connection.lastError" />
       </span>
       <span class="connection-tile__url"><HighlightedText :text="connectionUrl(connection)" :query="query" /></span>
     </button>
@@ -26,6 +27,7 @@
 import { ref } from "vue";
 import AppMenu from "../ui/AppMenu.vue";
 import HighlightedText from "../ui/HighlightedText.vue";
+import ConnectionErrorIcon from "./ConnectionErrorIcon.vue";
 import ConnectionStateDot from "./ConnectionStateDot.vue";
 import { connectionUrl } from "../../../../shared/connectionUrl";
 
