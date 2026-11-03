@@ -7,11 +7,14 @@
       </h1>
 
       <AppTextField
+        ref="searchField"
         v-model="searchConnection"
         class="home__search"
         label="Search connections"
         label-hidden
-        placeholder="Search connections"
+        placeholder="Search connections or type a broker URL"
+        @keydown.enter="connectFromSearch"
+        @keydown.esc="clearSearch"
       >
         <template #prepend-inner>
           <Search :size="16" aria-hidden="true" class="home__search-icon" />
@@ -28,13 +31,20 @@
         </template>
       </AppTextField>
 
-      <section v-if="connections.recentConnections.length" class="home__section">
+      <QuickConnectRow
+        v-if="quickConnectTarget"
+        :url="connectionUrl(quickConnectTarget)"
+        @connect="connectQuick"
+      />
+
+      <section v-if="recentConnections.length" class="home__section">
         <h2 class="home__caption">Recent</h2>
         <ul class="home__tiles" aria-label="Recent connections">
           <ConnectionTile
-            v-for="connection in connections.recentConnections"
+            v-for="connection in recentConnections"
             :key="connection.id"
             :connection="connection"
+            :query="searchConnection"
             :menu-items="menuItemsFor(connection)"
             :tab-state="tabStateOf(connection)"
             @connect="connect(connection)"
@@ -52,18 +62,19 @@
             New connection
           </AppButton>
         </div>
-        <ul v-if="connections.otherConnections.length" class="home__list" aria-label="All connections">
+        <ul v-if="otherConnections.length" class="home__list" aria-label="All connections">
           <ConnectionRow
-            v-for="connection in connections.otherConnections"
+            v-for="connection in otherConnections"
             :key="connection.id"
             :connection="connection"
+            :query="searchConnection"
             :menu-items="menuItemsFor(connection)"
             :tab-state="tabStateOf(connection)"
             @connect="connect(connection)"
             @action="runAction($event, connection)"
           />
         </ul>
-        <p v-else class="home__empty">{{ emptyListText }}</p>
+        <p v-else-if="emptyListText" class="home__empty">{{ emptyListText }}</p>
       </section>
     </div>
 
@@ -99,11 +110,12 @@
 </template>
 
 <script setup>
-import { computed, onBeforeMount, onBeforeUnmount, ref } from "vue";
+import { computed, onBeforeMount, onBeforeUnmount, onMounted, ref, useTemplateRef } from "vue";
 import { Copy, Download, Pencil, Pin, Plus, Search, Trash2, X } from "@lucide/vue";
 import logo from "../assets/logo.png";
 import ConnectionDialog from "../components/ConnectionDialog.vue";
 import ConnectionRow from "../components/home/ConnectionRow.vue";
+import QuickConnectRow from "../components/home/QuickConnectRow.vue";
 import ConnectionTile from "../components/home/ConnectionTile.vue";
 import AppButton from "../components/ui/AppButton.vue";
 import AppDialog from "../components/ui/AppDialog.vue";
@@ -111,7 +123,10 @@ import AppTextField from "../components/ui/AppTextField.vue";
 import ConnectionProperties from "../models/ConnectionProperties";
 import { useConnectionsStore } from "../stores/connections";
 import { useNotifyStore } from "../stores/notify";
+import connectionMatches from "../utils/connectionMatches";
+import parseBrokerUrl from "../utils/parseBrokerUrl";
 import toPlain from "../utils/toPlain";
+import { connectionUrl } from "../../../shared/connectionUrl";
 
 const connections = useConnectionsStore();
 const notify = useNotifyStore();
@@ -127,11 +142,33 @@ const dialogOpen = ref(false);
 /** Reduced state of the open connection tabs, by connection id. */
 const tabStates = ref(new Map());
 
-const emptyListText = computed(() =>
-  connections.recentConnections.length
-    ? "No other connections."
-    : "No connections yet."
+const searchField = useTemplateRef("searchField");
+
+const recentConnections = computed(() =>
+  connections.recentConnections.filter(matchesSearch)
 );
+const otherConnections = computed(() =>
+  connections.otherConnections.filter(matchesSearch)
+);
+
+/** Broker URL typed in the search field, or undefined when the text is not one. */
+const quickConnectTarget = computed(() => parseBrokerUrl(searchConnection.value));
+
+const emptyListText = computed(() => {
+  if (searchConnection.value.trim()) {
+    return recentConnections.value.length || quickConnectTarget.value
+      ? ""
+      : "No connections match your search.";
+  }
+
+  return connections.recentConnections.length
+    ? "No other connections."
+    : "No connections yet.";
+});
+
+function matchesSearch(connection) {
+  return connectionMatches(connection, searchConnection.value);
+}
 
 function tabStateOf(connection) {
   return tabStates.value.get(connection.id)?.state;
@@ -208,6 +245,44 @@ function connectTemporary(data) {
   connect(data);
 }
 
+/** Opens a temporary tab with default properties and the typed broker URL. */
+function connectQuick() {
+  const target = quickConnectTarget.value;
+  const defaults = new ConnectionProperties();
+
+  defaults.init({ ...defaults, ...target, name: target.host });
+  connectTemporary(defaults);
+}
+
+/** Enter in the search: the typed URL first, else the first match. */
+function connectFromSearch() {
+  if (quickConnectTarget.value) return connectQuick();
+
+  const [firstMatch] = [...recentConnections.value, ...otherConnections.value];
+
+  if (firstMatch) connect(firstMatch);
+}
+
+function clearSearch() {
+  searchConnection.value = "";
+}
+
+function isTypingTarget(target) {
+  return target.closest("input, textarea, select, [contenteditable]") !== null;
+}
+
+/** Ctrl/Cmd+L, or `/` outside text fields, focuses the search; ignored while a dialog is open. */
+function focusSearchOnShortcut(event) {
+  if (dialogOpen.value || deleteDialog.value) return;
+
+  const isAddressShortcut = (event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "l";
+  const isSlash = event.key === "/" && !isTypingTarget(event.target);
+
+  if (!isAddressShortcut && !isSlash) return;
+  event.preventDefault();
+  searchField.value.focus();
+}
+
 function confirmDelete(connection) {
   connectionToDelete.value = connection;
   deleteDialog.value = true;
@@ -266,6 +341,11 @@ function setTabStates(states) {
 
 let unsubscribeMenuEvents = [];
 
+onMounted(() => {
+  searchField.value.focus();
+  window.addEventListener("keydown", focusSearchOnShortcut);
+});
+
 onBeforeMount(() => {
   unsubscribeMenuEvents = [
     window.api.app.on("exportDataPressed", exportConnectionData),
@@ -276,6 +356,7 @@ onBeforeMount(() => {
 });
 
 onBeforeUnmount(() => {
+  window.removeEventListener("keydown", focusSearchOnShortcut);
   unsubscribeMenuEvents.forEach((unsubscribe) => unsubscribe());
 });
 </script>

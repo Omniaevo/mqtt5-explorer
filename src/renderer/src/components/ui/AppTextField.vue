@@ -73,6 +73,8 @@ function clear() {
   input.value.focus();
 }
 
+defineExpose({ focus: () => input.value.focus() });
+
 const ROOT_ATTRS = ["class", "style"];
 const inputAttrs = computed(() =>
   Object.fromEntries(Object.entries(attrs).filter(([name]) => !ROOT_ATTRS.includes(name))),

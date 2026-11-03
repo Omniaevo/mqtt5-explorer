@@ -2,8 +2,8 @@
   <li class="connection-row" @contextmenu.prevent="menuOpen = true">
     <button class="connection-row__main" type="button" @click="emit('connect')">
       <ConnectionStateDot v-if="tabState" :state="tabState" />
-      <span class="connection-row__name">{{ connection.name }}</span>
-      <span class="connection-row__url">{{ connectionUrl(connection) }}</span>
+      <span class="connection-row__name"><HighlightedText :text="connection.name" :query="query" /></span>
+      <span class="connection-row__url"><HighlightedText :text="connectionUrl(connection)" :query="query" /></span>
     </button>
     <AppMenu
       v-model:open="menuOpen"
@@ -21,6 +21,7 @@
  */
 import { ref } from "vue";
 import AppMenu from "../ui/AppMenu.vue";
+import HighlightedText from "../ui/HighlightedText.vue";
 import ConnectionStateDot from "./ConnectionStateDot.vue";
 import { connectionUrl } from "../../../../shared/connectionUrl";
 
@@ -28,6 +29,8 @@ defineProps({
   connection: { type: Object, required: true },
   menuItems: { type: Array, required: true },
   tabState: { type: String, default: undefined },
+  /** Search text to highlight in the name and URL. */
+  query: { type: String, default: "" },
 });
 
 const emit = defineEmits(["connect", "action"]);

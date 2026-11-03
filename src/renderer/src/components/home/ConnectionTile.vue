@@ -3,9 +3,9 @@
     <button class="connection-tile__main" type="button" @click="emit('connect')">
       <span class="connection-tile__head">
         <ConnectionStateDot v-if="tabState" :state="tabState" />
-        <span class="connection-tile__name">{{ connection.name }}</span>
+        <span class="connection-tile__name"><HighlightedText :text="connection.name" :query="query" /></span>
       </span>
-      <span class="connection-tile__url">{{ connectionUrl(connection) }}</span>
+      <span class="connection-tile__url"><HighlightedText :text="connectionUrl(connection)" :query="query" /></span>
     </button>
     <div class="connection-tile__menu">
       <AppMenu
@@ -25,6 +25,7 @@
  */
 import { ref } from "vue";
 import AppMenu from "../ui/AppMenu.vue";
+import HighlightedText from "../ui/HighlightedText.vue";
 import ConnectionStateDot from "./ConnectionStateDot.vue";
 import { connectionUrl } from "../../../../shared/connectionUrl";
 
@@ -32,6 +33,8 @@ defineProps({
   connection: { type: Object, required: true },
   menuItems: { type: Array, required: true },
   tabState: { type: String, default: undefined },
+  /** Search text to highlight in the name and URL. */
+  query: { type: String, default: "" },
 });
 
 const emit = defineEmits(["connect", "action"]);
