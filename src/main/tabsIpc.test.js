@@ -98,10 +98,17 @@ describe("parseConnection", () => {
     ).toBeUndefined();
   });
 
-  it("rejects a port that is not a number", () => {
+  it("converts a numeric port string to a number", () => {
     expect(
       parseConnection({ ...validConnection(), port: "1883" })
+    ).toMatchObject({ port: 1883 });
+  });
+
+  it("rejects a port that is not a number", () => {
+    expect(
+      parseConnection({ ...validConnection(), port: "abc" })
     ).toBeUndefined();
+    expect(parseConnection({ ...validConnection(), port: " " })).toBeUndefined();
   });
 
   it("rejects topics that are not strings", () => {

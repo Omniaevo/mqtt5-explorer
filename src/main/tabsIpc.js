@@ -16,7 +16,6 @@ const LISTENER_CHANNELS = [
   Channel.TABS_SELECT,
   Channel.TABS_CLOSE,
   Channel.TABS_OPEN,
-  Channel.TABS_OPEN_CONNECTION,
   Channel.TABS_SET_STATE,
   Channel.TABS_CONTEXT_MENU,
   Channel.TABS_REORDER,
@@ -33,6 +32,7 @@ const HANDLER_CHANNELS = [
   Channel.TABS_GET_OWN_STATE,
   Channel.TABS_GET_PINNED,
   Channel.TABS_SET_PINNED,
+  Channel.TABS_OPEN_CONNECTION,
 ];
 
 const isPlainObject = (value) =>
@@ -57,15 +57,23 @@ const isNonEmptyString = (value) => typeof value === "string" && value !== "";
 const pick = (source, keys) =>
   Object.fromEntries(keys.map((key) => [key, source[key]]));
 
+/** Numeric strings become numbers: text inputs and old saved data give "1883". */
+const toNumber = (value) =>
+  isNonEmptyString(value) && value.trim() !== "" ? Number(value) : value;
+
 /**
  * Returns a copy of the connection with only the known fields, or undefined
  * when a required field is missing or a field has the wrong type.
  */
-export function parseConnection(connection) {
-  if (!isPlainObject(connection)) return undefined;
+export function parseConnection(input) {
+  if (!isPlainObject(input)) return undefined;
 
   const { requiredStrings, optionalStrings, numbers, protocols } =
     ConnectionFields;
+  const connection = {
+    ...input,
+    ...Object.fromEntries(numbers.map((key) => [key, toNumber(input[key])])),
+  };
   const { protocol, topics, validateCertificate } = connection;
   const valid =
     requiredStrings.every((key) => isNonEmptyString(connection[key])) &&
@@ -185,15 +193,17 @@ function registerViewHandlers({ tabs, fromShell, tabOf }) {
 
     if (typeof target === "string") tabs.requestClose([target]);
   });
-  ipcMain.on(Channel.TABS_OPEN_CONNECTION, (event, connection) => {
+  // Resolves false when the connection is invalid, so Home can tell the user
+  ipcMain.handle(Channel.TABS_OPEN_CONNECTION, (event, connection) => {
     const parsed = parseConnection(connection);
 
-    if (parsed && tabOf(event) === FixedTabId.HOME) {
-      tabs.open(TabKind.CONNECTION, {
-        connectionId: parsed.id,
-        connection: parsed,
-      });
-    }
+    if (!parsed || tabOf(event) !== FixedTabId.HOME) return false;
+
+    tabs.open(TabKind.CONNECTION, {
+      connectionId: parsed.id,
+      connection: parsed,
+    });
+    return true;
   });
   ipcMain.on(Channel.TABS_SET_STATE, (event, state, message) => {
     const report = parseStateReport(state, message);

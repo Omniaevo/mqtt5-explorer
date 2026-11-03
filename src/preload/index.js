@@ -118,9 +118,10 @@ const api = {
      * Opens the connection in its own tab, or selects the tab it already has.
      * Only the Home view may call it.
      * @param {object} connection Plain connection properties.
+     * @returns {Promise<boolean>} False when main rejects the connection.
      */
     openConnection: (connection) =>
-      ipcRenderer.send(Channel.TABS_OPEN_CONNECTION, connection),
+      ipcRenderer.invoke(Channel.TABS_OPEN_CONNECTION, connection),
     /**
      * Called with the reduced state of the open connection tabs on every change.
      * Home only.

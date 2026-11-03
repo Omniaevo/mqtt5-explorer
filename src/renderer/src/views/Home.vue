@@ -276,8 +276,13 @@ function save(data) {
   connections.persist();
 }
 
-function connect(connection) {
-  window.api.tabs.openConnection(toPlain(connection));
+/** Main rejects invalid connection data: tell the user instead of doing nothing. */
+async function connect(connection) {
+  const opened = await window.api.tabs.openConnection(toPlain(connection));
+
+  if (!opened) {
+    notify.error(`Cannot open "${connection.name}": check its settings`);
+  }
 }
 
 function saveAndConnect(data) {
