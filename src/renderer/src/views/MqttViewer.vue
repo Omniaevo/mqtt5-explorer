@@ -2,12 +2,12 @@
   <div class="viewer">
     <AppHeader>
       <template #start>
-        <AppTooltip :text="stateView.text">
+        <AppTooltip :text="statusText">
           <span
             class="state-icon"
             role="img"
             tabindex="0"
-            :aria-label="stateView.text"
+            :aria-label="statusText"
           >
             <component
               :is="stateView.icon"
@@ -357,6 +357,7 @@ const debouncedSearchTerm = useDebouncedRef(searchTerm, SEARCH_DEBOUNCE_MS);
 
 const {
   stateView,
+  statusText,
   isConnected,
   isClosed,
   connect,

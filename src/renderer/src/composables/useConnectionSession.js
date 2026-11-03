@@ -35,6 +35,13 @@ export function useConnectionSession(connection, onFailed = () => {}) {
   const notify = useNotifyStore();
   const state = ref(STATES.PENDING);
   const stateView = computed(() => STATE_VIEWS[state.value]);
+  const failureMessage = ref("");
+  // The error state explains itself: show why, not just "An error occurred"
+  const statusText = computed(() =>
+    state.value === STATES.ERROR && failureMessage.value
+      ? failureMessage.value
+      : stateView.value.text
+  );
   const isConnected = computed(() => state.value === STATES.CONNECTED);
   const isClosed = computed(
     () => state.value === STATES.DISCONNECTED || state.value === STATES.ERROR
@@ -64,6 +71,7 @@ export function useConnectionSession(connection, onFailed = () => {}) {
   /** Opens a new connection with the settings of the last `connect`. */
   function reconnect() {
     state.value = STATES.PENDING;
+    failureMessage.value = "";
     window.api.tabs.setState(TabState.PENDING);
 
     connection.connect(
@@ -90,12 +98,14 @@ export function useConnectionSession(connection, onFailed = () => {}) {
       const message = errorMessage || UNREACHABLE_MESSAGE;
 
       notify.error(message);
+      failureMessage.value = message;
       onFailed(message);
     });
   }
 
   return {
     stateView,
+    statusText,
     isConnected,
     isClosed,
     connect,
