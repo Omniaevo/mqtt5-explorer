@@ -11,6 +11,7 @@ function createFakeView(route) {
     webContentsId: nextWebContentsId++,
     visible: undefined,
     bounds: undefined,
+    radius: undefined,
     destroyed: false,
     focusCount: 0,
     reloads: [],
@@ -20,6 +21,9 @@ function createFakeView(route) {
     },
     setBounds(bounds) {
       this.bounds = bounds;
+    },
+    setBorderRadius(radius) {
+      this.radius = radius;
     },
     setVisible(visible) {
       this.visible = visible;
@@ -40,6 +44,7 @@ function createManager() {
   const views = [];
   const onChange = vi.fn();
   const contentSize = { ...CONTENT_SIZE };
+  const cornerRadius = { value: 12 };
   const manager = new TabManager({
     createView: (route) => {
       const view = createFakeView(route);
@@ -48,10 +53,11 @@ function createManager() {
       return view;
     },
     getContentSize: () => contentSize,
+    getCornerRadius: () => cornerRadius.value,
     onChange,
   });
 
-  return { manager, views, onChange, contentSize };
+  return { manager, views, onChange, contentSize, cornerRadius };
 }
 
 const ids = (manager) => manager.list().map((tab) => tab.id);
@@ -224,6 +230,32 @@ describe("TabManager", () => {
     manager.setStripHeight(40);
 
     expect(views[0].bounds).toEqual({ x: 0, y: 40, width: 1000, height: 660 });
+  });
+
+  it("rounds the views by the corner radius", () => {
+    const { manager, views } = createManager();
+
+    manager.resize();
+
+    expect(views[0].radius).toBe(12);
+  });
+
+  it("squares the views when the radius drops to zero", () => {
+    const { manager, views, cornerRadius } = createManager();
+
+    cornerRadius.value = 0;
+    manager.resize();
+
+    expect(views[0].radius).toBe(0);
+  });
+
+  it("focuses the active view on request", () => {
+    const { manager, views } = createManager();
+    const focusesBefore = views[0].focusCount;
+
+    manager.focusActive();
+
+    expect(views[0].focusCount).toBe(focusesBefore + 1);
   });
 
   it("follows the window size on resize", () => {

@@ -26,6 +26,12 @@ export const Channel = Object.freeze({
   TABS_GET_CONNECTION: "tabs:getConnection",
   TABS_SET_STATE: "tabs:setState",
   SHELL_SET_HEIGHT: "shell:setHeight",
+  SHELL_OPEN_MENU: "shell:openMenu",
+  WINDOW_MINIMIZE: "window:minimize",
+  WINDOW_TOGGLE_MAXIMIZE: "window:toggleMaximize",
+  WINDOW_CLOSE: "window:close",
+  WINDOW_GET_STATE: "window:getState",
+  WINDOW_STATE: "window:state",
 });
 
 /** Kinds of tab the main process can host. */

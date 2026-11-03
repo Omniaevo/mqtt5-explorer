@@ -13,6 +13,7 @@ import trayIconLinux from "../../resources/img/tray/tray.png?asset";
 import { registerIpcHandlers } from "./ipcHandlers";
 import TabManager from "./TabManager";
 import { registerTabsIpc } from "./tabsIpc";
+import { registerWindowIpc, windowState } from "./windowIpc";
 import { createTabViewFactory, loadRoute } from "./createTabView";
 import { Channel, FixedTabId, MenuEvent, TabKind } from "../shared/ipcChannels";
 
@@ -22,6 +23,8 @@ const isMac = process.platform === "darwin";
 const isWindows = process.platform === "win32";
 const appName = "MQTT5 Explorer";
 const COPYRIGHT_YEAR = 2021;
+// Matches the rounded top corners of the window the desktop draws
+const WINDOW_CORNER_RADIUS = 12;
 const LICENSE_URL_BASE = "https://github.com/Omniaevo/mqtt5-explorer/blob";
 
 const store = new Store();
@@ -30,16 +33,24 @@ let win;
 let tray;
 let tabs;
 let removeTabsIpc;
+let removeWindowIpc;
 let menuKind;
 
 // The menu depends on the kind of the active tab
+const activeKind = () => tabs?.active()?.kind ?? TabKind.HOME;
 const refreshMenu = () => {
-  const kind = tabs?.active()?.kind ?? TabKind.HOME;
+  const kind = activeKind();
 
   if (kind === menuKind) return;
 
   menuKind = kind;
   Menu.setApplicationMenu(Menu.buildFromTemplate(menuTemplate(kind)));
+};
+// Windows and Linux have no menu bar: the shell button pops the menu up
+const popupAppMenu = ({ x, y }) => {
+  if (isMac || !win) return;
+
+  Menu.buildFromTemplate(menuTemplate(activeKind())).popup({ window: win, x, y });
 };
 const focusWindow = () => {
   if (!win) return;
@@ -358,7 +369,12 @@ async function createWindow() {
     title: appName,
     icon: appIcon,
     webPreferences,
+    // The shell draws the title bar and the window controls
+    frame: false,
   });
+
+  // Alt must not bring the menu bar back; the accelerators stay active
+  if (!isMac) win.setMenuBarVisibility(false);
 
   // The window webContents is the shell; every tab is a view above it
   tabs = new TabManager({
@@ -367,6 +383,9 @@ async function createWindow() {
       const [width, height] = win.getContentSize();
       return { width, height };
     },
+    // A maximized or full screen window has square corners
+    getCornerRadius: () =>
+      win.isMaximized() || win.isFullScreen() ? 0 : WINDOW_CORNER_RADIUS,
     onChange: (snapshot) => {
       win.webContents.send(Channel.TABS_STATE, snapshot);
       refreshMenu();
@@ -375,6 +394,12 @@ async function createWindow() {
   removeTabsIpc = registerTabsIpc({
     tabs,
     getShellContents: () => win.webContents,
+  });
+
+  removeWindowIpc = registerWindowIpc({
+    getWindow: () => win,
+    getShellContents: () => win.webContents,
+    onOpenMenu: popupAppMenu,
   });
 
   // Create the tray icon
@@ -402,7 +427,11 @@ async function createWindow() {
 
   // Maximize, restore and full screen do not always fire "resize" first
   ["maximize", "unmaximize", "enter-full-screen", "leave-full-screen"].forEach(
-    (eventName) => win.on(eventName, () => tabs.resize())
+    (eventName) =>
+      win.on(eventName, () => {
+        tabs.resize();
+        win.webContents.send(Channel.WINDOW_STATE, windowState(win));
+      })
   );
 
   // Close to tray
@@ -413,9 +442,13 @@ async function createWindow() {
     }
   });
 
+  // The window gives the focus to the shell; the content must have it
+  win.on("focus", () => tabs.focusActive());
+
   refreshMenu();
 
   await loadRoute(win.webContents, "/shell");
+  tabs.focusActive();
 
   if (process.env.ELECTRON_RENDERER_URL) {
     if (!process.env.IS_TEST) win.webContents.openDevTools({ mode: "detach" });
@@ -468,6 +501,7 @@ app.on("before-quit", async (event) => {
     await ipc.shutdown();
 
     if (removeTabsIpc) removeTabsIpc();
+    if (removeWindowIpc) removeWindowIpc();
     // Destroying the window also destroys the tab views
     if (win && !win.isDestroyed()) win.destroy();
     if (tray) tray.destroy();

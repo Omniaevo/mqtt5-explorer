@@ -17,6 +17,7 @@ const ROUTES = Object.freeze({
 class TabManager {
   #createView;
   #getContentSize;
+  #getCornerRadius;
   #onChange;
   #tabs = [];
   #views = new Map();
@@ -26,13 +27,15 @@ class TabManager {
 
   /**
    * @param {object} deps
-   * @param {(route: string) => {webContentsId: number, setBounds: Function, setVisible: Function, send: Function, focus: Function, reload: Function, destroy: Function}} deps.createView
+   * @param {(route: string) => {webContentsId: number, setBounds: Function, setBorderRadius: Function, setVisible: Function, send: Function, focus: Function, reload: Function, destroy: Function}} deps.createView
    * @param {() => {width: number, height: number}} deps.getContentSize
+   * @param {() => number} deps.getCornerRadius Radius of the view corners in pixels.
    * @param {(snapshot: {tabs: object[], activeId: string}) => void} deps.onChange
    */
-  constructor({ createView, getContentSize, onChange }) {
+  constructor({ createView, getContentSize, getCornerRadius, onChange }) {
     this.#createView = createView;
     this.#getContentSize = getContentSize;
+    this.#getCornerRadius = getCornerRadius;
     this.#onChange = onChange;
 
     this.#add({ id: HOME_ID, kind: TabKind.HOME, title: "Home" });
@@ -71,6 +74,11 @@ class TabManager {
     this.#syncVisibility();
     this.#views.get(id).focus();
     this.#emit();
+  }
+
+  /** Gives the keyboard focus back to the view of the active tab. */
+  focusActive() {
+    this.#views.get(this.#activeId).focus();
   }
 
   /** Selects the next tab, wrapping around. */
@@ -256,7 +264,12 @@ class TabManager {
       height: Math.max(height - this.#stripHeight, 0),
     };
 
-    this.#views.forEach((view) => view.setBounds(bounds));
+    const radius = this.#getCornerRadius();
+
+    this.#views.forEach((view) => {
+      view.setBounds(bounds);
+      view.setBorderRadius(radius);
+    });
     this.#syncVisibility();
   }
 

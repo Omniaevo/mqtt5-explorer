@@ -18,6 +18,7 @@ export function createTabViewFactory(win, webPreferences) {
     return {
       webContentsId: view.webContents.id,
       setBounds: (bounds) => view.setBounds(bounds),
+      setBorderRadius: (radius) => view.setBorderRadius(radius),
       setVisible: (visible) => view.setVisible(visible),
       send: (channel, ...args) => view.webContents.send(channel, ...args),
       focus: () => view.webContents.focus(),

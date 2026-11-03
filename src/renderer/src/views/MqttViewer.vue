@@ -2,16 +2,6 @@
   <div class="viewer">
     <AppHeader>
       <template #start>
-        <AppTooltip text="Disconnect">
-          <AppButton
-            variant="icon"
-            aria-label="Disconnect"
-            @click="disconnectFromMqtt()"
-          >
-            <ArrowLeft :size="18" aria-hidden="true" />
-          </AppButton>
-        </AppTooltip>
-
         <AppTooltip :text="stateView.text">
           <span
             class="state-icon"
@@ -249,7 +239,7 @@ import {
   watch,
 } from "vue";
 import { useRoute } from "vue-router";
-import { ArrowLeft, CircleDot, RefreshCw, Trash2, X } from "@lucide/vue";
+import { CircleDot, RefreshCw, Trash2, X } from "@lucide/vue";
 import NotificationsDialog from "../components/viewer/NotificationsDialog.vue";
 import HistoryPanel from "../components/viewer/HistoryPanel.vue";
 import AppButton from "../components/ui/AppButton.vue";
@@ -314,7 +304,7 @@ const searchTerm = ref(undefined);
 const searchMode = ref(undefined);
 const debouncedSearchTerm = useDebouncedRef(searchTerm, SEARCH_DEBOUNCE_MS);
 
-const { stateView, connect, disconnect: disconnectFromMqtt } =
+const { stateView, connect } =
   useConnectionSession(connection);
 const {
   selectedNode,

@@ -139,6 +139,26 @@ const api = {
       ipcRenderer.send(Channel.SHELL_SET_HEIGHT, height),
   },
 
+  // Shell only: the window has no native frame
+  window: {
+    /**
+     * Pops up the app menu (Windows and Linux).
+     * @param {{x: number, y: number}} anchor Window position in pixels.
+     */
+    openMenu: (anchor) => ipcRenderer.send(Channel.SHELL_OPEN_MENU, anchor),
+    minimize: () => ipcRenderer.send(Channel.WINDOW_MINIMIZE),
+    toggleMaximize: () => ipcRenderer.send(Channel.WINDOW_TOGGLE_MAXIMIZE),
+    /** Closes the window, or hides it to the tray. */
+    close: () => ipcRenderer.send(Channel.WINDOW_CLOSE),
+    /** @returns {Promise<{maximized: boolean}>} */
+    getState: () => ipcRenderer.invoke(Channel.WINDOW_GET_STATE),
+    /**
+     * @param {(state: {maximized: boolean}) => void} callback
+     * @returns {() => void} Unsubscribe function.
+     */
+    onState: (callback) => subscribe(Channel.WINDOW_STATE, callback),
+  },
+
   app: {
     /** Operating system name, as given by `process.platform`. */
     platform: process.platform,
