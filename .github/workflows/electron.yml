@@ -6,12 +6,15 @@ on:
       - "**"
     tags:
       - v[0-9]+.[0-9]+.[0-9]+
+      - v[0-9]+.[0-9]+.[0-9]+-*
 
 permissions:
   contents: write
 
 env:
   NODE_VERSION: 24.x
+  # Tags with a "-suffix" (e.g. v1.2.3-beta) publish as pre-release; overrides releaseType in electron-builder.yml
+  EP_PRE_RELEASE: ${{ contains(github.ref_name, '-') }}
 
 jobs:
   test:
