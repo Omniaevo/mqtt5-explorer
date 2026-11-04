@@ -54,16 +54,26 @@
         </AppTooltip>
       </div>
 
-      <Transition name="search-slide">
+      <!-- Icon button that grows into the search bar when opened -->
+      <div class="search" :class="{ 'search--open': searchVisible }">
         <SearchBar
           v-if="searchVisible"
           v-model:term="searchTerm"
           v-model:mode="searchMode"
-          class="search-bar"
           @close="toggleSearchField"
           @show-info="searchInfoDialog = true"
         />
-      </Transition>
+        <AppTooltip v-else text="Search">
+          <AppButton
+            ref="searchButton"
+            variant="icon"
+            aria-label="Search"
+            @click="toggleSearchField"
+          >
+            <SearchIcon :size="18" aria-hidden="true" />
+          </AppButton>
+        </AppTooltip>
+      </div>
 
       <template #end>
         <AppTooltip v-if="fileLoggingSwitch" text="Logging is active">
@@ -278,14 +288,25 @@ import {
   computed,
   inject,
   markRaw,
+  nextTick,
   onBeforeMount,
   onBeforeUnmount,
   onMounted,
   ref,
+  useTemplateRef,
   watch,
 } from "vue";
 import { useRoute } from "vue-router";
-import { Bell, CircleDot, Pin, PinOff, RefreshCw, Trash2, X } from "@lucide/vue";
+import {
+  Bell,
+  CircleDot,
+  Pin,
+  PinOff,
+  RefreshCw,
+  Search as SearchIcon,
+  Trash2,
+  X,
+} from "@lucide/vue";
 import NotificationsDialog from "../components/viewer/NotificationsDialog.vue";
 import HistoryPanel from "../components/viewer/HistoryPanel.vue";
 import AppButton from "../components/ui/AppButton.vue";
@@ -354,6 +375,7 @@ const searchInfoDialog = ref(false);
 const searchVisible = ref(false);
 const searchTerm = ref(undefined);
 const searchMode = ref(undefined);
+const searchButton = useTemplateRef("searchButton");
 const debouncedSearchTerm = useDebouncedRef(searchTerm, SEARCH_DEBOUNCE_MS);
 useTopicSearchResponder(tree);
 
@@ -441,7 +463,14 @@ function onBatch(packets) {
 function toggleSearchField() {
   searchVisible.value = !searchVisible.value;
 
-  if (!searchVisible.value) searchTerm.value = undefined;
+  if (!searchVisible.value) closeSearchField();
+}
+
+/** Clears the term and gives the focus back to the search button. */
+async function closeSearchField() {
+  searchTerm.value = undefined;
+  await nextTick();
+  searchButton.value?.$el.focus();
 }
 
 /** Copies the broker URL to the clipboard and drops the focus from the box. */
@@ -613,23 +642,23 @@ onBeforeUnmount(() =>
   color: var(--color-danger);
 }
 
-.search-bar {
-  flex: 0 1 40ch;
+/* Closed: button wide. Open: grows to the bar width */
+.search {
+  display: flex;
+  flex: 0 0 var(--control-height);
   min-inline-size: 0;
+  margin-inline-start: var(--space-3);
+  transition: flex-basis var(--duration-normal) var(--easing);
 }
 
-/* Search bar slides in from the top edge of the header */
-.search-slide-enter-active,
-.search-slide-leave-active {
-  transition:
-    transform var(--duration-normal) var(--easing),
-    opacity var(--duration-normal) var(--easing);
+/* Clip the bar content while it grows; closed state keeps the button focus ring */
+.search--open {
+  flex: 0 1 52ch;
+  overflow: hidden;
 }
 
-.search-slide-enter-from,
-.search-slide-leave-to {
-  opacity: 0;
-  transform: translateY(-50%);
+.search--open > * {
+  flex: 1;
 }
 
 /* Layout */
@@ -874,8 +903,7 @@ onBeforeUnmount(() =>
   .message-row,
   .message-move,
   .message-enter-active,
-  .search-slide-enter-active,
-  .search-slide-leave-active {
+  .search {
     transition: none;
   }
 
