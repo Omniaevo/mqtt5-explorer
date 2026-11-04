@@ -442,14 +442,14 @@ describe("TabManager", () => {
       expect(onPinnedChange).not.toHaveBeenCalled();
     });
 
-    it("creates the view and wakes the tab disconnected on its first select", () => {
+    it("creates the view and wakes the tab connecting on its first select", () => {
       const { manager, views } = createManager();
       manager.restorePinned(["a"], [saved("a")]);
 
       manager.select(manager.list()[1].id);
 
       expect(views.at(-1).route).toBe(`/viewer/${manager.active().id}`);
-      expect(manager.active().state).toBe("disconnected");
+      expect(manager.active().state).toBe("pending");
     });
 
     it("keeps the other sleeping tabs asleep when one wakes", () => {
@@ -479,7 +479,77 @@ describe("TabManager", () => {
 
       manager.close("settings");
 
-      expect(manager.active()).toMatchObject({ connectionId: "a", state: "disconnected" });
+      expect(manager.active()).toMatchObject({ connectionId: "a", state: "pending" });
+    });
+
+    it("destroys the view of an unloaded tab and keeps the tab", () => {
+      const { manager, views } = createPinnable("a");
+      const a = openSaved(manager, "a");
+
+      expect(manager.unload(a)).toBe(true);
+
+      expect(views[1].destroyed).toBe(true);
+      expect(manager.list().find((tab) => tab.id === a).state).toBe("sleeping");
+    });
+
+    it("selects Home when the active tab is unloaded", () => {
+      const { manager } = createPinnable("a");
+      const a = openSaved(manager, "a");
+
+      manager.unload(a);
+
+      expect(manager.active().id).toBe("home");
+    });
+
+    it("keeps the active tab when another tab is unloaded", () => {
+      const { manager } = createPinnable("a");
+      const a = openSaved(manager, "a");
+      manager.open("settings");
+
+      manager.unload(a);
+
+      expect(manager.active().id).toBe("settings");
+    });
+
+    it("keeps the pin of an unloaded tab", () => {
+      const { manager, onPinnedChange } = createPinnable("a");
+      const a = openSaved(manager, "a");
+      manager.pin(a);
+      onPinnedChange.mockClear();
+
+      manager.unload(a);
+
+      expect(manager.list().find((tab) => tab.id === a).pinned).toBe(true);
+      expect(onPinnedChange).not.toHaveBeenCalled();
+    });
+
+    it("creates a new connecting view when an unloaded tab is selected again", () => {
+      const { manager, views } = createPinnable("a");
+      const a = openSaved(manager, "a");
+      manager.unload(a);
+
+      manager.select(a);
+
+      expect(views).toHaveLength(3);
+      expect(manager.active().state).toBe("pending");
+    });
+
+    it("does not unload Home or a sleeping tab", () => {
+      const { manager } = createManager();
+      manager.restorePinned(["a"], [saved("a")]);
+
+      expect(manager.unload("home")).toBe(false);
+      expect(manager.unload(manager.list()[1].id)).toBe(false);
+    });
+
+    it("clears the logging flag when the tab is unloaded", () => {
+      const { manager } = createPinnable("a");
+      const a = openSaved(manager, "a");
+      manager.setLogging(a, true);
+
+      manager.unload(a);
+
+      expect(manager.list().find((tab) => tab.id === a).logging).toBe(false);
     });
 
     it("pins right after Home and Settings in pin order", () => {
@@ -890,19 +960,33 @@ describe("TabManager", () => {
       expect(views[1].sent).toEqual([]);
     });
 
-    it("reports a closed tab", () => {
-      const onTabClosed = vi.fn();
+    function createReporting() {
+      const onViewDestroyed = vi.fn();
       const manager = new TabManager({
         createView: createFakeView,
         getContentSize: () => CONTENT_SIZE,
         onChange: vi.fn(),
-        onTabClosed,
+        onViewDestroyed,
       });
       const tabId = manager.open("connection", { connectionId: "c1", connection });
 
+      return { manager, onViewDestroyed, tabId };
+    }
+
+    it("reports the destroyed view of a closed tab", () => {
+      const { manager, onViewDestroyed, tabId } = createReporting();
+
       manager.close(tabId);
 
-      expect(onTabClosed).toHaveBeenCalledWith(tabId);
+      expect(onViewDestroyed).toHaveBeenCalledWith(tabId);
+    });
+
+    it("reports the destroyed view of an unloaded tab", () => {
+      const { manager, onViewDestroyed, tabId } = createReporting();
+
+      manager.unload(tabId);
+
+      expect(onViewDestroyed).toHaveBeenCalledWith(tabId);
     });
   });
 });

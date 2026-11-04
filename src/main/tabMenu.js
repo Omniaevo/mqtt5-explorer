@@ -20,6 +20,11 @@ const connectionItems = ({ tab, canPin, actions }) => [
     enabled: isLive(tab.state),
     click: actions.disconnect,
   },
+  {
+    label: "Unload tab",
+    enabled: tab.state !== TabState.SLEEPING,
+    click: actions.unload,
+  },
   { type: "separator" },
 ];
 
@@ -30,7 +35,7 @@ const connectionItems = ({ tab, canPin, actions }) => [
  * @param {{id: string, kind: string, pinned: boolean, state: string} | undefined} deps.tab
  * @param {boolean} deps.canPin
  * @param {boolean} deps.canCloseOthers
- * @param {{pin: Function, unpin: Function, reconnect: Function, disconnect: Function, close: Function, closeOthers: Function}} deps.actions
+ * @param {{pin: Function, unpin: Function, reconnect: Function, disconnect: Function, unload: Function, close: Function, closeOthers: Function}} deps.actions
  * @returns {Electron.MenuItemConstructorOptions[]}
  */
 export function tabMenuTemplate({ tab, canPin, canCloseOthers, actions }) {

@@ -29,7 +29,7 @@ class TabManager {
   #statusBarHeight = 0;
   #nextConnectionTabId = 1;
   #onPinnedChange;
-  #onTabClosed;
+  #onViewDestroyed;
   #confirmLoggingClose;
   #savedConnections = new Map();
 
@@ -39,7 +39,7 @@ class TabManager {
    * @param {() => {width: number, height: number}} deps.getContentSize
    * @param {(snapshot: {tabs: object[], activeId: string}) => void} deps.onChange
    * @param {(connectionIds: string[]) => void} [deps.onPinnedChange] Called with the ordered ids of the pinned tabs.
-   * @param {(tabId: string) => void} [deps.onTabClosed] Called after a tab closed.
+   * @param {(tabId: string) => void} [deps.onViewDestroyed] Called after the view of a tab is destroyed: on close and on unload.
    * @param {(titles: string[]) => Promise<boolean>} [deps.confirmLoggingClose] Asks the user before tabs that log to a file close.
    */
   constructor({
@@ -47,14 +47,14 @@ class TabManager {
     getContentSize,
     onChange,
     onPinnedChange = () => {},
-    onTabClosed = () => {},
+    onViewDestroyed = () => {},
     confirmLoggingClose = async () => true,
   }) {
     this.#createView = createView;
     this.#getContentSize = getContentSize;
     this.#onChange = onChange;
     this.#onPinnedChange = onPinnedChange;
-    this.#onTabClosed = onTabClosed;
+    this.#onViewDestroyed = onViewDestroyed;
     this.#confirmLoggingClose = confirmLoggingClose;
 
     this.#add({ id: HOME_ID, kind: TabKind.HOME, title: "Home" });
@@ -71,9 +71,8 @@ class TabManager {
   open(kind, payload = {}) {
     const existing = this.#findExisting(kind, payload);
 
-    // Opening a connection on purpose: a sleeping tab connects right away
     if (existing) {
-      this.#activate(existing.id, TabState.PENDING);
+      this.select(existing.id);
       return existing.id;
     }
 
@@ -88,19 +87,40 @@ class TabManager {
 
   /** Shows the view of the tab, hides all the others and focuses the view. */
   select(id) {
-    this.#activate(id, TabState.DISCONNECTED);
-  }
-
-  /** `wakeState` is the state of a sleeping tab that gets its view now. */
-  #activate(id, wakeState) {
     const tab = this.#find(id);
 
     if (!tab) return;
 
     tab.activity = 0;
     this.#activeId = id;
-    this.#showActive(wakeState);
+    this.#showActive();
     this.#emit();
+  }
+
+  /**
+   * Unloads a connection tab without closing it: the view is destroyed, so
+   * its session ends, and the tab sleeps until the next select. When the tab
+   * is active, Home becomes active.
+   * @returns {boolean} False when the tab is not an awake connection tab.
+   */
+  unload(id) {
+    const tab = this.#find(id);
+
+    if (tab?.kind !== TabKind.CONNECTION || tab.state === TabState.SLEEPING) {
+      return false;
+    }
+
+    this.#views.get(id)?.destroy();
+    this.#views.delete(id);
+    tab.state = TabState.SLEEPING;
+    tab.logging = false;
+
+    if (this.#activeId === id) this.#activeId = HOME_ID;
+
+    this.#showActive();
+    this.#emit();
+    this.#onViewDestroyed(id);
+    return true;
   }
 
   /** Gives the keyboard focus back to the view of the active tab. */
@@ -224,7 +244,7 @@ class TabManager {
 
     this.#showActive();
     this.#emit();
-    this.#onTabClosed(id);
+    this.#onViewDestroyed(id);
     return true;
   }
 
@@ -499,20 +519,17 @@ class TabManager {
     this.#views.set(tab.id, this.#createView(ROUTES[tab.kind](tab)));
   }
 
-  /**
-   * Gives a sleeping tab its view. The viewer starts in `state`: pending
-   * connects at once, disconnected waits for the user.
-   */
-  #wake(tab, state) {
+  /** Gives a sleeping tab its view: the viewer loads and connects. */
+  #wake(tab) {
     if (this.#views.has(tab.id)) return;
 
-    tab.state = state;
+    tab.state = TabState.PENDING;
     this.#createViewOf(tab);
     this.#layout();
   }
 
-  #showActive(wakeState = TabState.DISCONNECTED) {
-    this.#wake(this.#find(this.#activeId), wakeState);
+  #showActive() {
+    this.#wake(this.#find(this.#activeId));
     this.#syncVisibility();
     this.#views.get(this.#activeId).focus();
   }

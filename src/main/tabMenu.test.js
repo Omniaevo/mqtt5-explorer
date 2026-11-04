@@ -6,6 +6,7 @@ const actions = () => ({
   unpin: vi.fn(),
   reconnect: vi.fn(),
   disconnect: vi.fn(),
+  unload: vi.fn(),
   close: vi.fn(),
   closeOthers: vi.fn(),
 });
@@ -42,6 +43,7 @@ describe("tabMenuTemplate", () => {
       "Pin tab",
       "Reconnect",
       "Disconnect",
+      "Unload tab",
       "Close",
       "Close others",
     ]);
@@ -80,4 +82,17 @@ describe("tabMenuTemplate", () => {
   it.each(["disconnected", "error"])("enables Reconnect on a %s tab", (state) => {
     expect(item(build(connectionTab({ state })), "Reconnect").enabled).toBe(true);
   });
+
+  it("disables Unload on a sleeping tab", () => {
+    const template = build(connectionTab({ state: "sleeping" }));
+
+    expect(item(template, "Unload tab").enabled).toBe(false);
+  });
+
+  it.each(["pending", "connected", "disconnected", "error"])(
+    "enables Unload on a %s tab",
+    (state) => {
+      expect(item(build(connectionTab({ state })), "Unload tab").enabled).toBe(true);
+    }
+  );
 });

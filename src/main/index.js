@@ -78,6 +78,7 @@ const popupTabMenu = (tabId) => {
       unpin: () => tabs.unpin(tabId),
       reconnect: () => tabs.sendTo(tabId, Channel.TABS_RECONNECT),
       disconnect: () => tabs.sendTo(tabId, Channel.TABS_DISCONNECT),
+      unload: () => tabs.unload(tabId),
       close: () => tabs.requestClose([tabId]),
       closeOthers: () => tabs.closeOthers(tabId),
     },
@@ -452,7 +453,7 @@ async function createWindow() {
       refreshMenu();
     },
     onPinnedChange: (connectionIds) => store.set(StoreKey.PINNED_TABS, connectionIds),
-    onTabClosed: (tabId) => topicSearch.dropTab(tabId),
+    onViewDestroyed: (tabId) => topicSearch.dropTab(tabId),
     confirmLoggingClose,
   });
   stopFollowingConnections = restorePinnedTabs({ store, tabs });
