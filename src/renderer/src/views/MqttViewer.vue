@@ -31,14 +31,30 @@
             <span class="address__name">{{ connectionProperties.name }}</span>
           </button>
         </AppTooltip>
-        <AppTooltip text="Notifications">
+        <!-- The rec icon takes the bell's place while file logging is active -->
+        <AppTooltip v-if="fileLoggingSwitch" text="Logging is active">
+          <AppButton
+            variant="icon"
+            size="sm"
+            color="danger"
+            aria-label="Logging is active"
+            @click="toggleNotificationsDialog"
+          >
+            <CircleDot class="rec-icon" :size="16" aria-hidden="true" />
+          </AppButton>
+        </AppTooltip>
+        <AppTooltip v-else text="Notifications">
           <AppButton
             variant="icon"
             size="sm"
             aria-label="Notifications"
             @click="toggleNotificationsDialog"
           >
-            <Bell :size="16" aria-hidden="true" />
+            <component
+              :is="notifySwitch ? BellRing : Bell"
+              :size="16"
+              aria-hidden="true"
+            />
           </AppButton>
         </AppTooltip>
         <AppTooltip v-if="canPin" :text="pinned ? 'Unpin tab' : 'Pin tab'">
@@ -76,16 +92,6 @@
       </div>
 
       <template #end>
-        <AppTooltip v-if="fileLoggingSwitch" text="Logging is active">
-          <AppButton
-            variant="icon"
-            color="danger"
-            aria-label="Logging is active"
-            @click="toggleNotificationsDialog"
-          >
-            <CircleDot class="rec-icon" :size="18" aria-hidden="true" />
-          </AppButton>
-        </AppTooltip>
         <AppButton
           v-if="isClosed"
           variant="tonal"
@@ -299,6 +305,7 @@ import {
 import { useRoute } from "vue-router";
 import {
   Bell,
+  BellRing,
   CircleDot,
   Pin,
   PinOff,
