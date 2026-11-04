@@ -41,6 +41,8 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
       - run: npm install
+      # electron-builder names the release "v" + package.json version: sync it with the tag
+      - run: npm version "${{ github.ref_name }}" --no-git-tag-version --allow-same-version
       - run: npm run electron:icons
       - run: npm run build:linux -- -p always
         env:
@@ -63,6 +65,8 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
       - run: npm install
+      # electron-builder names the release "v" + package.json version: sync it with the tag
+      - run: npm version "${{ github.ref_name }}" --no-git-tag-version --allow-same-version
       - run: npm run electron:icons
       - run: npm run build:mac -- -p always
         env:
@@ -79,6 +83,8 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
       - run: npm install
+      # electron-builder names the release "v" + package.json version: sync it with the tag
+      - run: npm version "${{ github.ref_name }}" --no-git-tag-version --allow-same-version
       - run: npm run electron:icons
       - run: npm run build:win -- -p always
         env:
