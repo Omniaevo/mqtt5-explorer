@@ -146,7 +146,7 @@ describe("TabManager", () => {
     expect(views.map((view) => view.visible)).toEqual([false, true]);
   });
 
-  it("selects the right neighbour when the active tab closes", () => {
+  it("selects Home when the active tab closes", () => {
     const { manager } = createManager();
     manager.open("settings");
     const middle = manager.open("connection", { connectionId: "a" });
@@ -155,17 +155,7 @@ describe("TabManager", () => {
     manager.select(middle);
     manager.close(middle);
 
-    expect(manager.active().connectionId).toBe("b");
-  });
-
-  it("selects the left neighbour when the last tab closes", () => {
-    const { manager } = createManager();
-    manager.open("settings");
-    const last = manager.open("connection", { connectionId: "a" });
-
-    manager.close(last);
-
-    expect(manager.active().id).toBe("settings");
+    expect(manager.active().id).toBe("home");
   });
 
   it("keeps the active tab when another tab closes", () => {
@@ -470,16 +460,6 @@ describe("TabManager", () => {
 
       expect(manager.active()).toMatchObject({ connectionId: "a", state: "pending" });
       expect(manager.list()).toHaveLength(2);
-    });
-
-    it("wakes the sleeping neighbour that becomes active after a close", () => {
-      const { manager } = createManager();
-      manager.restorePinned(["a"], [saved("a")]);
-      manager.open("settings");
-
-      manager.close("settings");
-
-      expect(manager.active()).toMatchObject({ connectionId: "a", state: "pending" });
     });
 
     it("destroys the view of an unloaded tab and keeps the tab", () => {

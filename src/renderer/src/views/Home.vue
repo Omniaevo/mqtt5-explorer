@@ -115,12 +115,24 @@
         </template>
       </AppDialog>
     </div>
+
+    <AppTooltip text="Settings" side="left">
+      <AppButton
+        variant="tonal"
+        color="primary"
+        class="home__settings-fab"
+        aria-label="Open settings"
+        @click="openSettings"
+      >
+        <Settings :size="16" aria-hidden="true" />
+      </AppButton>
+    </AppTooltip>
   </div>
 </template>
 
 <script setup>
 import { computed, onBeforeMount, onBeforeUnmount, onMounted, ref, useTemplateRef, watch } from "vue";
-import { Copy, Download, Pencil, Pin, Plus, Search, Trash2, X } from "@lucide/vue";
+import { Copy, Download, Pencil, Pin, Plus, Search, Settings, Trash2, X } from "@lucide/vue";
 import logo from "../assets/logo.png";
 import ConnectionDialog from "../components/ConnectionDialog.vue";
 import ConnectionRow from "../components/home/ConnectionRow.vue";
@@ -130,6 +142,7 @@ import ConnectionTile from "../components/home/ConnectionTile.vue";
 import AppButton from "../components/ui/AppButton.vue";
 import AppDialog from "../components/ui/AppDialog.vue";
 import AppTextField from "../components/ui/AppTextField.vue";
+import AppTooltip from "../components/ui/AppTooltip.vue";
 import { useDebouncedRef } from "../composables/useDebouncedRef";
 import ConnectionProperties from "../models/ConnectionProperties";
 import { useConnectionsStore } from "../stores/connections";
@@ -156,6 +169,8 @@ const debouncedSearch = useDebouncedRef(searchConnection, TOPIC_SEARCH_DEBOUNCE_
 /** Topics found in the connected tabs: `[{ tabId, title, topics }]`. */
 const topicGroups = ref([]);
 let topicSearchCount = 0;
+const openSettings = () => window.api.tabs.open("settings");
+
 const deleteDialog = ref(false);
 const connectionToDelete = ref(null);
 
@@ -421,6 +436,15 @@ onBeforeUnmount(() => {
 .home {
   block-size: 100%;
   overflow: auto;
+}
+
+/* Square tonal button; the parent selector beats the AppButton padding rule */
+.home-page .home__settings-fab {
+  position: fixed;
+  inset-block-end: var(--space-6);
+  inset-inline-end: var(--space-6);
+  inline-size: var(--button-size);
+  padding-inline: 0;
 }
 
 .home__column {

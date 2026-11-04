@@ -222,7 +222,7 @@ class TabManager {
   }
 
   /**
-   * Closes a tab. The right neighbour becomes active, else the left one.
+   * Closes a tab. When it was active, Home becomes active.
    * @returns {boolean} False when the tab is unknown or is Home.
    */
   close(id) {
@@ -238,9 +238,7 @@ class TabManager {
     // Closing a pinned tab unpins it
     if (tab.pinned) this.#notifyPinned();
 
-    if (this.#activeId === id) {
-      this.#activeId = (this.#tabs[index] ?? this.#tabs[index - 1]).id;
-    }
+    if (this.#activeId === id) this.#activeId = HOME_ID;
 
     this.#showActive();
     this.#emit();

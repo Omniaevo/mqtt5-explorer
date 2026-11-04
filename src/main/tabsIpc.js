@@ -157,11 +157,6 @@ function registerShellHandlers({ tabs, fromShell, onContextMenu }) {
   onShell(Channel.TABS_SELECT, (id) => {
     if (typeof id === "string") tabs.select(id);
   });
-  onShell(Channel.TABS_OPEN, (kind, payload) => {
-    const request = parseOpenRequest(kind, payload);
-
-    if (request) tabs.open(request.kind, request.payload);
-  });
   onShell(Channel.TABS_CONTEXT_MENU, (id) => {
     if (typeof id === "string") onContextMenu(id);
   });
@@ -192,6 +187,18 @@ function registerViewHandlers({ tabs, fromShell, tabOf }) {
     const target = fromShell(event) ? id : tabOf(event);
 
     if (typeof target === "string") tabs.requestClose([target]);
+  });
+  ipcMain.on(Channel.TABS_OPEN, (event, kind, payload) => {
+    const request = parseOpenRequest(kind, payload);
+
+    if (!request) return;
+
+    // The shell opens any tab; Home opens only Settings
+    const allowed =
+      fromShell(event) ||
+      (tabOf(event) === FixedTabId.HOME && request.kind === TabKind.SETTINGS);
+
+    if (allowed) tabs.open(request.kind, request.payload);
   });
   // Resolves false when the connection is invalid, so Home can tell the user
   ipcMain.handle(Channel.TABS_OPEN_CONNECTION, (event, connection) => {

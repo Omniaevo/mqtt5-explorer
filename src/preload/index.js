@@ -193,6 +193,7 @@ const api = {
     setState: (state, message) =>
       ipcRenderer.send(Channel.TABS_SET_STATE, state, message),
     /**
+     * Shell: any kind. Home: "settings" only.
      * @param {"settings" | "connection"} kind
      * @param {{connectionId?: string, connection?: object}} [payload]
      */
