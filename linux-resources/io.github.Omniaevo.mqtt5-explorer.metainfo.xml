@@ -59,6 +59,23 @@
   </screenshots>
 
   <releases>
+    <release version="3.0.0" date="2026-11-06">
+      <url type="details">https://github.com/Omniaevo/mqtt5-explorer/releases/tag/v3.0.0</url>
+      <description>
+        <p>A complete new look:</p>
+        <ul>
+          <li>Browser style tabs: open each connection in its own tab, pin, reorder and unload tabs;</li>
+          <li>New start page with recent connections, quick connect by URL and connection filter;</li>
+          <li>Search topics across all connected tabs;</li>
+          <li>Selectable wallpapers for the start page;</li>
+          <li>Settings now open in a tab;</li>
+          <li>New frameless window with in-app controls;</li>
+          <li>Address bar shows the connection, logging and notification state, with in-tab reconnect;</li>
+          <li>Last connection error is saved and shown on the start page;</li>
+          <li>Bug fixes.</li>
+        </ul>
+      </description>
+    </release>
     <release version="2.1.0" date="2026-11-02">
       <url type="details">https://github.com/Omniaevo/mqtt5-explorer/releases/tag/v2.1.0</url>
       <description>
