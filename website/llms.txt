@@ -1,0 +1,28 @@
+# MQTT5 Explorer
+
+> MQTT5 Explorer is a free, open source (GPL-3.0) desktop MQTT client for Windows, macOS and Linux. It supports all the features of MQTT 5 (message properties, user properties) and also MQTT 3.1 and 3.1.1. Made by Omniaevo SRL. Current version: 3.0.0.
+
+## Key facts
+
+- Protocols: MQTT 5.0 (default), 3.1.1 and 3.1. Transports: mqtt://, mqtts://, ws://, wss://.
+- Security: username and password, TLS with CA certificate, client certificate and client key.
+- Parallel connections: each broker connection opens in its own tab; all tabs stay connected.
+- Topic tree: live tree of topics with the last value; payload, history and publish views for each topic.
+- Search: on topic names, or inside payloads and properties with `query::<key.path>=<value>`. Case sensitive, whole word and regex options.
+- Notifications and logging: trigger conditions joined with "or" / "and"; desktop notifications and file logging.
+- Home page: recent connections, quick connect by typing a broker URL, topic search across open tabs.
+- Look: light and dark themes, custom primary color, font size, 9 wallpapers.
+- Keyboard shortcuts: Ctrl+K lists them all (Cmd on macOS).
+
+## Download
+
+- [Flathub](https://flathub.org/apps/io.github.Omniaevo.mqtt5-explorer): Linux, all distributions
+- [AUR](https://aur.archlinux.org/packages/mqtt5-explorer-bin): Arch Linux, package `mqtt5-explorer-bin`
+- [GitHub releases](https://github.com/Omniaevo/mqtt5-explorer/releases): Windows (.exe), macOS (.dmg), Linux (.AppImage)
+
+## Links
+
+- [Website](https://mqtt5explorer.netlify.app/)
+- [Source code](https://github.com/Omniaevo/mqtt5-explorer)
+- [Issues](https://github.com/Omniaevo/mqtt5-explorer/issues)
+- [License (GPL-3.0)](https://github.com/Omniaevo/mqtt5-explorer/blob/master/LICENSE)
