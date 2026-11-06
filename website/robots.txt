@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://mqtt5explorer.netlify.app/sitemap.xml
