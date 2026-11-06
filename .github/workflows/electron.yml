@@ -6,21 +6,24 @@ on:
       - "**"
     tags:
       - v[0-9]+.[0-9]+.[0-9]+
+      - v[0-9]+.[0-9]+.[0-9]+-*
 
 permissions:
   contents: write
 
 env:
-  NODE_VERSION: 20.x
+  NODE_VERSION: 24.x
+  # Tags with a "-suffix" (e.g. v1.2.3-beta) publish as pre-release; overrides releaseType in electron-builder.yml
+  EP_PRE_RELEASE: ${{ contains(github.ref_name, '-') }}
 
 jobs:
   test:
     name: Lint and unit tests
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v5
       - name: Use Node.js ${{ env.NODE_VERSION }}
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v5
         with:
           node-version: ${{ env.NODE_VERSION }}
       - run: npm install
@@ -32,44 +35,38 @@ jobs:
     name: Create AppImage for Linux
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v5
       - name: Use Node.js ${{ env.NODE_VERSION }}
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v5
         with:
           node-version: ${{ env.NODE_VERSION }}
       - run: npm install
+      # electron-builder names the release "v" + package.json version: sync it with the tag
+      - run: npm version "${{ github.ref_name }}" --no-git-tag-version --allow-same-version
       - run: npm run electron:icons
       - run: npm run build:linux -- -p always
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - run: tar -czf io.github.Omniaevo.mqtt5-explorer.tar.gz dist_electron/linux-unpacked linux-resources
       - run: sha256sum io.github.Omniaevo.mqtt5-explorer.tar.gz
-      - name: Get release
-        id: get_release
-        uses: bruceadams/get-release@v1.3.2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Upload linux unpacked
-        uses: actions/upload-release-asset@v1
+        run: gh release upload "${{ github.ref_name }}" io.github.Omniaevo.mqtt5-explorer.tar.gz
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.get_release.outputs.upload_url }}
-          asset_path: ./io.github.Omniaevo.mqtt5-explorer.tar.gz
-          asset_name: io.github.Omniaevo.mqtt5-explorer.tar.gz
-          asset_content_type: application/x-gzip
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   build-macos:
     needs: build-linux
     name: Create DMG for MacOS
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v5
       - name: Use Node.js ${{ env.NODE_VERSION }}
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v5
         with:
           node-version: ${{ env.NODE_VERSION }}
       - run: npm install
+      # electron-builder names the release "v" + package.json version: sync it with the tag
+      - run: npm version "${{ github.ref_name }}" --no-git-tag-version --allow-same-version
       - run: npm run electron:icons
       - run: npm run build:mac -- -p always
         env:
@@ -80,12 +77,14 @@ jobs:
     name: Create EXE for Windows
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v5
       - name: Use Node.js ${{ env.NODE_VERSION }}
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v5
         with:
           node-version: ${{ env.NODE_VERSION }}
       - run: npm install
+      # electron-builder names the release "v" + package.json version: sync it with the tag
+      - run: npm version "${{ github.ref_name }}" --no-git-tag-version --allow-same-version
       - run: npm run electron:icons
       - run: npm run build:win -- -p always
         env:

@@ -15,6 +15,8 @@ export function useNotifyAndLogging(getConnectionName) {
   const logsFolder = ref("");
 
   watch(fileLoggingSwitch, (enabled) => {
+    window.api.tabs.setLogging(enabled);
+
     if (enabled) {
       window.api.logger.start(getConnectionName());
       logsFolder.value = window.api.logger.logsFolder();

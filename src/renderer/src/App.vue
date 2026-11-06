@@ -38,6 +38,7 @@ import { useSettingsStore } from "./stores/settings";
 import { useConnectionsStore } from "./stores/connections";
 import { useNotifyStore } from "./stores/notify";
 import { useThemeSync } from "./composables/useThemeSync";
+import { useStoreSync } from "./composables/useStoreSync";
 
 const TOOLTIP_DELAY_MS = 400;
 const TOAST_DURATION_MS = 5000;
@@ -53,6 +54,7 @@ setLucideProps({ strokeWidth: 2 });
 settings.load();
 connections.load();
 applyAll();
+useStoreSync({ applySettings: applyAll });
 
 // Every settings change is saved right away
 watch(() => settings.$state, settings.persist, { deep: true });

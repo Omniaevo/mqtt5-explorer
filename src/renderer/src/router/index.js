@@ -4,11 +4,24 @@ import Home from "../views/Home.vue";
 export default createRouter({
   history: createWebHashHistory(),
   routes: [
-    { path: "/", name: "Home", component: Home },
+    { path: "/", redirect: "/home" },
+    { path: "/home", name: "Home", component: Home },
     {
-      path: "/viewer/:index",
+      path: "/settings",
+      name: "Settings",
+      component: () => import("../views/SettingsView.vue"),
+    },
+    {
+      path: "/viewer/:tabId",
       name: "Viewer",
       component: () => import("../views/MqttViewer.vue"),
+      // Main owns the connection properties of the tab (see `tabs:getConnection`)
+      beforeEnter: async (to) => {
+        to.meta.connection = await window.api.tabs.getConnection();
+        to.meta.initialState = await window.api.tabs.getOwnState();
+
+        return to.meta.connection ? true : { name: "Home" };
+      },
     },
   ],
 });

@@ -22,6 +22,12 @@ const api = {
     get: (key) => ipcRenderer.sendSync(Channel.STORE_GET, key),
     /** @param {string} key @param {string} value */
     set: (key, value) => ipcRenderer.sendSync(Channel.STORE_SET, key, value),
+    /**
+     * Called with the key another renderer just changed.
+     * @param {(key: string) => void} callback
+     * @returns {() => void} Unsubscribe function.
+     */
+    onChanged: (callback) => subscribe(Channel.STORE_CHANGED, callback),
   },
 
   mqtt: {
@@ -82,18 +88,204 @@ const api = {
       ipcRenderer.invoke(Channel.DIALOG_OPEN_FILE, options),
   },
 
+  tabs: {
+    /** @returns {Promise<{tabs: object[], activeId: string}>} */
+    getState: () => ipcRenderer.invoke(Channel.TABS_GET_STATE),
+    /**
+     * Called with the new tab list on every change.
+     * @param {(state: {tabs: object[], activeId: string}) => void} callback
+     * @returns {() => void} Unsubscribe function.
+     */
+    onState: (callback) => subscribe(Channel.TABS_STATE, callback),
+    /** @param {string} id */
+    select: (id) => ipcRenderer.send(Channel.TABS_SELECT, id),
+    /** @param {string} id */
+    close: (id) => ipcRenderer.send(Channel.TABS_CLOSE, id),
+    /**
+     * Pops up the native context menu of a tab at the pointer. Shell only.
+     * @param {string} id
+     */
+    openContextMenu: (id) => ipcRenderer.send(Channel.TABS_CONTEXT_MENU, id),
+    /**
+     * Opens the connection in its own tab, or selects the tab it already has.
+     * Only the Home view may call it.
+     * @param {object} connection Plain connection properties.
+     * @returns {Promise<boolean>} False when main rejects the connection.
+     */
+    openConnection: (connection) =>
+      ipcRenderer.invoke(Channel.TABS_OPEN_CONNECTION, connection),
+    /**
+     * Called with the reduced state of the open connection tabs on every change.
+     * Home only.
+     * @param {(states: {connectionId: string, state: string, pinned: boolean}[]) => void} callback
+     * @returns {() => void} Unsubscribe function.
+     */
+    onConnectionStates: (callback) =>
+      subscribe(Channel.TABS_CONNECTION_STATES, callback),
+    /**
+     * Current reduced state of the open connection tabs. Home only.
+     * @returns {Promise<{connectionId: string, state: string, pinned: boolean}[]>}
+     */
+    getConnectionStates: () =>
+      ipcRenderer.invoke(Channel.TABS_GET_CONNECTION_STATES),
+    /**
+     * Pins the open tab of a saved connection. Home only.
+     * @param {string} connectionId
+     */
+    pinConnection: (connectionId) =>
+      ipcRenderer.send(Channel.TABS_PIN_CONNECTION, connectionId),
+    /**
+     * Connection state of the calling view's tab when the view loaded.
+     * "disconnected" means: do not connect until the user asks.
+     * @returns {Promise<string>}
+     */
+    getOwnState: () => ipcRenderer.invoke(Channel.TABS_GET_OWN_STATE),
+    /**
+     * Called when the tab menu asks the view to disconnect.
+     * @param {() => void} callback
+     * @returns {() => void} Unsubscribe function.
+     */
+    onDisconnect: (callback) => subscribe(Channel.TABS_DISCONNECT, callback),
+    /**
+     * Called when the user picks Reconnect in the tab menu.
+     * @param {() => void} callback
+     * @returns {() => void} Unsubscribe function.
+     */
+    onReconnect: (callback) => subscribe(Channel.TABS_RECONNECT, callback),
+    /**
+     * Moves a tab to the place of another tab of the same group. Shell only.
+     * @param {string} id
+     * @param {string} targetId
+     */
+    reorder: (id, targetId) => ipcRenderer.send(Channel.TABS_REORDER, id, targetId),
+    /** @returns {Promise<boolean>} True when the calling view's tab is pinned. */
+    getPinned: () => ipcRenderer.invoke(Channel.TABS_GET_PINNED),
+    /**
+     * Pins or unpins the calling view's tab. Only a saved connection can be pinned.
+     * @param {boolean} pinned
+     * @returns {Promise<boolean>} Pinned state after the call.
+     */
+    setPinned: (pinned) => ipcRenderer.invoke(Channel.TABS_SET_PINNED, pinned),
+    /**
+     * Connection properties of the tab that owns the calling view.
+     * @returns {Promise<object | undefined>}
+     */
+    getConnection: () => ipcRenderer.invoke(Channel.TABS_GET_CONNECTION),
+    /**
+     * Tells the strip that the calling view is (or is no longer) logging
+     * to a file, so the tab can show the rec icon.
+     * @param {boolean} enabled
+     */
+    setLogging: (enabled) => ipcRenderer.send(Channel.TABS_SET_LOGGING, enabled),
+    /**
+     * Tells the strip how many messages the calling view got while it was
+     * hidden. Send it once per batch; selecting the tab clears the counter.
+     * @param {number} messageCount
+     */
+    addActivity: (messageCount) =>
+      ipcRenderer.send(Channel.TABS_SET_ACTIVITY, messageCount),
+    /**
+     * Reports the connection state of the calling view's tab. The tab stays
+     * open on "error"; the view shows the message itself.
+     * @param {"pending" | "connected" | "disconnected" | "error"} state
+     * @param {string} [message] Error text.
+     */
+    setState: (state, message) =>
+      ipcRenderer.send(Channel.TABS_SET_STATE, state, message),
+    /**
+     * Shell: any kind. Home: "settings" only.
+     * @param {"settings" | "connection"} kind
+     * @param {{connectionId?: string, connection?: object}} [payload]
+     */
+    open: (kind, payload) => ipcRenderer.send(Channel.TABS_OPEN, kind, payload),
+    /** @param {number} height Strip height in pixels. */
+    setStripHeight: (height) =>
+      ipcRenderer.send(Channel.SHELL_SET_HEIGHT, height),
+    /** @param {number} height Status bar height in pixels. */
+    setStatusBarHeight: (height) =>
+      ipcRenderer.send(Channel.SHELL_SET_STATUS_HEIGHT, height),
+  },
+
+  search: {
+    /**
+     * Searches topics in the connected tabs. Home only.
+     * @param {string} query At least 2 characters.
+     * @returns {Promise<{tabId: string, title: string, topics: string[]}[]>}
+     */
+    topics: (query) => ipcRenderer.invoke(Channel.SEARCH_TOPICS, query),
+    /**
+     * Selects a tab and a topic in it. Home only.
+     * @param {string} tabId
+     * @param {string} topic
+     */
+    openTopic: (tabId, topic) =>
+      ipcRenderer.send(Channel.SEARCH_OPEN_TOPIC, tabId, topic),
+    /**
+     * Viewer only. Called when Home searches topics.
+     * @param {(request: {requestId: number, query: string}) => void} callback
+     * @returns {() => void} Unsubscribe function.
+     */
+    onRequest: (callback) => subscribe(Channel.SEARCH_REQUEST, callback),
+    /**
+     * Viewer only. Answers a search request.
+     * @param {number} requestId
+     * @param {string[]} topics Matching topics.
+     */
+    respond: (requestId, topics) =>
+      ipcRenderer.send(Channel.SEARCH_RESPONSE, requestId, topics),
+  },
+
+  // Shell only: the window has no native frame
+  window: {
+    /**
+     * Pops up the app menu (Windows and Linux).
+     * @param {{x: number, y: number}} anchor Window position in pixels.
+     */
+    openMenu: (anchor) => ipcRenderer.send(Channel.SHELL_OPEN_MENU, anchor),
+    minimize: () => ipcRenderer.send(Channel.WINDOW_MINIMIZE),
+    toggleMaximize: () => ipcRenderer.send(Channel.WINDOW_TOGGLE_MAXIMIZE),
+    /** Closes the window, or hides it to the tray. */
+    close: () => ipcRenderer.send(Channel.WINDOW_CLOSE),
+    /** @returns {Promise<{maximized: boolean}>} */
+    getState: () => ipcRenderer.invoke(Channel.WINDOW_GET_STATE),
+    /**
+     * @param {(state: {maximized: boolean}) => void} callback
+     * @returns {() => void} Unsubscribe function.
+     */
+    onState: (callback) => subscribe(Channel.WINDOW_STATE, callback),
+  },
+
+  // Native tooltip: the shell asks for it, a view of its own draws it above the tabs
+  tooltip: {
+    /**
+     * Shell only. Shows a tooltip below an element after the caller's delay.
+     * @param {{title: string, subtitle?: string, anchor: {x: number, y: number, width: number, height: number}}} request
+     */
+    show: (request) => ipcRenderer.send(Channel.TOOLTIP_SHOW, request),
+    /** Shell only. */
+    hide: () => ipcRenderer.send(Channel.TOOLTIP_HIDE),
+    /** Tooltip view only: tells main it can receive content. */
+    ready: () => ipcRenderer.send(Channel.TOOLTIP_READY),
+    /**
+     * Tooltip view only.
+     * @param {(content: {id: number, title: string, subtitle?: string}) => void} callback
+     * @returns {() => void} Unsubscribe function.
+     */
+    onContent: (callback) => subscribe(Channel.TOOLTIP_CONTENT, callback),
+    /** Tooltip view only: size of the drawn content, for the view bounds. */
+    reportSize: (size) => ipcRenderer.send(Channel.TOOLTIP_SIZE, size),
+  },
+
   app: {
     /** Operating system name, as given by `process.platform`. */
     platform: process.platform,
-    /** @param {"home" | "viewer"} name */
-    sendPage: (name) => ipcRenderer.send(Channel.APP_SEND_PAGE, name),
     /** @param {string} path Folder inside the logs folder. */
     openFolder: (path) => ipcRenderer.send(Channel.APP_OPEN_FOLDER, path),
     /** @param {string} url An http(s) URL. */
     openExternal: (url) => ipcRenderer.send(Channel.APP_OPEN_EXTERNAL, url),
     /**
      * Listens to a menu event.
-     * @param {"settingsPressed" | "exportDataPressed" | "importDataPressed" | "searchPressed" | "notificationPressed"} channel
+     * @param {string} channel One of the `MenuEvent` values.
      * @param {(...args: any[]) => void} callback
      * @returns {() => void} Unsubscribe function.
      */

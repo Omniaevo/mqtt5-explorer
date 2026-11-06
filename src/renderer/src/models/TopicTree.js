@@ -23,6 +23,11 @@ class TopicTree {
     this.#top.resizeHistory(historySize);
   }
 
+  /** Drops every topic. Node ids keep growing so stale ids never match. */
+  clear() {
+    this.#top = new TopicNode(0, "", "");
+  }
+
   /** Array copy of the root nodes, in insertion order. */
   get roots() {
     return this.#top.children;
@@ -63,6 +68,26 @@ class TopicTree {
     }
 
     return nodes;
+  }
+
+  /**
+   * Finds topics that hold a value and pass a filter.
+   * @param {(topic: string) => boolean} matches
+   * @param {number} limit Stops the walk after this many topics.
+   * @returns {string[]}
+   */
+  search(matches, limit) {
+    const found = [];
+    const pending = [...this.#top.children].reverse();
+
+    while (pending.length > 0 && found.length < limit) {
+      const node = pending.pop();
+
+      if (node.value !== undefined && matches(node.topic)) found.push(node.topic);
+      pending.push(...node.children.reverse());
+    }
+
+    return found;
   }
 
   static #hasPayload(message) {

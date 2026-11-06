@@ -8,7 +8,11 @@ const BOOLEAN_TOKENS = new Map([
   ["no", 0],
 ]);
 
-/** @returns {{value: number, isBoolean: boolean} | null} */
+/**
+ * Number for a finite numeric string; 1/0 for true/false, on/off, yes/no
+ * (case-insensitive, trimmed). Also accepts JSON numbers and booleans.
+ * @returns {{value: number, isBoolean: boolean} | null} `null` when the value cannot be plotted.
+ */
 const classify = (raw) => {
   if (typeof raw === "boolean") return { value: Number(raw), isBoolean: true };
   if (typeof raw === "number") {
@@ -26,13 +30,6 @@ const classify = (raw) => {
 
   return Number.isFinite(value) ? { value, isBoolean: false } : null;
 };
-
-/**
- * Number for a finite numeric string; 1/0 for true/false, on/off, yes/no
- * (case-insensitive, trimmed). Also accepts JSON numbers and booleans.
- * @returns {number | null} `null` when the value cannot be plotted.
- */
-export const toChartValue = (raw) => classify(raw)?.value ?? null;
 
 /** Parsed JSON object/array of each history entry; `null` for other payloads. */
 const parsedEntries = new WeakMap();

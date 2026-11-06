@@ -2,6 +2,7 @@
 export const Channel = Object.freeze({
   STORE_GET: "store:get",
   STORE_SET: "store:set",
+  STORE_CHANGED: "store:changed",
   MQTT_CONNECT: "mqtt:connect",
   MQTT_DISCONNECT: "mqtt:disconnect",
   MQTT_PUBLISH: "mqtt:publish",
@@ -13,29 +14,89 @@ export const Channel = Object.freeze({
   NOTIFY_SET_CONFIG: "notify:setConfig",
   NOTIFY_SELECT_TOPIC: "notify:selectTopic",
   DIALOG_OPEN_FILE: "dialog:openFile",
-  APP_SEND_PAGE: "app:sendPage",
   APP_OPEN_FOLDER: "app:openFolder",
   APP_OPEN_EXTERNAL: "app:openExternal",
+  TABS_STATE: "tabs:state",
+  TABS_GET_STATE: "tabs:getState",
+  TABS_SELECT: "tabs:select",
+  TABS_CLOSE: "tabs:close",
+  TABS_OPEN: "tabs:open",
+  TABS_OPEN_CONNECTION: "tabs:openConnection",
+  TABS_GET_CONNECTION: "tabs:getConnection",
+  TABS_SET_STATE: "tabs:setState",
+  TABS_CONTEXT_MENU: "tabs:contextMenu",
+  TABS_SET_LOGGING: "tabs:setLogging",
+  TABS_SET_ACTIVITY: "tabs:setActivity",
+  TABS_CONNECTION_STATES: "tabs:connectionStates",
+  TABS_GET_CONNECTION_STATES: "tabs:getConnectionStates",
+  TABS_PIN_CONNECTION: "tabs:pinConnection",
+  TABS_GET_OWN_STATE: "tabs:getOwnState",
+  TABS_DISCONNECT: "tabs:disconnect",
+  TABS_RECONNECT: "tabs:reconnect",
+  TABS_REORDER: "tabs:reorder",
+  TABS_GET_PINNED: "tabs:getPinned",
+  TABS_SET_PINNED: "tabs:setPinned",
+  SEARCH_TOPICS: "search:topics",
+  SEARCH_REQUEST: "search:request",
+  SEARCH_RESPONSE: "search:response",
+  SEARCH_OPEN_TOPIC: "search:openTopic",
+  TOOLTIP_SHOW: "tooltip:show",
+  TOOLTIP_HIDE: "tooltip:hide",
+  TOOLTIP_READY: "tooltip:ready",
+  TOOLTIP_CONTENT: "tooltip:content",
+  TOOLTIP_SIZE: "tooltip:size",
+  SHELL_SET_HEIGHT: "shell:setHeight",
+  SHELL_SET_STATUS_HEIGHT: "shell:setStatusHeight",
+  SHELL_OPEN_MENU: "shell:openMenu",
+  WINDOW_MINIMIZE: "window:minimize",
+  WINDOW_TOGGLE_MAXIMIZE: "window:toggleMaximize",
+  WINDOW_CLOSE: "window:close",
+  WINDOW_GET_STATE: "window:getState",
+  WINDOW_STATE: "window:state",
+});
+
+/** Kinds of tab the main process can host. */
+export const TabKind = Object.freeze({
+  HOME: "home",
+  SETTINGS: "settings",
+  CONNECTION: "connection",
+});
+
+/** Ids of the tabs that exist at most once. */
+export const FixedTabId = Object.freeze({
+  HOME: "home",
+  SETTINGS: "settings",
+});
+
+/** Connection state of a tab. Tabs without a connection are always ready. */
+export const TabState = Object.freeze({
+  SLEEPING: "sleeping",
+  PENDING: "pending",
+  CONNECTED: "connected",
+  DISCONNECTED: "disconnected",
+  ERROR: "error",
 });
 
 /** Menu events sent from the main process to the renderer. */
 export const MenuEvent = Object.freeze({
-  SETTINGS: "settingsPressed",
   EXPORT_DATA: "exportDataPressed",
   IMPORT_DATA: "importDataPressed",
   SEARCH: "searchPressed",
   NOTIFICATION: "notificationPressed",
 });
 
+/** Persisted store keys: values must stay unchanged to keep user data. */
+export const StoreKey = Object.freeze({
+  CONNECTIONS: "saved_mqtt_connections",
+  SETTINGS: "saved_app_settings",
+  CLOSE_TO_TRAY: "close_to_tray",
+  // Main-only: the renderer never reads or writes it
+  PINNED_TABS: "pinned_tabs",
+});
+
 /** Store keys the renderer may read and write. */
 export const RendererStoreKeys = Object.freeze([
-  "saved_mqtt_connections",
-  "saved_app_settings",
-  "close_to_tray",
+  StoreKey.CONNECTIONS,
+  StoreKey.SETTINGS,
+  StoreKey.CLOSE_TO_TRAY,
 ]);
-
-/** Pages the renderer can announce (they select the application menu). */
-export const Page = Object.freeze({
-  HOME: "home",
-  VIEWER: "viewer",
-});

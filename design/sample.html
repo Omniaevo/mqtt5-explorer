@@ -297,6 +297,57 @@
       .msg { display: flex; align-items: center; gap: var(--space-4); padding: 0 var(--space-4); block-size: var(--row-height); border-radius: var(--radius-sm); font-family: var(--font-mono); font-size: var(--font-size-sm); }
       .msg--in { background: color-mix(in oklab, var(--color-success) 16%, transparent); }
       .msg--del { background: color-mix(in oklab, var(--color-danger) 16%, transparent); }
+
+      /* Tab strip: the only drag region in the app (not shown in this static sample) */
+      .strip { display: flex; align-items: center; gap: var(--space-2); block-size: var(--header-height); padding-inline: var(--space-4); border: 1px solid var(--color-border); border-radius: var(--radius-lg); background: var(--color-surface); overflow: hidden; }
+      .tab {
+        display: flex; align-items: center; flex: 0 1 24ch; gap: var(--space-3);
+        min-inline-size: 12ch; block-size: var(--control-height);
+        padding-inline: var(--space-4);
+        border-radius: var(--radius-lg);
+        color: var(--color-text-muted);
+        font-size: var(--font-size-sm); font-weight: var(--font-weight-medium); line-height: var(--line-height-tight);
+        transition: background-color var(--duration-fast) var(--easing);
+      }
+      .tab:hover { background: var(--color-hover); }
+      .tab--icon-only { flex: none; min-inline-size: 0; }
+      .tab--active { background: color-mix(in oklab, var(--color-primary) 14%, var(--color-surface)); color: var(--color-primary); }
+      .tab--active:hover { background: color-mix(in oklab, var(--color-primary) 22%, var(--color-surface)); }
+      .tab__name { flex: 1; min-inline-size: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .tab__dot { flex: none; inline-size: 0.5rem; block-size: 0.5rem; border: 1px solid var(--dot-color, var(--color-text-muted)); border-radius: var(--radius-sm); }
+      .tab__dot--connected { --dot-color: var(--color-success); background: var(--dot-color); }
+      .tab__dot--pending { --dot-color: var(--color-warning); background: var(--dot-color); }
+      .tab__dot--error { --dot-color: var(--color-danger); background: var(--dot-color); }
+      .tab__activity { flex: none; padding-inline: var(--space-2); border-radius: var(--radius-sm); background: var(--color-primary); color: var(--color-on-primary); font-family: var(--font-mono); font-size: var(--font-size-xs); line-height: var(--line-height-tight); }
+      .tab__pin { color: var(--color-text-muted); }
+      .tab__rec { flex: none; color: var(--color-danger); }
+
+      /* Home tile */
+      .tile { position: relative; border: 1px solid var(--color-border); border-radius: var(--radius-lg); background: var(--color-surface-raised); }
+      .tile:hover { background-image: linear-gradient(var(--color-hover), var(--color-hover)); }
+      .tile__main { display: grid; gap: var(--space-2); padding: var(--space-5); padding-inline-end: calc(var(--space-5) + var(--control-height)); }
+      .tile__head { display: flex; align-items: center; gap: var(--space-4); min-inline-size: 0; }
+      .tile__name { overflow: hidden; font-weight: var(--font-weight-bold); text-overflow: ellipsis; white-space: nowrap; }
+      .tile__url { overflow: hidden; color: var(--color-text-muted); font-family: var(--font-mono); font-size: var(--font-size-xs); text-overflow: ellipsis; white-space: nowrap; }
+      .tile__menu { position: absolute; inset-block-start: var(--space-4); inset-inline-end: var(--space-4); }
+
+      /* Actions menu (open) */
+      .menu { inline-size: max-content; min-inline-size: 16ch; padding: var(--space-2); border-radius: var(--radius-lg); background: var(--color-surface-raised); box-shadow: var(--shadow-2); }
+      .menu__item { display: flex; align-items: center; gap: var(--space-4); min-block-size: var(--row-height); padding-inline: var(--space-4); border-radius: var(--radius-md); }
+      .menu__item .icon { inline-size: 0.875rem; block-size: 0.875rem; color: var(--color-text-muted); }
+      .menu__item--highlighted { background: var(--color-hover); }
+      .menu__item--danger, .menu__item--danger .icon { color: var(--color-danger); }
+      .menu__separator { block-size: 1px; margin-block: var(--space-2); background: var(--color-border); }
+
+      /* Wallpaper: pattern behind the content, ink mixed from the primary token */
+      .wallpaper { position: relative; isolation: isolate; padding: var(--space-5); border-radius: var(--radius-lg); }
+      .wallpaper::before {
+        content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+        background-image:
+          linear-gradient(color-mix(in oklab, var(--color-primary) 10%, transparent) 1px, transparent 1px),
+          linear-gradient(90deg, color-mix(in oklab, var(--color-primary) 10%, transparent) 1px, transparent 1px);
+        background-size: 24px 24px;
+      }
     }
 
     /* ===== Sample page only ===== */
@@ -351,6 +402,11 @@
       <symbol id="i-back" viewBox="0 0 24 24"><path d="m12 19-7-7 7-7M19 12H5"/></symbol>
       <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></symbol>
       <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></symbol>
+      <symbol id="i-home" viewBox="0 0 24 24"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></symbol>
+      <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></symbol>
+      <symbol id="i-ellipsis" viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></symbol>
+      <symbol id="i-pencil" viewBox="0 0 24 24"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/></symbol>
+      <symbol id="i-circle-dot" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="1"/></symbol>
     </defs>
   </svg>
 
@@ -456,6 +512,41 @@
           </ul>
         </section>
       </div>
+
+      <!-- Tab strip -->
+      <section class="group">
+        <h2 class="group__title">Tab strip</h2>
+        <div class="strip" role="tablist" aria-label="Tabs">
+          <div class="tab tab--icon-only"><svg class="icon" aria-hidden="true"><use href="#i-home"/></svg></div>
+          <div class="tab tab--active" role="tab" aria-selected="true"><span class="tab__dot tab__dot--connected" role="img" aria-label="connected"></span><span class="tab__name">AM3 TCP</span><svg class="icon tab__pin" aria-label="Pinned" role="img"><use href="#i-pin"/></svg></div>
+          <div class="tab" role="tab" aria-selected="false"><span class="tab__dot" role="img" aria-label="sleeping"></span><span class="tab__name">Lab WebSocket</span><svg class="icon tab__pin" aria-label="Pinned" role="img"><use href="#i-pin"/></svg></div>
+          <div class="tab" role="tab" aria-selected="false"><span class="tab__dot tab__dot--pending" role="img" aria-label="pending"></span><span class="tab__activity">12</span><span class="tab__name">Cloud TLS</span></div>
+          <div class="tab" role="tab" aria-selected="false"><span class="tab__dot tab__dot--error" role="img" aria-label="error"></span><span class="tab__name">Edge</span></div>
+          <div class="tab" role="tab" aria-selected="false"><svg class="icon tab__rec" aria-label="Logging is active" role="img"><use href="#i-circle-dot"/></svg><span class="tab__name">Logger</span></div>
+        </div>
+      </section>
+
+      <!-- Home tile, actions menu and wallpaper -->
+      <section class="group">
+        <h2 class="group__title">Home tile and menu</h2>
+        <div class="wallpaper">
+          <div class="cols">
+            <div class="tile">
+              <div class="tile__main">
+                <span class="tile__head"><span class="tab__dot tab__dot--connected" role="img" aria-label="connected"></span><span class="tile__name">AM3 TCP</span></span>
+                <span class="tile__url">mqtt://broker.local:1883</span>
+              </div>
+              <div class="tile__menu"><button class="btn btn--icon" type="button" aria-label="Actions for AM3 TCP"><svg class="icon"><use href="#i-ellipsis"/></svg></button></div>
+            </div>
+            <div class="menu" role="menu" aria-label="Actions">
+              <div class="menu__item menu__item--highlighted" role="menuitem"><svg class="icon"><use href="#i-pencil"/></svg>Edit</div>
+              <div class="menu__item" role="menuitem"><svg class="icon"><use href="#i-pin"/></svg>Pin tab</div>
+              <div class="menu__separator" role="separator"></div>
+              <div class="menu__item menu__item--danger" role="menuitem"><svg class="icon"><use href="#i-trash"/></svg>Delete</div>
+            </div>
+          </div>
+        </div>
+      </section>
 
       <!-- Dialog on backdrop -->
       <section class="group">
